@@ -2,18 +2,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Chat {
-    private Profile[] profiles;
+    private ArrayList<Profile> profiles;
     private ArrayList<Message> messages;
     private long timestamp;
     private static final Object messageSentinel = new Object();    // Prevents race conditions on accessing messages
 
-    public Chat(Profile[] profiles) {
+    public Chat(ArrayList<Profile> profiles) {
         this.profiles = profiles;
         messages = new ArrayList<>();
         timestamp = System.currentTimeMillis();
     }
 
-    public Profile[] getProfiles() {
+    public ArrayList<Profile> getProfiles() {
         return profiles;
     }
 
@@ -26,7 +26,7 @@ public class Chat {
     }
 
     public boolean sendMessage(Message message) {    // Add the message to the message array
-        if (Arrays.asList(profiles).contains(message.getSender())) {    // Ensure that the chat includes the sender
+        if (profiles.contains(message.getSender())) {    // Ensure that the chat includes the sender
             synchronized (messageSentinel) {
                 messages.add(message);
             }
@@ -36,7 +36,4 @@ public class Chat {
             return false;
         }
     }
-
-
-
 }
