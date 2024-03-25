@@ -1,5 +1,5 @@
 public class ProfileError extends Exception {
-    public ProfileError() {
-        super();
+    public ProfileError(String message) {
+        super(message);
     }
 }

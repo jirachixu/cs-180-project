@@ -4,9 +4,9 @@ public class Message {
     private int status;    // Current status of message: 0 = unedited, 1 = edited, 2 = deleted
     private long timestamp;    // The time in which the message was sent
 
-    public Message(Profile sender, String contents) throws ProfileError, MessageError{
+    public Message(Profile sender, String contents) throws ProfileError, MessageError {
         if (sender == null) {    // Checks to be done if ProfileError
-            throw new ProfileError();
+            throw new ProfileError("Message has no sender");
         }
 
         if (contents == null || contents.isEmpty()) {
