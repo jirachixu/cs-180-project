@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Database {
     private String profileIn; // File that profiles are read in from
@@ -7,7 +8,7 @@ public class Database {
     private String profileOut; // File that profiles are read out to
     private String chatOut; // File that chats are read out to
     private ArrayList<Profile> profiles; // ArrayList of profiles
-    private ArrayList<Chat> chats; // ArrayList of chats
+    private HashMap<String, Chat> chats; // HashMap (dictionary) of chats
 
     public Database(String profileIn, String chatIn, String profileOut, String chatOut) {
         this.profileIn = profileIn;
@@ -48,7 +49,7 @@ public class Database {
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
                     Chat chat = (Chat) ois.readObject();
                     if (chat != null) {
-                        chats.add(chat);
+                        chats.put(chat.getProfiles().get(0).getUsername() + chat.getProfiles().get(1).getUsername(), chat);
                     } else {
                         more = false;
                     }
@@ -75,8 +76,8 @@ public class Database {
 
     public boolean outputChat() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut))) {
-            for (int i = 0; i < chats.size(); i++) {
-                oos.writeObject(chats.get(i));
+            for (Chat c : chats.values()) {
+                oos.writeObject(c);
             }
         } catch (IOException e) {
             return false;
@@ -91,5 +92,30 @@ public class Database {
             }
         }
         return false;
+    }
+
+    public synchronized void sendMessage(Message message) {
+        String key = message.getSender() + message.getReceiver();
+        if (chats.containsKey(key)) {
+            Chat chat = chats.get(key);
+            chat.sendMessage(message);
+        } else {
+            ArrayList<Profile> chatProfiles = new ArrayList<>();
+            chatProfiles.add(message.getSender());
+            chatProfiles.add(message.getReceiver());
+            chats.put(key, new Chat(chatProfiles));
+        }
+    }
+
+    public synchronized void editMessage(Message message, String newContent) throws MessageError {
+        String key = message.getSender() + message.getReceiver();
+        Chat chat = chats.get(key);
+        chat.editMessage(message, newContent);
+    }
+
+    public synchronized void deleteMessage(Message message) {
+        String key = message.getSender() + message.getReceiver();
+        Chat chat = chats.get(key);
+        chat.deleteMessage(message);
     }
 }
