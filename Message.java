@@ -1,4 +1,6 @@
-public class Message {
+import java.io.Serializable;
+
+public class Message implements Serializable {
     private final Profile sender;    // The profile that sent the message
     private String contents;    // The contents of the message
     private int status;    // Current status of message: 0 = unedited, 1 = edited, 2 = deleted

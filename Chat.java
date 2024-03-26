@@ -1,13 +1,15 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Chat {
+public class Chat implements Serializable {
     private ArrayList<Profile> profiles;
     private ArrayList<Message> messages;
     private long timestamp;
+
     private static final Object messageSentinel = new Object();    // Prevents race conditions on accessing messages
 
-    public Chat(ArrayList<Profile> profiles) {
+    public Chat(ArrayList<Profile> profiles) {  // TODO SENDER RECIERVER MESSAGE
         this.profiles = profiles;
         messages = new ArrayList<>();
         timestamp = System.currentTimeMillis();
@@ -44,7 +46,7 @@ public class Chat {
 
     // Finds and edits a messages to change the contents of the method. Returns true if successful, returns false if the
     // message is not found. Message error thrown if message is deleted or if newContents are null/empty
-    public boolean editMessage(Message message, String newContents) throws MessageError {
+    public boolean editMessage(Message message, String newContents) throws MessageError {    // TODO: EDIT MESSAGE
         try {
             int i = messages.indexOf(message);
             if (i < 0) {
@@ -67,4 +69,6 @@ public class Chat {
             return true;
         }
     }
+
+
 }
