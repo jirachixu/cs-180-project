@@ -83,4 +83,13 @@ public class Database {
         }
         return true;
     }
+
+    public boolean login(String username, String password) {
+        for (int i = 0; i < profiles.size(); i++) {
+            if (profiles.get(i).getUsername().equals(username) && profiles.get(i).getPassword().equals(password)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
