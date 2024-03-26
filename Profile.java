@@ -22,6 +22,15 @@ public class Profile {
         this.blocked = blocked;
     }
 
+    public Profile() {
+        this.username = null;
+        this.password = null;
+        this.displayName = null;
+        this.receiveAll = false;
+        this.friends = null;
+        this.blocked = null;
+    }
+
     public String getUsername() {
         return username;
     }
