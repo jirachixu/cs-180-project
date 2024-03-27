@@ -100,10 +100,7 @@ public class Database {
             Chat chat = chats.get(key);
             chat.sendMessage(message);
         } else {
-            ArrayList<Profile> chatProfiles = new ArrayList<>();
-            chatProfiles.add(message.getSender());
-            chatProfiles.add(message.getReceiver());
-            chats.put(key, new Chat(chatProfiles));
+            chats.put(key, new Chat(message));
         }
     }
 
@@ -113,7 +110,7 @@ public class Database {
         chat.editMessage(message, newContent);
     }
 
-    public synchronized void deleteMessage(Message message) {
+    public synchronized void deleteMessage(Message message) throws MessageError {
         String key = message.getSender().getUsername() + message.getReceiver().getUsername();
         Chat chat = chats.get(key);
         chat.deleteMessage(message);
