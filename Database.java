@@ -95,7 +95,7 @@ public class Database {
     }
 
     public synchronized void sendMessage(Message message) {
-        String key = message.getSender() + message.getReceiver();
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
         if (chats.containsKey(key)) {
             Chat chat = chats.get(key);
             chat.sendMessage(message);
@@ -108,13 +108,13 @@ public class Database {
     }
 
     public synchronized void editMessage(Message message, String newContent) throws MessageError {
-        String key = message.getSender() + message.getReceiver();
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
         Chat chat = chats.get(key);
         chat.editMessage(message, newContent);
     }
 
     public synchronized void deleteMessage(Message message) {
-        String key = message.getSender() + message.getReceiver();
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
         Chat chat = chats.get(key);
         chat.deleteMessage(message);
     }
