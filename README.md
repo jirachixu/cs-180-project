@@ -4,10 +4,20 @@
 ### Database
 #### Fields
 | Field Name | Type                | Access Modifier | Description                           |
-|------------|---------------------|-----------------|---------------------------------------|
-| profiles   | ArrayList\<Profile> | private         | ArrayList of profiles in the database |
-| chats      | ArrayList\<Chat>    | private         | ArrayList of chats in the database    |
+|-----------|---------------------|-----------------|---------------------------------------|
+| profiles  | ArrayList\<Profile> | private         | ArrayList of profiles in the database |
+| chats     | ArrayList\<Chat>    | private         | ArrayList of chats in the database    |
 #### Methods
+| Method Name                             | Type              | Description                                                                                     |
+|-----------------------------------------|-------------------|-------------------------------------------------------------------------------------------------|
+| readProfile()                           | boolean           | Reads in all of the profiles from the profile file (profileIn).                                 |
+| readChat()                              | boolean           | Reads in all of the chats from the chat file (chatIn).                                          |
+| outputProfile()                         | boolean           | Outputs all of the profiles to the profileOut file.                                             |
+| outputChat()                            | boolean           | Outputs all of the chats to the chatOut file.                                                   |
+| login(String username, String password) | boolean           | If the username and password match any of the profiles, returns true. Otherwise, returns false. |
+| sendMessage(Message message)            | synchronized void | Sends a message to a chat between two profiles.                                                 |
+| editMessage(Message message)            | synchronized void | Edits a message in a chat between two profiles.                                                 |
+| deleteMessage(Message message)          | synchronized void | Deletes a message in a chat between two profiles.                                               |
 ### Chat
 #### Fields
 | Field Name | Type                | Access Modifier | Description                                 |
