@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Database {
+public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
     private String chatIn; // File that chats are read in from
     private String profileOut; // File that profiles are read out to
