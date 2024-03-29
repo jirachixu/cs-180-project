@@ -114,4 +114,28 @@ public class Database implements DatabaseInterface {
         Chat chat = chats.get(key);
         chat.deleteMessage(message);
     }
+
+    public synchronized void createUser(String username, String password, String displayName) {
+        profiles.add(new Profile(username, password, displayName, true, null, null));
+    }
+
+    public synchronized boolean deleteUser(String username) {
+        for (int i = 0; i < profiles.size(); i++) {
+            if (profiles.get(i).getUsername().equals(username)) {
+                profiles.remove(profiles.get(i));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean editUser(String username, String newDisplayName) {
+        for (int i = 0; i < profiles.size(); i++) {
+            if (profiles.get(i).getUsername().equals(username)) {
+                profiles.get(i).setDisplayName(newDisplayName);
+                return true;
+            }
+        }
+        return false;
+    }
 }
