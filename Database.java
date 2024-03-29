@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 /*
  * TODO: Ruiqi: add user search function (both username and display name, case insensitive),
- *  create, edit, delete user
  */
 public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
@@ -113,5 +112,50 @@ public class Database implements DatabaseInterface {
         String key = message.getSender().getUsername() + message.getReceiver().getUsername();
         Chat chat = chats.get(key);
         chat.deleteMessage(message);
+    }
+
+    public synchronized boolean createProfile(String username, String password) {
+        Profile newProfile = new Profile(username, password, username, true,
+                new ArrayList<>(), new ArrayList<>());
+        if (profiles.contains(newProfile)) {
+            return false;
+        }
+        profiles.add(newProfile);
+        return true;
+    }
+
+    public synchronized boolean editDisplayName(String username, String newDisplayName) {
+        for (Profile p : profiles) {
+            if (p.getUsername().equals(username)) {
+                p.setDisplayName(newDisplayName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean editPassword(String username, String newPassword) {
+        for (Profile p : profiles) {
+            if (p.getUsername().equals(username)) {
+                p.setPassword(newPassword);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean editReceiveAll(String username, boolean newReceiveAll) {
+        for (Profile p : profiles) {
+            if (p.getUsername().equals(username)) {
+                p.setReceiveAll(newReceiveAll);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean deleteProfile(String username) {
+        Profile toDelete = new Profile(username);
+        return profiles.remove(toDelete);
     }
 }
