@@ -10,4 +10,6 @@ public interface DatabaseInterface {
     public boolean createProfile(String username, String password);
     public boolean deleteProfile(String username);
     public boolean editDisplayName(String username, String newDisplayName);
+    public boolean editPassword(String username, String newPassword);
+    public boolean editReceiveAll(String username, boolean newReceiveAll);
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
  * TODO: all the setter methods and addFriend, removeFriend, block, unblock, etc. have to communicate with the client
  *  and get info (the method parameters) from the user, also probably needs to be displayed on the GUI
  */
-public class Profile {
+public class Profile implements ProfileInterface {
     private final String username;
     private String password;
     private String displayName;

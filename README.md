@@ -80,5 +80,12 @@ the profile which sent the message and the profile which received the message.
 | status     | int           | The current status of the message (0 = unedited, 1 = edited, 2 = deleted). |
 | timestamp  | long          | The time in which the message was sent.                                    |
 #### Methods
-
+| Method Name                               | Return  | Description                                                                                                                  |
+|-------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------|
+| getSender()                               | Profile | Gets the sender of the message.                                                                                              |
+| getReceiver()                             | Profile | Gets the receiver of the message.                                                                                            |
+| edit(String contents) throws MessageError | void    | Edits the content of the message                                                                                             |
+| delete()                                  | void    | Deletes the message (sets its contents to null).                                                                             |
+| getContents()                             | String  | Gets the contents of the message.                                                                                            |
+| equals(Object o)                          | boolean | Checks if the object is a Message, and then checks if they have the same sender, receiver, status, timestamp, and contents.  |
 ## Client
