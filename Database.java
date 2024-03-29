@@ -2,19 +2,24 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/*
+ * TODO: Ruiqi: add user search function (both username and display name, case insensitive)
+ */
 public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
     private String chatIn; // File that chats are read in from
     private String profileOut; // File that profiles are read out to
     private String chatOut; // File that chats are read out to
-    private ArrayList<Profile> profiles; // ArrayList of profiles
-    private HashMap<String, Chat> chats; // HashMap (dictionary) of chats
+    private ArrayList<Profile> profiles = new ArrayList<>(); // ArrayList of profiles
+    private HashMap<String, Chat> chats = new HashMap<>(); // HashMap (dictionary) of chats
 
     public Database(String profileIn, String chatIn, String profileOut, String chatOut) {
         this.profileIn = profileIn;
         this.chatIn = chatIn;
         this.profileOut = profileOut;
         this.chatOut = chatOut;
+        readProfile();
+        readChat();
     }
 
     // Reads in all the profiles from the profile file.
@@ -65,8 +70,8 @@ public class Database implements DatabaseInterface {
 
     public boolean outputProfile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut))) {
-            for (int i = 0; i < profiles.size(); i++) {
-                oos.writeObject(profiles.get(i));
+            for (Profile profile : profiles) {
+                oos.writeObject(profile);
             }
         } catch (IOException e) {
             return false;
@@ -86,8 +91,8 @@ public class Database implements DatabaseInterface {
     }
 
     public boolean login(String username, String password) {
-        for (int i = 0; i < profiles.size(); i++) {
-            if (profiles.get(i).getUsername().equals(username) && profiles.get(i).getPassword().equals(password)) {
+        for (Profile profile : profiles) {
+            if (profile.getUsername().equals(username) && profile.getPassword().equals(password)) {
                 return true;
             }
         }
