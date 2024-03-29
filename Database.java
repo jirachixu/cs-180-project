@@ -3,7 +3,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /*
- * TODO: Ruiqi: add user search function (both username and display name, case insensitive)
+ * TODO: Ruiqi: add user search function (both username and display name, case insensitive),
+ *  create, edit, delete user
  */
 public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
