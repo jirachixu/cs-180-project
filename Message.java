@@ -36,6 +36,10 @@ public class Message implements Serializable, MessageInterface {
         return receiver;
     }
 
+    public long getTimestamp() { return timestamp; }
+
+    public int getStatus() { return status; }
+
     public void edit(String contents) throws MessageError {    // Replace the contents of the old message with the new one
         if (status != 2) {    // Ensure message is not deleted
             if (contents == null || contents.isEmpty()) {
