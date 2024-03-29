@@ -52,12 +52,7 @@ public class Database implements DatabaseInterface {
             boolean more = true;
             while (more) {
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
-                    Chat chat = (Chat) ois.readObject();
-                    if (chat != null) {
-                        chats.put(chat.getProfiles().get(0).getUsername() + chat.getProfiles().get(1).getUsername(), chat);
-                    } else {
-                        more = false;
-                    }
+                    chats = (HashMap<String, Chat>) ois.readObject();
                 } catch (ClassNotFoundException e) {
                     return false;
                 }
@@ -81,9 +76,7 @@ public class Database implements DatabaseInterface {
 
     public boolean outputChat() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut))) {
-            for (Chat c : chats.values()) {
-                oos.writeObject(c);
-            }
+            oos.writeObject(chats);
         } catch (IOException e) {
             return false;
         }
