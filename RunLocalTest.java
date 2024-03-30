@@ -8,7 +8,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 public class RunLocalTest {
     public static void main(String[] args) {
@@ -39,8 +41,8 @@ public class RunLocalTest {
                     Modifier.isPublic(modifiers));
             Assert.assertFalse("Ensure that Message is not abstract!",
                     Modifier.isAbstract(modifiers));
-            Assert.assertEquals("Ensure that Message implements MessageInterface!",
-                    1, superinterfaces.length);
+            Assert.assertEquals("Ensure that Message implements MessageInterface and Serializable!",
+                    2, superinterfaces.length);
         }
 
         @Test(timeout = 1000)
@@ -59,8 +61,8 @@ public class RunLocalTest {
                     Modifier.isPublic(modifiers));
             Assert.assertFalse("Ensure that Chat is not abstract!",
                     Modifier.isAbstract(modifiers));
-            Assert.assertEquals("Ensure that Chat implements ChatInterface!",
-                    1, superinterfaces.length);
+            Assert.assertEquals("Ensure that Chat implements ChatInterface and Serializable!",
+                    2, superinterfaces.length);
         }
 
         @Test(timeout = 1000)
@@ -79,8 +81,8 @@ public class RunLocalTest {
                     Modifier.isPublic(modifiers));
             Assert.assertFalse("Ensure that Profile is not abstract!",
                     Modifier.isAbstract(modifiers));
-            Assert.assertEquals("Ensure that Profile implements ProfileInterface!",
-                    1, superinterfaces.length);
+            Assert.assertEquals("Ensure that Profile implements ProfileInterface and Serializable!",
+                    2, superinterfaces.length);
         }
 
         @Test(timeout = 1000)
@@ -126,7 +128,7 @@ public class RunLocalTest {
 
             assertEquals("Ensure that getSender() returns the correct value!", p1, actSender);
             assertEquals("Ensure that getReceiver() returns the correct value!", p2, actReceiver);
-            assertEquals("Ensure that getContent() returns the current value!", "hello world!",
+            assertEquals("Ensure that getContent() returns the correct value!", "hello world!",
                     expectedMessage.getContents());
             assertEquals("Ensure that getTimestamp() returns the correct value!", timestamp,
                     expectedMessage.getTimestamp());
@@ -155,9 +157,9 @@ public class RunLocalTest {
                         "Make sure the Message constructor is correct!", false);
             }
 
-            assertEquals("Make sure the equals method is implemented properly! These should be equal!",
+            assertEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, equalMessage);
-            assertNotEquals("Make sure the equals method is implemented properly! These should NOT be equal!",
+            assertNotEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, unequalMessage);
 
             assertEquals("Make sure the toString method is implement correctly!",
@@ -173,7 +175,69 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testChatMethods() {
-
+            Profile p1 = new Profile("first", "password", "world", true, null, null);
+            Profile p2 = new Profile("second", "password", "hello", true, null, null);
+            Profile p3 = new Profile("third", "password", "goodbye", false, null, null);
+            ArrayList<Profile> profiles = new ArrayList<>();
+            profiles.add(p1);
+            profiles.add(p2);
+            Message m1 = null;
+            try {
+                m1 = new Message(p1, p2, "hello world!");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            } catch (ProfileError e) {
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            ArrayList<Message> messages = new ArrayList<>();
+            messages.add(m1);
+            Chat expectedChat = new Chat(m1);
+            long timestamp = expectedChat.getTimestamp();
+            assertEquals("Ensure that getProfiles() returns the correct value!", profiles, expectedChat.getProfiles());
+            assertEquals("Ensure that getMessages() returns the correct value!", messages, expectedChat.getMessages());
+            assertEquals("Ensure that getTimestamp() returns the correct value!", timestamp, expectedChat.getTimestamp());
+            assertTrue("Ensure that matchesProfiles() returns the correct value!", expectedChat.matchesProfiles(p1, p2));
+            assertFalse("Ensure that matches Profiles() returns the correct value!", expectedChat.matchesProfiles(p2, p3));
+            try {
+                expectedChat.sendMessage(new Message(p1, p2, "im the next message!"));
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            } catch (ProfileError e) {
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            assertEquals("Ensure that sendMessage() is properly updating the messages array!", 2, expectedChat.getMessages().size());
+            assertNotEquals("Ensure that sendMessage() is properly updating the timestamp!", timestamp, expectedChat.getTimestamp());
+            Message m3 = null;
+            try {
+                m3 = new Message(p3, p2, "this isn't in the expectedChat!");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            } catch (ProfileError e) {
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            try {
+                expectedChat.editMessage(m1, "goodbye world!");
+            } catch (MessageError e) {
+                Assert.assertTrue("editMessage() threw an unexpected MessageError\n" +
+                        "Make sure editMessage() is correct!", false);
+            }
+            assertEquals("Ensure that editMessage() is properly updating the message!", "goodbye world!", m1.getContents());
+            Message finalM = m3;
+            assertThrows(MessageError.class, () -> expectedChat.editMessage(finalM, "i shouldn't work!"));
+            try {
+                expectedChat.deleteMessage(m1);
+            } catch (MessageError e) {
+                Assert.assertTrue("deleteMessage() threw an unexpected MessageError\n" +
+                        "Make sure deleteMessage() is correct!", false);
+            }
+            assertEquals("Ensure that deleteMessage() is properly updating the message!", 2, m1.getStatus());
+            assertThrows(MessageError.class, () -> expectedChat.deleteMessage(finalM));
         }
 
         @Test(timeout = 1000)
