@@ -154,8 +154,13 @@ public class Database implements DatabaseInterface {
     }
 
     public synchronized boolean deleteProfile(String username) {
-        Profile toDelete = new Profile(username);
-        return profiles.remove(toDelete);
+       for (Profile p : profiles) {
+           if (p.getUsername().equals(username)) {
+               profiles.remove(p);
+               return true;
+           }
+       }
+       return false;
     }
 
     public synchronized ArrayList<Profile> findProfiles(String toFind) {

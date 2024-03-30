@@ -182,6 +182,7 @@ public class RunLocalTest {
             profiles.add(p1);
             profiles.add(p2);
             Message m1 = null;
+
             try {
                 m1 = new Message(p1, p2, "hello world!");
             } catch (MessageError e) {
@@ -191,15 +192,18 @@ public class RunLocalTest {
                 Assert.assertTrue("Message threw an unexpected ProfileError\n" +
                         "Make sure the Message constructor is correct!", false);
             }
+
             ArrayList<Message> messages = new ArrayList<>();
             messages.add(m1);
             Chat expectedChat = new Chat(m1);
             long timestamp = expectedChat.getTimestamp();
+
             assertEquals("Ensure that getProfiles() returns the correct value!", profiles, expectedChat.getProfiles());
             assertEquals("Ensure that getMessages() returns the correct value!", messages, expectedChat.getMessages());
             assertEquals("Ensure that getTimestamp() returns the correct value!", timestamp, expectedChat.getTimestamp());
             assertTrue("Ensure that matchesProfiles() returns the correct value!", expectedChat.matchesProfiles(p1, p2));
             assertFalse("Ensure that matches Profiles() returns the correct value!", expectedChat.matchesProfiles(p2, p3));
+
             try {
                 expectedChat.sendMessage(new Message(p1, p2, "im the next message!"));
             } catch (MessageError e) {
@@ -209,9 +213,12 @@ public class RunLocalTest {
                 Assert.assertTrue("Message threw an unexpected ProfileError\n" +
                         "Make sure the Message constructor is correct!", false);
             }
+
             assertEquals("Ensure that sendMessage() is properly updating the messages array!", 2, expectedChat.getMessages().size());
             assertNotEquals("Ensure that sendMessage() is properly updating the timestamp!", timestamp, expectedChat.getTimestamp());
+
             Message m3 = null;
+
             try {
                 m3 = new Message(p3, p2, "this isn't in the expectedChat!");
             } catch (MessageError e) {
@@ -221,28 +228,98 @@ public class RunLocalTest {
                 Assert.assertTrue("Message threw an unexpected ProfileError\n" +
                         "Make sure the Message constructor is correct!", false);
             }
+
             try {
                 expectedChat.editMessage(m1, "goodbye world!");
             } catch (MessageError e) {
                 Assert.assertTrue("editMessage() threw an unexpected MessageError\n" +
                         "Make sure editMessage() is correct!", false);
             }
+
             assertEquals("Ensure that editMessage() is properly updating the message!", "goodbye world!", m1.getContents());
+
             Message finalM = m3;
             assertThrows(MessageError.class, () -> expectedChat.editMessage(finalM, "i shouldn't work!"));
+
             try {
                 expectedChat.deleteMessage(m1);
             } catch (MessageError e) {
                 Assert.assertTrue("deleteMessage() threw an unexpected MessageError\n" +
                         "Make sure deleteMessage() is correct!", false);
             }
+
             assertEquals("Ensure that deleteMessage() is properly updating the message!", 2, m1.getStatus());
             assertThrows(MessageError.class, () -> expectedChat.deleteMessage(finalM));
         }
 
         @Test(timeout = 1000)
         public void testProfileMethods() {
+            Profile friend = new Profile("friend", "friend", "friend", false, null, null);
+            Profile blocked = new Profile("blocked", "blocked", "blocked", true, null, null);
+            ArrayList<Profile> friends = new ArrayList<>();
+            ArrayList<Profile> block = new ArrayList<>();
+            friends.add(friend);
+            block.add(blocked);
+            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block);
+            Profile p2 = new Profile();
 
+            assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
+            assertNull("Make sure getUsername() works properly!", p2.getUsername());
+            assertEquals("Make sure getPassword() works properly!", "password", p1.getPassword());
+            assertNull("Make sure getPassword() works properly!", p2.getPassword());
+            assertEquals("Make sure getDisplayName() works properly!", "hello world", p1.getDisplayName());
+            assertNull("Make sure getDisplayName() works properly!", p2.getDisplayName());
+            assertTrue("Make sure isReceiveAll() works properly!", p1.isReceiveAll());
+            assertFalse("Make sure isReceiveAll() works properly!", p2.isReceiveAll());
+            assertEquals("Make sure getFriends() works properly!", friends, p1.getFriends());
+            assertNull("Make sure getFriends() works properly!", p2.getFriends());
+            assertEquals("Make sure getBlocked() works properly!", block, p1.getBlocked());
+            assertNull("Make sure getBlocked() works properly!", p2.getBlocked());
+
+            p1.setDisplayName("goodbye world");
+            assertEquals("Make sure setDisplayName() works properly!", "goodbye world", p1.getDisplayName());
+            p1.setPassword("skibidi toilet");
+            assertEquals("Make sure setPassword() works properly!", "skibidi toilet", p1.getPassword());
+            p1.setReceiveAll(false);
+            assertFalse("Make sure setReceiveAll() works properly!", p1.isReceiveAll());
+            p1.setFriends(null);
+            assertNull("Make sure setFriends() works properly!", p1.getFriends());
+            p1.setBlocked(null);
+            assertNull("Make sure setBlocked() works properly!", p1.getBlocked());
+
+            p1.setFriends(friends);
+            p1.setBlocked(block);
+
+            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, null, null);
+            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, null, null);
+
+            p1.addFriend(p3);
+            ArrayList<Profile> expectedFriends = new ArrayList<>();
+            expectedFriends.add(friend);
+            expectedFriends.add(p3);
+
+            for (int i = 0; i < 2; i++) {
+                assertEquals("Make sure addFriend() works properly!", expectedFriends.get(i), p1.getFriends().get(i));
+            }
+
+            p1.removeFriend(friend);
+            assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
+
+            p1.block(p4);
+            ArrayList<Profile> expectedBlocked = new ArrayList<>();
+            expectedBlocked.add(blocked);
+            expectedBlocked.add(p4);
+
+            for (int i = 0; i < 2; i++) {
+                assertEquals("Make sure block() works properly!", expectedBlocked.get(i), p1.getBlocked().get(i));
+            }
+
+            p1.unblock(blocked);
+            assertEquals("Make sure unblock() works properly!", p4, p1.getBlocked().get(0));
+
+            assertNotEquals("Make sure equals() works properly!", p3, p1);
+            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null);
+            assertEquals("Make sure equals() works properly!", p5, p1);
         }
 
         @Test(timeout = 1000)
