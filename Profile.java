@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /*
@@ -11,15 +12,17 @@ public class Profile implements ProfileInterface {
     private boolean receiveAll;
     private ArrayList<Profile> friends;
     private ArrayList<Profile> blocked;
+    private ArrayList<Profile> requests;
     //TODO
     public Profile(String username, String password, String displayName, boolean receiveAll,
-                   ArrayList<Profile> friends, ArrayList<Profile> blocked) {
+                   ArrayList<Profile> friends, ArrayList<Profile> blocked, ArrayList<Profile> requests) {
         this.username = username;
         this.password = password;
         this.displayName = displayName;
         this.receiveAll = receiveAll;
         this.friends = friends;
         this.blocked = blocked;
+        this.requests = requests;
     }
 
     public Profile(String username) {
@@ -29,6 +32,7 @@ public class Profile implements ProfileInterface {
         this.receiveAll = false;
         this.friends = null;
         this.blocked = null;
+        this.requests = null;
     }
 
     public Profile() {
@@ -38,6 +42,7 @@ public class Profile implements ProfileInterface {
         this.receiveAll = false;
         this.friends = null;
         this.blocked = null;
+        this.requests = null;
     }
 
     public String getUsername() {
@@ -84,8 +89,24 @@ public class Profile implements ProfileInterface {
         this.blocked = blocked;
     }
 
-    public boolean addFriend(Profile p) {
-        return friends.add(p);
+    public ArrayList<Profile> getRequests() {
+        return requests;
+    }
+
+    public boolean requestFriend(Profile p) {
+        if (p.getRequests().contains(this) || p.getFriends().contains(this)) {
+            return false;
+        }
+        return p.getRequests().add(this);
+    }
+
+    public boolean acceptRequest(Profile p) {
+        if (requests.contains(p) && !friends.contains(p)) {
+            friends.add(p);
+            requests.remove(p);
+            return true;
+        }
+        return false;
     }
 
     public boolean removeFriend(Profile p) {
@@ -93,6 +114,10 @@ public class Profile implements ProfileInterface {
     }
 
     public boolean block(Profile p) {
+        if (blocked.contains(p)) {
+            return false;
+        }
+        removeFriend(p);
         return blocked.add(p);
     }
 

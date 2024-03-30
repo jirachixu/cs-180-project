@@ -12,7 +12,8 @@ public interface ProfileInterface {
     public void setFriends(ArrayList<Profile> friends);
     public ArrayList<Profile> getBlocked();
     public void setBlocked(ArrayList<Profile> blocked);
-    public boolean addFriend(Profile p);
+    public boolean requestFriend(Profile p);
+    public boolean acceptRequest(Profile p);
     public boolean removeFriend(Profile p);
     public boolean block(Profile p);
     public boolean unblock(Profile p);
