@@ -2,9 +2,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/*
- * TODO: Ruiqi: add user search function (both username and display name, case insensitive),
- */
 public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
     private String chatIn; // File that chats are read in from
@@ -114,6 +111,7 @@ public class Database implements DatabaseInterface {
         chat.deleteMessage(message);
     }
 
+    // I'm assuming that the default display name is the same as your username, then you can edit it as you wish
     public synchronized boolean createProfile(String username, String password) {
         Profile newProfile = new Profile(username, password, username, true,
                 new ArrayList<>(), new ArrayList<>());
@@ -134,7 +132,8 @@ public class Database implements DatabaseInterface {
         return false;
     }
 
-    public synchronized boolean editPassword(String username, String newPassword) {
+    // probably doesn't have to be synchronized because nobody's using your account password as you change it
+    public boolean editPassword(String username, String newPassword) {
         for (Profile p : profiles) {
             if (p.getUsername().equals(username)) {
                 p.setPassword(newPassword);
@@ -157,5 +156,17 @@ public class Database implements DatabaseInterface {
     public synchronized boolean deleteProfile(String username) {
         Profile toDelete = new Profile(username);
         return profiles.remove(toDelete);
+    }
+
+    public synchronized ArrayList<Profile> findProfiles(String toFind) {
+        ArrayList<Profile> searchResults = new ArrayList<>();
+        String toFindIgnoreCase = toFind.toLowerCase();
+        for (Profile p : profiles) {
+            if (p.getUsername().toLowerCase().startsWith(toFindIgnoreCase)
+                    || p.getDisplayName().toLowerCase().startsWith(toFindIgnoreCase)) {
+                searchResults.add(p);
+            }
+        }
+        return searchResults;
     }
 }
