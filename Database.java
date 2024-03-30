@@ -114,7 +114,7 @@ public class Database implements DatabaseInterface {
     // I'm assuming that the default display name is the same as your username, then you can edit it as you wish
     public synchronized boolean createProfile(String username, String password) {
         Profile newProfile = new Profile(username, password, username, true,
-                new ArrayList<>(), new ArrayList<>());
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         if (profiles.contains(newProfile)) {
             return false;
         }
