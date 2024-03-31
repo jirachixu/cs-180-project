@@ -9,6 +9,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @RunWith(Enclosed.class)
 public class RunLocalTest {
@@ -345,7 +347,55 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testDatabaseMethods() {
+            ArrayList<Profile> expectedProfiles = new ArrayList<>();
 
+            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
+            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
+            Profile p3 = new Profile("third", "password", "boom", true, null, null, null);
+
+            expectedProfiles.add(p1);
+            expectedProfiles.add(p2);
+            expectedProfiles.add(p3);
+
+            Message m1 = null;
+            Message m2 = null;
+            Message m3 = null;
+
+            try {
+                m1 = new Message(p1, p2, "hello world!");
+                m2 = new Message(p2, p3, "goodbye world!");
+                m3 = new Message(p1, p3, "it's a wonderful day outside!");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            } catch (ProfileError e) {
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+
+            HashMap<String, Chat> expectedChats = new HashMap<>();
+
+            Chat c1 = new Chat(m1);
+            Chat c2 = new Chat(m2);
+            Chat c3 = new Chat(m3);
+
+            expectedChats.put(c1.getProfiles().get(0).getUsername() + c1.getProfiles().get(1).getUsername(), c1);
+            expectedChats.put(c2.getProfiles().get(0).getUsername() + c2.getProfiles().get(1).getUsername(), c2);
+            expectedChats.put(c3.getProfiles().get(0).getUsername() + c3.getProfiles().get(1).getUsername(), c3);
+
+            Database database = new Database("profileTest.txt", "chatTest.txt", "profileOutTest.txt", "chatOutTest.txt");
+
+            database.readProfile();
+            database.readChat();
+
+            ArrayList<Profile> actualProfiles = database.getProfiles();
+            HashMap<String, Chat> actualChats = database.getChats();
+            for (int i = 0; i < expectedProfiles.size(); i++) {
+                assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
+            }
+            for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
+                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
+            }
         }
     }
 }
