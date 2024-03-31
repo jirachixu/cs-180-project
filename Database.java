@@ -15,26 +15,36 @@ public class Database implements DatabaseInterface {
         this.chatIn = chatIn;
         this.profileOut = profileOut;
         this.chatOut = chatOut;
-        readProfile();
-        readChat();
+    }
+
+    // For testing purposes
+    public Database(String profileIn, String chatIn, String profileOut, String chatOut, ArrayList<Profile> profiles, HashMap<String, Chat> chats) {
+        this.profileIn = profileIn;
+        this.chatIn = chatIn;
+        this.profileOut = profileOut;
+        this.chatOut = chatOut;
+        this.profiles = profiles;
+        this.chats = chats;
+    }
+
+    // For testing purposes
+    public ArrayList<Profile> getProfiles() {
+        return profiles;
+    }
+
+    // For testing purposes
+    public HashMap<String, Chat> getChats() {
+        return chats;
     }
 
     // Reads in all the profiles from the profile file.
     // I'm assuming profiles are written in with ObjectInputStream.
     public boolean readProfile() {
         try {
-            boolean more = true;
-            while (more) {
-                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
-                    Profile prof = (Profile) ois.readObject();
-                    if (prof != null) {
-                        profiles.add(prof);
-                    } else {
-                        more = false;
-                    }
-                } catch (ClassNotFoundException e) {
-                    return false;
-                }
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
+                profiles = (ArrayList<Profile>) ois.readObject();
+            } catch (ClassNotFoundException e) {
+                return false;
             }
         } catch (IOException e) {
             return false;
@@ -46,13 +56,10 @@ public class Database implements DatabaseInterface {
     // I'm assuming chats are written in with ObjectInputStream.
     public boolean readChat() {
         try {
-            boolean more = true;
-            while (more) {
-                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
-                    chats = (HashMap<String, Chat>) ois.readObject();
-                } catch (ClassNotFoundException e) {
-                    return false;
-                }
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
+                chats = (HashMap<String, Chat>) ois.readObject();
+            } catch (ClassNotFoundException e) {
+                return false;
             }
         } catch (IOException e) {
             return false;
@@ -62,9 +69,7 @@ public class Database implements DatabaseInterface {
 
     public boolean outputProfile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut))) {
-            for (Profile profile : profiles) {
-                oos.writeObject(profile);
-            }
+            oos.writeObject(profiles);
         } catch (IOException e) {
             return false;
         }
