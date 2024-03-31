@@ -1,21 +1,22 @@
 import java.util.ArrayList;
 
 public interface ProfileInterface {
-    public String getUsername();
-    public String getPassword();
-    public void setPassword(String password);
-    public String getDisplayName();
-    public void setDisplayName(String displayName);
-    public boolean isReceiveAll();
-    public void setReceiveAll(boolean receiveAll);
-    public ArrayList<Profile> getFriends();
-    public void setFriends(ArrayList<Profile> friends);
-    public ArrayList<Profile> getBlocked();
-    public void setBlocked(ArrayList<Profile> blocked);
-    public boolean requestFriend(Profile p);
-    public boolean acceptRequest(Profile p);
-    public boolean removeFriend(Profile p);
-    public boolean block(Profile p);
-    public boolean unblock(Profile p);
-    public boolean equals(Object o);
+    String getUsername();
+    String getPassword();
+    void setPassword(String password);
+    String getDisplayName();
+    void setDisplayName(String displayName);
+    boolean isReceiveAll();
+    boolean isFriends(Profile profile);
+    void setReceiveAll(boolean receiveAll);
+    ArrayList<Profile> getFriends();
+    void setFriends(ArrayList<Profile> friends);
+    ArrayList<Profile> getBlocked();
+    void setBlocked(ArrayList<Profile> blocked);
+    boolean requestFriend(Profile p);
+    boolean acceptRequest(Profile p);
+    boolean removeFriend(Profile p);
+    boolean block(Profile p);
+    boolean unblock(Profile p);
+    boolean equals(Object o);
 }

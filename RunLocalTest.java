@@ -1,8 +1,10 @@
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
+import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
@@ -12,6 +14,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
+@RunWith(Enclosed.class)
 public class RunLocalTest {
     public static void main(String[] args) {
         Result result = JUnitCore.runClasses(TestCase.class);
@@ -107,8 +110,8 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testMessageMethods() {
-            Profile p1 = new Profile("first", "password", "world", true, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null);
+            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
+            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
             Message expectedMessage = null;
             long timestamp = 0;
 
@@ -175,9 +178,9 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testChatMethods() {
-            Profile p1 = new Profile("first", "password", "world", true, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null);
-            Profile p3 = new Profile("third", "password", "goodbye", false, null, null);
+            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
+            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
+            Profile p3 = new Profile("third", "password", "goodbye", false, null, null, null);
             ArrayList<Profile> profiles = new ArrayList<>();
             profiles.add(p1);
             profiles.add(p2);
@@ -195,7 +198,10 @@ public class RunLocalTest {
 
             ArrayList<Message> messages = new ArrayList<>();
             messages.add(m1);
+
             Chat expectedChat = new Chat(m1);
+
+
             long timestamp = expectedChat.getTimestamp();
 
             assertEquals("Ensure that getProfiles() returns the correct value!", profiles, expectedChat.getProfiles());
@@ -254,13 +260,13 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testProfileMethods() {
-            Profile friend = new Profile("friend", "friend", "friend", false, null, null);
-            Profile blocked = new Profile("blocked", "blocked", "blocked", true, null, null);
+            Profile friend = new Profile("friend", "friend", "friend", false, null, null, null);
+            Profile blocked = new Profile("blocked", "blocked", "blocked", true, null, null, null);
             ArrayList<Profile> friends = new ArrayList<>();
             ArrayList<Profile> block = new ArrayList<>();
             friends.add(friend);
             block.add(blocked);
-            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block);
+            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, null);
             Profile p2 = new Profile();
 
             assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
@@ -290,10 +296,10 @@ public class RunLocalTest {
             p1.setFriends(friends);
             p1.setBlocked(block);
 
-            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, null, null);
-            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, null, null);
+            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, null, null, null);
+            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, null, null, null);
 
-            p1.addFriend(p3);
+            p1.requestFriend(p3);
             ArrayList<Profile> expectedFriends = new ArrayList<>();
             expectedFriends.add(friend);
             expectedFriends.add(p3);
@@ -318,7 +324,7 @@ public class RunLocalTest {
             assertEquals("Make sure unblock() works properly!", p4, p1.getBlocked().get(0));
 
             assertNotEquals("Make sure equals() works properly!", p3, p1);
-            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null);
+            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null, null);
             assertEquals("Make sure equals() works properly!", p5, p1);
         }
 
@@ -326,6 +332,5 @@ public class RunLocalTest {
         public void testDatabaseMethods() {
 
         }
-
     }
 }

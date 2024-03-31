@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /*
@@ -67,6 +66,10 @@ public class Profile implements ProfileInterface {
 
     public boolean isReceiveAll() {
         return receiveAll;
+    }
+
+    public boolean isFriends(Profile profile) {
+        return friends.contains(profile);
     }
 
     public void setReceiveAll(boolean receiveAll) {

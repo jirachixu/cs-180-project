@@ -5,17 +5,19 @@ public class Chat implements Serializable, ChatInterface {
     private final ArrayList<Profile> profiles;
     private ArrayList<Message> messages;
     private long timestamp;
-    private static final Object messageSentinel = new Object();    // Prevents race conditions on accessing messages
 
-    public Chat(Message message) {
+    public Chat(Message message) {    // Creates message but only adds message if able to
+        Profile sender = message.getSender();
+        Profile receiver = message.getReceiver();
         profiles = new ArrayList<Profile>();
         profiles.add(message.getSender());
         profiles.add(message.getReceiver());
-
         messages = new ArrayList<Message>();
-        messages.add(message);
-
         timestamp = System.currentTimeMillis();
+
+        if (receiver.isReceiveAll() || receiver.isFriends(sender)) {
+            messages.add(message);
+        }
     }
 
     public ArrayList<Profile> getProfiles() {
@@ -36,7 +38,10 @@ public class Chat implements Serializable, ChatInterface {
     }
 
     public void sendMessage(Message message) {    // Add the message to the message array
-        synchronized (messageSentinel) {    // Ensure that one only message is added at a time to the array
+        Profile sender = message.getSender();
+        Profile receiver = message.getReceiver();
+
+        if (receiver.isReceiveAll() || receiver.isFriends(sender)) {
             messages.add(message);
             timestamp = System.currentTimeMillis();
         }
