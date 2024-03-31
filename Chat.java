@@ -2,9 +2,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Chat implements Serializable, ChatInterface {
-    private final ArrayList<Profile> profiles;
-    private ArrayList<Message> messages;
-    private long timestamp;
+    private final ArrayList<Profile> profiles;    // Users in the chat
+    private ArrayList<Message> messages;    // All messages sent in the chat
+    private long timestamp;    // Time of the last sent chat
 
     public Chat(Message message) {    // Creates message but only adds message if able to
         Profile sender = message.getSender();
