@@ -10,8 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -345,11 +345,13 @@ public class RunLocalTest {
             Message m1 = null;
             Message m2 = null;
             Message m3 = null;
+            Message m4 = null;
 
             try {
                 m1 = new Message(p1, p2, "hello world!");
                 m2 = new Message(p2, p3, "goodbye world!");
                 m3 = new Message(p1, p3, "it's a wonderful day outside!");
+                m4 = new Message(p2, p3, "this is getting sent! yay!");
             } catch (MessageError e) {
                 Assert.assertTrue("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
@@ -368,18 +370,87 @@ public class RunLocalTest {
             expectedChats.put(c2.getProfiles().get(0).getUsername() + c2.getProfiles().get(1).getUsername(), c2);
             expectedChats.put(c3.getProfiles().get(0).getUsername() + c3.getProfiles().get(1).getUsername(), c3);
 
-            Database database = new Database("profileTest.txt", "chatTest.txt", "profileOutTest.txt", "chatOutTest.txt");
+            Database database = new Database("profileTest.txt", "chatTest.txt", "profileTest.txt", "chatTest.txt");
 
             database.readProfile();
             database.readChat();
 
             ArrayList<Profile> actualProfiles = database.getProfiles();
             HashMap<String, Chat> actualChats = database.getChats();
+
             for (int i = 0; i < expectedProfiles.size(); i++) {
                 assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
             }
             for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
                 assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
+            }
+
+            database.outputProfile();
+            database.outputChat();
+
+            database.clearDatabase();
+            assertNull("Make sure clearDatabase() works properly!", database.getProfiles());
+            assertNull("Make sure clearDatabase() works properly!", database.getChats());
+
+            database.readProfile();
+            database.readChat();
+
+            actualProfiles = database.getProfiles();
+            actualChats = database.getChats();
+
+            for (int i = 0; i < expectedProfiles.size(); i++) {
+                assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
+            }
+            for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
+                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
+            }
+
+            assertTrue("Make sure login() works properly!", database.login("first", "password"));
+            assertFalse("Make sure login() works properly!", database.login("one hundred", "kilos"));
+
+            database.sendMessage(m4);
+            actualChats = database.getChats();
+            assertEquals("Make sure sendMessage() works properly!", "this is getting sent! yay!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            try {
+                database.editMessage(m4, "i'm editing the message!");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            actualChats = database.getChats();
+            assertEquals("Make sure editMessage() works properly!", "i'm editing the message!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            try {
+                database.deleteMessage(m4);
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            actualChats = database.getChats();
+            assertNull("Make sure deleteMessage() works properly!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            assertTrue("Make sure createProfile() works properly!", database.createProfile("test", "new profile"));
+            assertFalse("Make sure createProfile() works properly!", database.createProfile("first", "should not work"));
+
+            assertTrue("Make sure editDisplayName() works properly!", database.editDisplayName("first", "yay yippee"));
+            assertFalse("Make sure editDisplayName() works properly!", database.editDisplayName("bingle", "boooooo"));
+
+            assertTrue("Make sure editPassword() works properly!", database.editPassword("first", "new password yay!!"));
+            assertFalse("Make sure editPassword() works properly!", database.editPassword("moooooooo", "no password boo!!"));
+
+            assertTrue("Make sure editReceiveAll() works properly!", database.editReceiveAll("second", false));
+            assertFalse("Make sure editReceiveAll() works properly!", database.editReceiveAll("womp womp", true));
+
+            assertTrue("Make sure deleteProfile() works properly!", database.deleteProfile("second"));
+            assertFalse("Make sure deleteProfile() works properly!", database.deleteProfile("banana"));
+
+            ArrayList<Profile> expectedFind = new ArrayList<>();
+            expectedFind.add(p1);
+            expectedFind.add(p3);
+            ArrayList<Profile> actualFind = database.findProfiles("IR");
+            for (int i = 0; i < expectedFind.size(); i++) {
+                assertEquals("Make sure findProfiles() works properly!", expectedFind.get(i), actualFind.get(i));
             }
         }
     }
