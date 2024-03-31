@@ -1,4 +1,3 @@
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -8,9 +7,6 @@ import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
-
-import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
@@ -108,10 +104,99 @@ public class RunLocalTest {
                     1, superinterfaces.length);
         }
 
+
+        @Test(timeout = 1000)
+        public void testProfileMethods() {
+
+            // Create profiles using all profile constructors
+            // Create a list with a friend in it
+            Profile friend = new Profile("friend", "friend", "friend", false);
+            ArrayList<Profile> friends = new ArrayList<>();
+            friends.add(friend);
+
+            // Create a list with a blocked user in it
+            Profile blocked = new Profile("blocked", "blocked", "blocked", true);
+            ArrayList<Profile> block = new ArrayList<>();
+            block.add(blocked);
+
+            // Create a list with a pending friend in it
+            Profile requested = new Profile("friend", "friend", "friend", false);
+            ArrayList<Profile> request = new ArrayList<>();
+            request.add(requested);
+
+            // Test all getters for constructor with all parameters
+            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, request);
+            assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
+            assertEquals("Make sure getPassword() works properly!", "password", p1.getPassword());
+            assertEquals("Make sure getDisplayName() works properly!", "hello world", p1.getDisplayName());
+            assertTrue("Make sure isReceiveAll() works properly!", p1.isReceiveAll());
+            assertEquals("Make sure getFriends() works properly!", friends, p1.getFriends());
+            assertEquals("Make sure getBlocked() works properly!", block, p1.getBlocked());
+
+            // Test all getters for constructor with no parameters
+            Profile p2 = new Profile();
+            assertNull("Make sure getUsername() works properly!", p2.getUsername());
+            assertNull("Make sure getPassword() works properly!", p2.getPassword());
+            assertNull("Make sure getDisplayName() works properly!", p2.getDisplayName());
+            assertFalse("Make sure isReceiveAll() works properly!", p2.isReceiveAll());
+            assertNull("Make sure getFriends() works properly!", p2.getFriends());
+            assertNull("Make sure getBlocked() works properly!", p2.getBlocked());
+
+
+
+            p1.setDisplayName("goodbye world");
+            assertEquals("Make sure setDisplayName() works properly!", "goodbye world", p1.getDisplayName());
+            p1.setPassword("skibidi toilet");
+            assertEquals("Make sure setPassword() works properly!", "skibidi toilet", p1.getPassword());
+            p1.setReceiveAll(false);
+            assertFalse("Make sure setReceiveAll() works properly!", p1.isReceiveAll());
+            p1.setFriends(null);
+            assertNull("Make sure setFriends() works properly!", p1.getFriends());
+            p1.setBlocked(null);
+            assertNull("Make sure setBlocked() works properly!", p1.getBlocked());
+
+            p1.setFriends(friends);
+            p1.setBlocked(block);
+
+            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true);
+            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false);
+
+            p1.requestFriend(p3);
+            p3.acceptRequest(p1);
+
+            ArrayList<Profile> expectedFriends = new ArrayList<>();
+            expectedFriends.add(friend);
+            expectedFriends.add(p3);
+
+            for (int i = 0; i < 2; i++) {
+                assertEquals("Make sure addFriend() works properly!", expectedFriends.get(i), p1.getFriends().get(i));
+            }
+
+            p1.removeFriend(friend);
+            assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
+
+            p1.block(p4);
+            ArrayList<Profile> expectedBlocked = new ArrayList<>();
+            expectedBlocked.add(blocked);
+            expectedBlocked.add(p4);
+
+            for (int i = 0; i < 2; i++) {
+                assertEquals("Make sure block() works properly!", expectedBlocked.get(i), p1.getBlocked().get(i));
+            }
+
+            p1.unblock(blocked);
+            assertEquals("Make sure unblock() works properly!", p4, p1.getBlocked().get(0));
+
+            assertNotEquals("Make sure equals() works properly!", p3, p1);
+            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null, null);
+            assertEquals("Make sure equals() works properly!", p5, p1);
+        }
+
+
         @Test(timeout = 1000)
         public void testMessageMethods() {
-            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
+            Profile p1 = new Profile("first", "password", "world", true);
+            Profile p2 = new Profile("second", "password", "hello", true);
             Message expectedMessage = null;
             long timestamp = 0;
 
@@ -256,76 +341,6 @@ public class RunLocalTest {
 
             assertEquals("Ensure that deleteMessage() is properly updating the message!", 2, m1.getStatus());
             assertThrows(MessageError.class, () -> expectedChat.deleteMessage(finalM));
-        }
-
-        @Test(timeout = 1000)
-        public void testProfileMethods() {
-            Profile friend = new Profile("friend", "friend", "friend", false, null, null, null);
-            Profile blocked = new Profile("blocked", "blocked", "blocked", true, null, null, null);
-            ArrayList<Profile> friends = new ArrayList<>();
-            ArrayList<Profile> block = new ArrayList<>();
-            friends.add(friend);
-            block.add(blocked);
-            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, null);
-            Profile p2 = new Profile();
-
-            assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
-            assertNull("Make sure getUsername() works properly!", p2.getUsername());
-            assertEquals("Make sure getPassword() works properly!", "password", p1.getPassword());
-            assertNull("Make sure getPassword() works properly!", p2.getPassword());
-            assertEquals("Make sure getDisplayName() works properly!", "hello world", p1.getDisplayName());
-            assertNull("Make sure getDisplayName() works properly!", p2.getDisplayName());
-            assertTrue("Make sure isReceiveAll() works properly!", p1.isReceiveAll());
-            assertFalse("Make sure isReceiveAll() works properly!", p2.isReceiveAll());
-            assertEquals("Make sure getFriends() works properly!", friends, p1.getFriends());
-            assertNull("Make sure getFriends() works properly!", p2.getFriends());
-            assertEquals("Make sure getBlocked() works properly!", block, p1.getBlocked());
-            assertNull("Make sure getBlocked() works properly!", p2.getBlocked());
-
-            p1.setDisplayName("goodbye world");
-            assertEquals("Make sure setDisplayName() works properly!", "goodbye world", p1.getDisplayName());
-            p1.setPassword("skibidi toilet");
-            assertEquals("Make sure setPassword() works properly!", "skibidi toilet", p1.getPassword());
-            p1.setReceiveAll(false);
-            assertFalse("Make sure setReceiveAll() works properly!", p1.isReceiveAll());
-            p1.setFriends(null);
-            assertNull("Make sure setFriends() works properly!", p1.getFriends());
-            p1.setBlocked(null);
-            assertNull("Make sure setBlocked() works properly!", p1.getBlocked());
-
-            p1.setFriends(friends);
-            p1.setBlocked(block);
-
-            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, null, null, null);
-            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, null, null, null);
-
-            p1.requestFriend(p3);
-            ArrayList<Profile> expectedFriends = new ArrayList<>();
-            expectedFriends.add(friend);
-            expectedFriends.add(p3);
-
-            for (int i = 0; i < 2; i++) {
-                assertEquals("Make sure addFriend() works properly!", expectedFriends.get(i), p1.getFriends().get(i));
-            }
-
-            p1.removeFriend(friend);
-            assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
-
-            p1.block(p4);
-            ArrayList<Profile> expectedBlocked = new ArrayList<>();
-            expectedBlocked.add(blocked);
-            expectedBlocked.add(p4);
-
-            for (int i = 0; i < 2; i++) {
-                assertEquals("Make sure block() works properly!", expectedBlocked.get(i), p1.getBlocked().get(i));
-            }
-
-            p1.unblock(blocked);
-            assertEquals("Make sure unblock() works properly!", p4, p1.getBlocked().get(0));
-
-            assertNotEquals("Make sure equals() works properly!", p3, p1);
-            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null, null);
-            assertEquals("Make sure equals() works properly!", p5, p1);
         }
 
         @Test(timeout = 1000)

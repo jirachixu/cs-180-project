@@ -25,6 +25,16 @@ public class Profile implements Serializable, ProfileInterface {
         this.requests = requests;
     }
 
+    public Profile(String username, String password, String displayName, boolean receiveAll) {
+        this.username = username;
+        this.password = password;
+        this.displayName = displayName;
+        this.receiveAll = receiveAll;
+        this.friends = new ArrayList<Profile>();
+        this.blocked = new ArrayList<Profile>();
+        this.requests = new ArrayList<Profile>();
+    }
+
     public Profile(String username) {
         this.username = username;
         this.password = null;
@@ -98,7 +108,7 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public boolean requestFriend(Profile p) {
-        if (p.getRequests().contains(this) || p.getFriends().contains(this)) {
+        if (p.getRequests().contains(this) || p.getFriends().contains(this)) {    // Returns false if request sent already or already friends
             return false;
         }
         return p.getRequests().add(this);
