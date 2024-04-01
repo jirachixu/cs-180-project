@@ -231,6 +231,12 @@ public class RunLocalTest {
             assertFalse("Ensure that matches Profiles() returns the correct value!", expectedChat.matchesProfiles(p2, p3));
 
             try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
                 expectedChat.sendMessage(new Message(p1, p2, "im the next message!"));
             } catch (MessageError e) {
                 Assert.assertTrue("Message threw an unexpected MessageError\n" +
