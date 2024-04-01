@@ -1,10 +1,10 @@
 # CS 180 Project
 ## How to Run
 Currently, the client side has not been implemented, so this can't be used as a proper app. You can test the server
-side methods by running RunLocalTest.java.
+side methods and classes which compose the database by running RunLocalTest.java.
 
 ## Submission
-Phase 1 was submitted on Brightspace by _.
+Phase 1 was submitted by Jared Bright on Brightspace on 04/01/2024.
 
 ## Server-Side Classes
 

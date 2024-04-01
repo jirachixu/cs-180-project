@@ -1,11 +1,6 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/*
- * TODO: all the setter methods and addFriend, removeFriend, block, unblock, etc. have to communicate with the client
- *  and get info (the method parameters) from the user, also probably needs to be displayed on the GUI
- */
-
 /**
  * Team Project - Profile
  *
@@ -29,7 +24,7 @@ public class Profile implements Serializable, ProfileInterface {
     private ArrayList<Profile> friends; // Their friends
     private ArrayList<Profile> blocked; // Who they have blocked (cannot send or receive messages)
     private ArrayList<Profile> requests; // Who has requested to be their friend
-    //TODO
+
     public Profile(String username, String password, String displayName, boolean receiveAll,
                    ArrayList<Profile> friends, ArrayList<Profile> blocked, ArrayList<Profile> requests) {
         this.username = username;
