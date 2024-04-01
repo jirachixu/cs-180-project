@@ -1,6 +1,14 @@
 import java.io.Serializable;
 import java.util.ArrayList;
-
+/**
+ * Project 5 -- Chat
+ * Class containing methods that allows for creation and basic manipulation of chat object for use with database
+ *
+ * @author Jared Bright, 024
+ *
+ * @version March 31, 2024
+ *
+ */
 public class Chat implements Serializable, ChatInterface {
     private final ArrayList<Profile> profiles;    // Users in the chat
     private ArrayList<Message> messages;    // All messages sent in the chat

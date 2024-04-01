@@ -117,14 +117,14 @@ public class RunLocalTest {
             Message expectedMessage = null;
             long timestamp = 0;
 
-            try {
+            try {    // Message creation
                 expectedMessage = new Message(p1, p2, "hello world!");
                 timestamp = expectedMessage.getTimestamp();
             } catch (MessageError e) {
-                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                Assert.assertEquals("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
             } catch (ProfileError e) {
-                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                Assert.assertEquals("Message threw an unexpected ProfileError\n" +
                         "Make sure the Message constructor is correct!", false);
             }
 
@@ -148,41 +148,60 @@ public class RunLocalTest {
             assertEquals("Ensure that the edit method works correctly!",
                     "goodbye world!", expectedMessage.getContents());
 
-            Message unequalMessage = null;
             Message equalMessage = null;
-
+            Message unequalMessage = null;
             try {
-                unequalMessage = new Message(p2, p1, "womp womp");
-                equalMessage = new Message(p1, p2, expectedMessage.getContents());
+                equalMessage = new Message(expectedMessage);
+                unequalMessage = new Message(expectedMessage);
+
+                unequalMessage.edit("womp womp");
             } catch (MessageError e) {
                 Assert.assertTrue("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
-            } catch (ProfileError e) {
-                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
-                        "Make sure the Message constructor is correct!", false);
             }
 
+            // Tests the equal methods within Message
             assertEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, equalMessage);
             assertNotEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, unequalMessage);
 
+            // Test the toString method within Message
             assertEquals("Make sure the toString method is implement correctly!",
                     String.format("Message<sender=%s,receiver=%s,status=%d,timestamp=%d,contents=%s>", p1, p2,
                             expectedMessage.getStatus(), expectedMessage.getTimestamp(), expectedMessage.getContents()),
                     expectedMessage.toString());
 
+            // Test the delete method within Message
             expectedMessage.delete();
             assertNull("Make sure the delete method is implemented correctly!", expectedMessage.getContents());
             assertEquals("Make sure the delete method is implemented correctly!", 2, expectedMessage.getStatus());
             assertNotEquals("Make sure the delete method is implemented correctly!", timestamp, expectedMessage.getTimestamp());
+
+            try {    // Ensure that deleted messages cannot be copied
+                var badMessage = new Message(expectedMessage);
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", true);
+            }
+
+            try {    // Ensure that deleted messages cannot be edited
+                expectedMessage.edit("This will fail");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", true);
+            }
+
+            Assert.assertFalse("Make sure the Message equals method is correct!",
+                    expectedMessage.equals(equalMessage));
+
         }
 
         @Test(timeout = 1000)
         public void testChatMethods() {
-            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
-            Profile p3 = new Profile("third", "password", "goodbye", false, null, null, null);
+            Profile p1 = new Profile("first", "password", "world", true);
+            Profile p2 = new Profile("second", "password", "hello", true);
+            Profile p3 = new Profile("third", "password", "goodbye", false);
             ArrayList<Profile> profiles = new ArrayList<>();
             profiles.add(p1);
             profiles.add(p2);
@@ -202,7 +221,6 @@ public class RunLocalTest {
             messages.add(m1);
 
             Chat expectedChat = new Chat(m1);
-
 
             long timestamp = expectedChat.getTimestamp();
 
