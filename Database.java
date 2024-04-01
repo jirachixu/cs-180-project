@@ -85,6 +85,11 @@ public class Database implements DatabaseInterface {
         return true;
     }
 
+    public void clearDatabase() {
+        profiles = null;
+        chats = null;
+    }
+
     public boolean login(String username, String password) {
         for (Profile profile : profiles) {
             if (profile.getUsername().equals(username) && profile.getPassword().equals(password)) {
@@ -120,8 +125,10 @@ public class Database implements DatabaseInterface {
     public synchronized boolean createProfile(String username, String password) {
         Profile newProfile = new Profile(username, password, username, true,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        if (profiles.contains(newProfile)) {
-            return false;
+        for (Profile p : profiles) {
+            if (p.getUsername().equals(newProfile.getUsername())) {
+                return false;
+            }
         }
         profiles.add(newProfile);
         return true;
