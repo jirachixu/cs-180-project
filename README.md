@@ -1,9 +1,16 @@
 # CS 180 Project
+## How to Run
+Currently, the client side has not been implemented, so this can't be used as a proper app. You can test the server
+side methods by running RunLocalTest.java.
+
+## Submission
+Phase 1 was submitted on Brightspace by _.
+
 ## Server-Side Classes
 
 ### Profile
 The Profile class holds the user's information. This controls who can message the user, as well as who is friends with 
-the user and who is blocked by the user.
+the user and who is blocked by the user. This is used by the Chat, Message, and Database classes.
 
 #### Fields
 | Field Name  | Type                | Description                                                                       |
@@ -37,7 +44,7 @@ the user and who is blocked by the user.
 
 ### Message
 The Message class handles the actual messages sent in a given chat. This contains the content of the message, as well as
-the profile which sent the message and the profile which received the message.
+the profile which sent the message and the profile which received the message. This is used by the Chat class.
 
 #### Fields
 | Field Name | Type          | Description                                                                |
@@ -64,7 +71,8 @@ the profile which sent the message and the profile which received the message.
 
 ### Chat
 The Chat class is where messages are sent and profiles interact with one another. This holds all the messages in a
-chat and the two profiles involved in the chat. It also contains a timestamp in for later display purposes
+chat and the two profiles involved in the chat. It also contains a timestamp in for later display purposes. This is used
+by the Database class.
 
 #### Fields
 | Field Name | Type                | Description                                   |
@@ -87,7 +95,8 @@ chat and the two profiles involved in the chat. It also contains a timestamp in 
 
 ### Database
 The Database class takes in all the requests from the client and does the processing on the server side. It is also
-responsible for saving and loading profiles and chats.
+responsible for saving and loading profiles and chats. This connects the Profile, Chat, and Message class on the server
+side.
 
 #### Fields
 | Field Name | Type                | Description                           |
@@ -111,3 +120,7 @@ responsible for saving and loading profiles and chats.
 
 ## Client-Side Classes
 ### Client
+
+## Testing
+All of these classes are tested in RunLocalTest.java, where all methods are rigorously tested to make sure they function
+properly and also so that they error properly for invalid inputs.
