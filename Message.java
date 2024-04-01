@@ -1,5 +1,20 @@
 import java.io.Serializable;
 
+/**
+ * Team Project - Message
+ *
+ * This class handles the content of a message
+ * and also contains the sender and receiver
+ * of the message, as well as tracking
+ * whether it has been edited or deleted
+ * and when it was sent.
+ *
+ * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ *
+ * @version Mar 31, 2024
+ *
+ */
+
 public class Message implements Serializable, MessageInterface {
     private final Profile sender;    // The profile that sent the message
     private final Profile receiver;    // The profile that receives the message
