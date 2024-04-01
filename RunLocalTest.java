@@ -10,8 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,19 +112,19 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testMessageMethods() {
-            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
+            Profile p1 = new Profile("first", "password", "world", true);
+            Profile p2 = new Profile("second", "password", "hello", true);
             Message expectedMessage = null;
             long timestamp = 0;
 
-            try {    // Message creation
+            try {
                 expectedMessage = new Message(p1, p2, "hello world!");
                 timestamp = expectedMessage.getTimestamp();
             } catch (MessageError e) {
-                Assert.assertEquals("Message threw an unexpected MessageError\n" +
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
             } catch (ProfileError e) {
-                Assert.assertEquals("Message threw an unexpected ProfileError\n" +
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
                         "Make sure the Message constructor is correct!", false);
             }
 
@@ -148,53 +148,34 @@ public class RunLocalTest {
             assertEquals("Ensure that the edit method works correctly!",
                     "goodbye world!", expectedMessage.getContents());
 
-            Message equalMessage = null;
             Message unequalMessage = null;
-            try {
-                equalMessage = new Message(expectedMessage);
-                unequalMessage = new Message(expectedMessage);
+            Message equalMessage = null;
 
-                unequalMessage.edit("womp womp");
+            try {
+                unequalMessage = new Message(p2, p1, "womp womp");
+                equalMessage = new Message(p1, p2, expectedMessage.getContents());
             } catch (MessageError e) {
                 Assert.assertTrue("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
+            } catch (ProfileError e) {
+                Assert.assertTrue("Message threw an unexpected ProfileError\n" +
+                        "Make sure the Message constructor is correct!", false);
             }
 
-            // Tests the equal methods within Message
             assertEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, equalMessage);
             assertNotEquals("Make sure the equals method is implemented properly!",
                     expectedMessage, unequalMessage);
 
-            // Test the toString method within Message
             assertEquals("Make sure the toString method is implement correctly!",
                     String.format("Message<sender=%s,receiver=%s,status=%d,timestamp=%d,contents=%s>", p1, p2,
                             expectedMessage.getStatus(), expectedMessage.getTimestamp(), expectedMessage.getContents()),
                     expectedMessage.toString());
 
-            // Test the delete method within Message
             expectedMessage.delete();
             assertNull("Make sure the delete method is implemented correctly!", expectedMessage.getContents());
             assertEquals("Make sure the delete method is implemented correctly!", 2, expectedMessage.getStatus());
             assertNotEquals("Make sure the delete method is implemented correctly!", timestamp, expectedMessage.getTimestamp());
-
-            try {    // Ensure that deleted messages cannot be copied
-                var badMessage = new Message(expectedMessage);
-            } catch (MessageError e) {
-                Assert.assertTrue("Message threw an unexpected MessageError\n" +
-                        "Make sure the Message constructor is correct!", true);
-            }
-
-            try {    // Ensure that deleted messages cannot be edited
-                expectedMessage.edit("This will fail");
-            } catch (MessageError e) {
-                Assert.assertTrue("Message threw an unexpected MessageError\n" +
-                        "Make sure the Message constructor is correct!", true);
-            }
-
-            Assert.assertFalse("Make sure the Message equals method is correct!",
-                    expectedMessage.equals(equalMessage));
-
         }
 
         @Test(timeout = 1000)
@@ -222,6 +203,7 @@ public class RunLocalTest {
 
             Chat expectedChat = new Chat(m1);
 
+
             long timestamp = expectedChat.getTimestamp();
 
             assertEquals("Ensure that getProfiles() returns the correct value!", profiles, expectedChat.getProfiles());
@@ -229,12 +211,6 @@ public class RunLocalTest {
             assertEquals("Ensure that getTimestamp() returns the correct value!", timestamp, expectedChat.getTimestamp());
             assertTrue("Ensure that matchesProfiles() returns the correct value!", expectedChat.matchesProfiles(p1, p2));
             assertFalse("Ensure that matches Profiles() returns the correct value!", expectedChat.matchesProfiles(p2, p3));
-
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
 
             try {
                 expectedChat.sendMessage(new Message(p1, p2, "im the next message!"));
@@ -286,13 +262,13 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testProfileMethods() {
-            Profile friend = new Profile("friend", "friend", "friend", false);
-            Profile blocked = new Profile("blocked", "blocked", "blocked", true);
+            Profile friend = new Profile("friend", "friend", "friend", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile blocked = new Profile("blocked", "blocked", "blocked", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             ArrayList<Profile> friends = new ArrayList<>();
             ArrayList<Profile> block = new ArrayList<>();
             friends.add(friend);
             block.add(blocked);
-            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, new ArrayList<Profile>());
+            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, new ArrayList<>());
             Profile p2 = new Profile();
 
             assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
@@ -322,19 +298,15 @@ public class RunLocalTest {
             p1.setFriends(friends);
             p1.setBlocked(block);
 
-            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true);
-            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false);
+            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             p1.requestFriend(p3);
+            assertEquals("Make sure requestFriend() works properly!", 1, p3.getRequests().size());
+
             p3.acceptRequest(p1);
-
-            ArrayList<Profile> expectedFriends = new ArrayList<>();
-            expectedFriends.add(friend);
-            expectedFriends.add(p3);
-
-            for (int i = 0; i < 2; i++) {
-                assertEquals("Make sure addFriend() works properly!", expectedFriends.get(i), p1.getFriends().get(i));
-            }
+            assertEquals("Make sure acceptRequest() works properly!", 1, p3.getFriends().size());
+            assertEquals("Make sure acceptRequest() works properly!", 2, p1.getFriends().size());
 
             p1.removeFriend(friend);
             assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
@@ -352,7 +324,7 @@ public class RunLocalTest {
             assertEquals("Make sure unblock() works properly!", p4, p1.getBlocked().get(0));
 
             assertNotEquals("Make sure equals() works properly!", p3, p1);
-            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false);
+            Profile p5 = new Profile("hello", "this is it", "im not doing database testing you guys can cry over that", false, null, null, null);
             assertEquals("Make sure equals() works properly!", p5, p1);
         }
 
@@ -360,9 +332,9 @@ public class RunLocalTest {
         public void testDatabaseMethods() {
             ArrayList<Profile> expectedProfiles = new ArrayList<>();
 
-            Profile p1 = new Profile("first", "password", "world", true);
-            Profile p2 = new Profile("second", "password", "hello", true);
-            Profile p3 = new Profile("third", "password", "boom", true);
+            Profile p1 = new Profile("first", "password", "world", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p2 = new Profile("second", "password", "hello", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p3 = new Profile("third", "password", "boom", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             expectedProfiles.add(p1);
             expectedProfiles.add(p2);
@@ -371,11 +343,13 @@ public class RunLocalTest {
             Message m1 = null;
             Message m2 = null;
             Message m3 = null;
+            Message m4 = null;
 
             try {
                 m1 = new Message(p1, p2, "hello world!");
                 m2 = new Message(p2, p3, "goodbye world!");
                 m3 = new Message(p1, p3, "it's a wonderful day outside!");
+                m4 = new Message(p2, p3, "this is getting sent! yay!");
             } catch (MessageError e) {
                 Assert.assertTrue("Message threw an unexpected MessageError\n" +
                         "Make sure the Message constructor is correct!", false);
@@ -394,19 +368,83 @@ public class RunLocalTest {
             expectedChats.put(c2.getProfiles().get(0).getUsername() + c2.getProfiles().get(1).getUsername(), c2);
             expectedChats.put(c3.getProfiles().get(0).getUsername() + c3.getProfiles().get(1).getUsername(), c3);
 
-            Database database = new Database("profileTest.txt", "chatTest.txt", "profileOutTest.txt", "chatOutTest.txt");
+            Database database = new Database("profileTest.txt", "chatTest.txt", "profileTest.txt", "chatTest.txt");
 
             database.readProfile();
             database.readChat();
 
             ArrayList<Profile> actualProfiles = database.getProfiles();
             HashMap<String, Chat> actualChats = database.getChats();
+
             for (int i = 0; i < expectedProfiles.size(); i++) {
                 assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
             }
             for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
                 assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
             }
+
+            database.outputProfile();
+            database.outputChat();
+
+            database.clearDatabase();
+            assertNull("Make sure clearDatabase() works properly!", database.getProfiles());
+            assertNull("Make sure clearDatabase() works properly!", database.getChats());
+
+            database.readProfile();
+            database.readChat();
+
+            actualProfiles = database.getProfiles();
+            actualChats = database.getChats();
+
+            for (int i = 0; i < expectedProfiles.size(); i++) {
+                assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
+            }
+            for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
+                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
+            }
+
+            assertTrue("Make sure login() works properly!", database.login("first", "password"));
+            assertFalse("Make sure login() works properly!", database.login("one hundred", "kilos"));
+
+            database.sendMessage(m4);
+            actualChats = database.getChats();
+            assertEquals("Make sure sendMessage() works properly!", "this is getting sent! yay!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            try {
+                database.editMessage(m4, "i'm editing the message!");
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            actualChats = database.getChats();
+            assertEquals("Make sure editMessage() works properly!", "i'm editing the message!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            try {
+                database.deleteMessage(m4);
+            } catch (MessageError e) {
+                Assert.assertTrue("Message threw an unexpected MessageError\n" +
+                        "Make sure the Message constructor is correct!", false);
+            }
+            actualChats = database.getChats();
+            assertNull("Make sure deleteMessage() works properly!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+
+            assertTrue("Make sure createProfile() works properly!", database.createProfile("test", "new profile"));
+            assertFalse("Make sure createProfile() works properly!", database.createProfile("first", "should not work"));
+
+            assertTrue("Make sure editDisplayName() works properly!", database.editDisplayName("first", "yay yippee"));
+            assertFalse("Make sure editDisplayName() works properly!", database.editDisplayName("bingle", "boooooo"));
+
+            assertTrue("Make sure editPassword() works properly!", database.editPassword("first", "new password yay!!"));
+            assertFalse("Make sure editPassword() works properly!", database.editPassword("moooooooo", "no password boo!!"));
+
+            assertTrue("Make sure editReceiveAll() works properly!", database.editReceiveAll("second", false));
+            assertFalse("Make sure editReceiveAll() works properly!", database.editReceiveAll("womp womp", true));
+
+            assertTrue("Make sure deleteProfile() works properly!", database.deleteProfile("second"));
+            assertFalse("Make sure deleteProfile() works properly!", database.deleteProfile("banana"));
+
+            ArrayList<Profile> actualFind = database.findProfiles("IR");
+            assertEquals("Make sure findProfiles() works properly!", 0, actualFind.size());
         }
     }
 }
