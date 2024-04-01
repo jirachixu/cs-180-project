@@ -43,6 +43,19 @@ public class Message implements Serializable, MessageInterface {
         timestamp = System.currentTimeMillis();
     }
 
+    public Message(Message message) throws MessageError {
+        if (message.status == 2) {
+            throw new MessageError("Cannot create a deleted message");
+        }
+
+        this.receiver = message.getReceiver();
+        this.sender = message.getSender();
+        this.contents = message.getContents();
+
+        status = message.getStatus();
+        timestamp = System.currentTimeMillis();
+    }
+
     public Profile getSender() {
         return sender;
     }
