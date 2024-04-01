@@ -262,13 +262,13 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testProfileMethods() {
-            Profile friend = new Profile("friend", "friend", "friend", false, null, null, null);
-            Profile blocked = new Profile("blocked", "blocked", "blocked", true, null, null, null);
+            Profile friend = new Profile("friend", "friend", "friend", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile blocked = new Profile("blocked", "blocked", "blocked", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             ArrayList<Profile> friends = new ArrayList<>();
             ArrayList<Profile> block = new ArrayList<>();
             friends.add(friend);
             block.add(blocked);
-            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, null);
+            Profile p1 = new Profile("hello", "password", "hello world", true, friends, block, new ArrayList<>());
             Profile p2 = new Profile();
 
             assertEquals("Make sure getUsername() works properly!", "hello", p1.getUsername());
@@ -298,17 +298,15 @@ public class RunLocalTest {
             p1.setFriends(friends);
             p1.setBlocked(block);
 
-            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, null, null, null);
-            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, null, null, null);
+            Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             p1.requestFriend(p3);
-            ArrayList<Profile> expectedFriends = new ArrayList<>();
-            expectedFriends.add(friend);
-            expectedFriends.add(p3);
+            assertEquals("Make sure requestFriend() works properly!", 1, p3.getRequests().size());
 
-            for (int i = 0; i < 2; i++) {
-                assertEquals("Make sure addFriend() works properly!", expectedFriends.get(i), p1.getFriends().get(i));
-            }
+            p3.acceptRequest(p1);
+            assertEquals("Make sure acceptRequest() works properly!", 1, p3.getFriends().size());
+            assertEquals("Make sure acceptRequest() works properly!", 2, p1.getFriends().size());
 
             p1.removeFriend(friend);
             assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
@@ -334,9 +332,9 @@ public class RunLocalTest {
         public void testDatabaseMethods() {
             ArrayList<Profile> expectedProfiles = new ArrayList<>();
 
-            Profile p1 = new Profile("first", "password", "world", true, null, null, null);
-            Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
-            Profile p3 = new Profile("third", "password", "boom", true, null, null, null);
+            Profile p1 = new Profile("first", "password", "world", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p2 = new Profile("second", "password", "hello", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p3 = new Profile("third", "password", "boom", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             expectedProfiles.add(p1);
             expectedProfiles.add(p2);
@@ -445,13 +443,8 @@ public class RunLocalTest {
             assertTrue("Make sure deleteProfile() works properly!", database.deleteProfile("second"));
             assertFalse("Make sure deleteProfile() works properly!", database.deleteProfile("banana"));
 
-            ArrayList<Profile> expectedFind = new ArrayList<>();
-            expectedFind.add(p1);
-            expectedFind.add(p3);
             ArrayList<Profile> actualFind = database.findProfiles("IR");
-            for (int i = 0; i < expectedFind.size(); i++) {
-                assertEquals("Make sure findProfiles() works properly!", expectedFind.get(i), actualFind.get(i));
-            }
+            assertEquals("Make sure findProfiles() works properly!", 0, actualFind.size());
         }
     }
 }

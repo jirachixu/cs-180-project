@@ -107,6 +107,7 @@ public class Profile implements Serializable, ProfileInterface {
     public boolean acceptRequest(Profile p) {
         if (requests.contains(p) && !friends.contains(p)) {
             friends.add(p);
+            p.getFriends().add(this);
             requests.remove(p);
             return true;
         }
