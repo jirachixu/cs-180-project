@@ -1,14 +1,19 @@
 import java.io.Serializable;
 import java.util.ArrayList;
+
 /**
- * Project 5 -- Chat
- * Class containing methods that allows for creation and basic manipulation of chat object for use with database
+ * Team Project - Chat
  *
- * @author Jared Bright, 024
+ * This class is where messages are sent for profiles
+ * to interact with one another. It also has a timestamp
+ * for later display purposes.
  *
- * @version March 31, 2024
+ * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ *
+ * @version Mar 31, 2024
  *
  */
+
 public class Chat implements Serializable, ChatInterface {
     private final ArrayList<Profile> profiles;    // Users in the chat
     private ArrayList<Message> messages;    // All messages sent in the chat
@@ -46,8 +51,8 @@ public class Chat implements Serializable, ChatInterface {
     }
 
     public void sendMessage(Message message) {    // Add the message to the message array
-        Profile sender = message.getSender();
-        Profile receiver = message.getReceiver();
+        Profile sender = message.getSender(); // Sender of the message
+        Profile receiver = message.getReceiver(); // Receiver of the message
 
         if (receiver.isReceiveAll() || receiver.isFriends(sender)) {
             messages.add(message);

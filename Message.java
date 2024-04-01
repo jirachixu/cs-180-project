@@ -1,14 +1,20 @@
 import java.io.Serializable;
+
 /**
- * Project 5 -- Message
- * Class containing methods that allows for creation and basic manipulation of messages object for use by other classes
- * of this project
+ * Team Project - Message
  *
- * @author Jared Bright, 024
+ * This class handles the content of a message
+ * and also contains the sender and receiver
+ * of the message, as well as tracking
+ * whether it has been edited or deleted
+ * and when it was sent.
  *
- * @version March 31, 2024
+ * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ *
+ * @version Mar 31, 2024
  *
  */
+
 public class Message implements Serializable, MessageInterface {
     private final Profile sender;    // The profile that sent the message
     private final Profile receiver;    // The profile that receives the message
@@ -35,19 +41,6 @@ public class Message implements Serializable, MessageInterface {
 
         status = 0;
         timestamp = System.currentTimeMillis();
-    }
-
-    public Message(Message message) throws MessageError {
-        if (message.status == 2) {
-            throw new MessageError("Message is deleted");
-        }
-
-        this.receiver = message.getReceiver();
-        this.sender = message.getSender();
-        this.contents = message.getContents();
-
-        status = message.getStatus();
-        timestamp = message.getTimestamp();
     }
 
     public Profile getSender() {
@@ -93,8 +86,8 @@ public class Message implements Serializable, MessageInterface {
     }
 
     @Override
-    public boolean equals(Object o) {    // Returns true only if all fields match and neither message is deleted
-        return o instanceof Message && this.status != 2 &&
+    public boolean equals(Object o) {    // Returns true only if all fields match
+        return o instanceof Message &&
                 ((Message) o).getSender().equals(sender) &&
                 ((Message) o).getReceiver().equals(receiver) &&
                 ((Message) o).status == this.status &&

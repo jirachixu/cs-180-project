@@ -2,6 +2,21 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Team Project - Database
+ *
+ * This class is the gateway between the server
+ * and the client. It takes in all the requests
+ * from the client-side and communicates them
+ * through the server-side by calling
+ * the appropriate classes and methods.
+ *
+ * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ *
+ * @version Mar 31, 2024
+ *
+ */
+
 public class Database implements DatabaseInterface {
     private String profileIn; // File that profiles are read in from
     private String chatIn; // File that chats are read in from
@@ -18,7 +33,8 @@ public class Database implements DatabaseInterface {
     }
 
     // For testing purposes
-    public Database(String profileIn, String chatIn, String profileOut, String chatOut, ArrayList<Profile> profiles, HashMap<String, Chat> chats) {
+    public Database(String profileIn, String chatIn, String profileOut, String chatOut, ArrayList<Profile> profiles,
+                    HashMap<String, Chat> chats) {
         this.profileIn = profileIn;
         this.chatIn = chatIn;
         this.profileOut = profileOut;
@@ -100,9 +116,9 @@ public class Database implements DatabaseInterface {
     }
 
     public synchronized void sendMessage(Message message) {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
         if (chats.containsKey(key)) {
-            Chat chat = chats.get(key);
+            Chat chat = chats.get(key); // The chat to send the message to
             chat.sendMessage(message);
         } else {
             chats.put(key, new Chat(message));
@@ -110,21 +126,21 @@ public class Database implements DatabaseInterface {
     }
 
     public synchronized void editMessage(Message message, String newContent) throws MessageError {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
-        Chat chat = chats.get(key);
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        Chat chat = chats.get(key); // The chat to edit a message in
         chat.editMessage(message, newContent);
     }
 
     public synchronized void deleteMessage(Message message) throws MessageError {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername();
-        Chat chat = chats.get(key);
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        Chat chat = chats.get(key); // Chat to delete a message in
         chat.deleteMessage(message);
     }
 
     // I'm assuming that the default display name is the same as your username, then you can edit it as you wish
     public synchronized boolean createProfile(String username, String password) {
         Profile newProfile = new Profile(username, password, username, true,
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>()); // The new profile being created
         for (Profile p : profiles) {
             if (p.getUsername().equals(newProfile.getUsername())) {
                 return false;
@@ -176,8 +192,8 @@ public class Database implements DatabaseInterface {
     }
 
     public synchronized ArrayList<Profile> findProfiles(String toFind) {
-        ArrayList<Profile> searchResults = new ArrayList<>();
-        String toFindIgnoreCase = toFind.toLowerCase();
+        ArrayList<Profile> searchResults = new ArrayList<>(); // Results of the search
+        String toFindIgnoreCase = toFind.toLowerCase(); // The string to find in lowercase
         for (Profile p : profiles) {
             if (p.getUsername().toLowerCase().startsWith(toFindIgnoreCase)
                     || p.getDisplayName().toLowerCase().startsWith(toFindIgnoreCase)) {

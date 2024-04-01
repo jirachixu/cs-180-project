@@ -5,14 +5,30 @@ import java.util.ArrayList;
  * TODO: all the setter methods and addFriend, removeFriend, block, unblock, etc. have to communicate with the client
  *  and get info (the method parameters) from the user, also probably needs to be displayed on the GUI
  */
+
+/**
+ * Team Project - Profile
+ *
+ * This class is the user on the server-side, and holds
+ * all of their information. This includes their
+ * credentials and also who can message them,
+ * who they are friends with, who they have blocked,
+ * and who has requested to be their friend.
+ *
+ * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ *
+ * @version Mar 31, 2024
+ *
+ */
+
 public class Profile implements Serializable, ProfileInterface {
-    private final String username;
-    private String password;
-    private String displayName;
-    private boolean receiveAll;
-    private ArrayList<Profile> friends;
-    private ArrayList<Profile> blocked;
-    private ArrayList<Profile> requests;
+    private final String username; // The username of the profile
+    private String password; // The password of the profile
+    private String displayName; // The display name of the profile (this can be changed)
+    private boolean receiveAll; // Whether they can receive messages from everyone, or just friends
+    private ArrayList<Profile> friends; // Their friends
+    private ArrayList<Profile> blocked; // Who they have blocked (cannot send or receive messages)
+    private ArrayList<Profile> requests; // Who has requested to be their friend
     //TODO
     public Profile(String username, String password, String displayName, boolean receiveAll,
                    ArrayList<Profile> friends, ArrayList<Profile> blocked, ArrayList<Profile> requests) {
