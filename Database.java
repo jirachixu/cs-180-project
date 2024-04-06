@@ -22,7 +22,7 @@ public class Database implements DatabaseInterface {
     private String chatIn; // File that chats are read in from
     private String profileOut; // File that profiles are read out to
     private String chatOut; // File that chats are read out to
-    private HashMap<String, Profile> profiles = new HashMap<>(); // ArrayList of profiles
+    private HashMap<String, Profile> profiles = new HashMap<>(); // HashMap of profiles
     private HashMap<String, Chat> chats = new HashMap<>(); // HashMap (dictionary) of chats
 
     public Database(String profileIn, String chatIn, String profileOut, String chatOut) {
