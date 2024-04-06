@@ -350,15 +350,15 @@ public class RunLocalTest {
 
         @Test(timeout = 1000)
         public void testDatabaseMethods() {
-            ArrayList<Profile> expectedProfiles = new ArrayList<>();
+            HashMap<String, Profile> expectedProfiles = new HashMap<>();
 
             Profile p1 = new Profile("first", "password", "world", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             Profile p2 = new Profile("second", "password", "hello", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             Profile p3 = new Profile("third", "password", "boom", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
-            expectedProfiles.add(p1);
-            expectedProfiles.add(p2);
-            expectedProfiles.add(p3);
+            expectedProfiles.put(p1.getUsername(), p1);
+            expectedProfiles.put(p2.getUsername(), p2);
+            expectedProfiles.put(p3.getUsername(), p3);
 
             Message m1 = null;
             Message m2 = null;
@@ -393,14 +393,14 @@ public class RunLocalTest {
             database.readProfile();
             database.readChat();
 
-            ArrayList<Profile> actualProfiles = database.getProfiles();
+            HashMap<String, Profile> actualProfiles = database.getProfiles();
             HashMap<String, Chat> actualChats = database.getChats();
 
-            for (int i = 0; i < expectedProfiles.size(); i++) {
-                assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
+            for (Map.Entry<String, Profile> entry : expectedProfiles.entrySet()) {
+                assertEquals("Make sure readProfile() works properly!", entry.getValue(), actualProfiles.get(entry.getKey()));
             }
             for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
-                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
+                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().getFirst().getUsername(), actualChats.get(entry.getKey()).getProfiles().getFirst().getUsername());
             }
 
             database.outputProfile();

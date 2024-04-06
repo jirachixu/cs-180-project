@@ -22,7 +22,7 @@ public class Database implements DatabaseInterface {
     private String chatIn; // File that chats are read in from
     private String profileOut; // File that profiles are read out to
     private String chatOut; // File that chats are read out to
-    private ArrayList<Profile> profiles = new ArrayList<>(); // ArrayList of profiles
+    private HashMap<String, Profile> profiles = new HashMap<>(); // ArrayList of profiles
     private HashMap<String, Chat> chats = new HashMap<>(); // HashMap (dictionary) of chats
 
     public Database(String profileIn, String chatIn, String profileOut, String chatOut) {
@@ -33,8 +33,8 @@ public class Database implements DatabaseInterface {
     }
 
     // For testing purposes
-    public Database(String profileIn, String chatIn, String profileOut, String chatOut, ArrayList<Profile> profiles,
-                    HashMap<String, Chat> chats) {
+    public Database(String profileIn, String chatIn, String profileOut, String chatOut,
+                    HashMap<String, Profile> profiles, HashMap<String, Chat> chats) {
         this.profileIn = profileIn;
         this.chatIn = chatIn;
         this.profileOut = profileOut;
@@ -44,7 +44,7 @@ public class Database implements DatabaseInterface {
     }
 
     // For testing purposes
-    public ArrayList<Profile> getProfiles() {
+    public HashMap<String, Profile> getProfiles() {
         return profiles;
     }
 
@@ -58,7 +58,7 @@ public class Database implements DatabaseInterface {
     public boolean readProfile() {
         try {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
-                profiles = (ArrayList<Profile>) ois.readObject();
+                profiles = (HashMap<String, Profile>) ois.readObject();
             } catch (ClassNotFoundException e) {
                 return false;
             }
@@ -107,12 +107,7 @@ public class Database implements DatabaseInterface {
     }
 
     public boolean login(String username, String password) {
-        for (Profile profile : profiles) {
-            if (profile.getUsername().equals(username) && profile.getPassword().equals(password)) {
-                return true;
-            }
-        }
-        return false;
+        return profiles.containsKey(username) && profiles.get(username).getPassword().equals(password);
     }
 
     public synchronized void sendMessage(Message message) {
@@ -141,60 +136,46 @@ public class Database implements DatabaseInterface {
     public synchronized boolean createProfile(String username, String password) {
         Profile newProfile = new Profile(username, password, username, true,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>()); // The new profile being created
-        for (Profile p : profiles) {
-            if (p.getUsername().equals(newProfile.getUsername())) {
-                return false;
-            }
+        if (profiles.containsKey(username)) {
+            return false;
         }
-        profiles.add(newProfile);
+        profiles.put(username, newProfile);
         return true;
     }
 
     public synchronized boolean editDisplayName(String username, String newDisplayName) {
-        for (Profile p : profiles) {
-            if (p.getUsername().equals(username)) {
-                p.setDisplayName(newDisplayName);
-                return true;
-            }
+        if (profiles.containsKey(username)) {
+            profiles.get(username).setDisplayName(newDisplayName);
+            return true;
         }
         return false;
     }
 
     // probably doesn't have to be synchronized because nobody's using your account password as you change it
     public boolean editPassword(String username, String newPassword) {
-        for (Profile p : profiles) {
-            if (p.getUsername().equals(username)) {
-                p.setPassword(newPassword);
-                return true;
-            }
+        if (profiles.containsKey(username)) {
+            profiles.get(username).setPassword(newPassword);
+            return true;
         }
         return false;
     }
 
     public synchronized boolean editReceiveAll(String username, boolean newReceiveAll) {
-        for (Profile p : profiles) {
-            if (p.getUsername().equals(username)) {
-                p.setReceiveAll(newReceiveAll);
-                return true;
-            }
+        if (profiles.containsKey(username)) {
+            profiles.get(username).setReceiveAll(newReceiveAll);
+            return true;
         }
         return false;
     }
 
     public synchronized boolean deleteProfile(String username) {
-       for (Profile p : profiles) {
-           if (p.getUsername().equals(username)) {
-               profiles.remove(p);
-               return true;
-           }
-       }
-       return false;
+        return profiles.remove(username) != null;
     }
 
     public synchronized ArrayList<Profile> findProfiles(String toFind) {
         ArrayList<Profile> searchResults = new ArrayList<>(); // Results of the search
         String toFindIgnoreCase = toFind.toLowerCase(); // The string to find in lowercase
-        for (Profile p : profiles) {
+        for (Profile p : profiles.values()) {
             if (p.getUsername().toLowerCase().startsWith(toFindIgnoreCase)
                     || p.getDisplayName().toLowerCase().startsWith(toFindIgnoreCase)) {
                 searchResults.add(p);
