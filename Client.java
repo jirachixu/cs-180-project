@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -7,6 +10,9 @@ public class Client {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         Socket socket;
+        BufferedReader inFromServer;
+        PrintWriter outToServer;
+
         // TODO IO: SERVER CONNECTION SHOULD BE FIRST THING DONE ON RUN
         try {
             socket = new Socket("localhost",8080);
@@ -23,7 +29,9 @@ public class Client {
             }
         }
 
-        //ArrayList<Chat> chats ;
+        while (true) {
+            break;
+        }    // TODO: Loop of main functionality
     }
 
     private static Profile createNewUser(Scanner scan, Socket socket) {    // Creates an account
