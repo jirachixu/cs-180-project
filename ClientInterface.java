@@ -1,7 +1,7 @@
 public interface ClientInterface {
     public void run();
-    public void createNewUser(String username, String password, String displayName);
-    public void login(String username, String password);
+    public void createNewUser();
+    public void login();
     public int blockUser(Profile profile);
     public int unblockUser(Profile profile);
     public int friendUser(Profile profile);
