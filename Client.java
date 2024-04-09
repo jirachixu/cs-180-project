@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client {
+public class Client implements ClientInterface {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         Socket socket;
@@ -24,8 +24,8 @@ public class Client {
 
         while (profile.getUsername() == null) {    // Loop while account is still empty
             switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
-                case 1-> profile = createNewUser(scan, socket);
-                case 2-> profile = login(scan, socket);
+                case 1 -> profile = createNewUser(scan, socket);
+                case 2 -> profile = login(scan, socket);
             }
         }
 
