@@ -107,6 +107,66 @@ public class RunLocalTest {
         }
 
         @Test(timeout = 1000)
+        public void ClientClassDeclarationTest() {
+            Class<?> clazz;
+            int modifiers;
+            Class<?> superclass;
+            Class<?>[] superinterfaces;
+
+            clazz = Client.class;
+            modifiers = clazz.getModifiers();
+            superclass = clazz.getSuperclass();
+            superinterfaces = clazz.getInterfaces();
+
+            Assert.assertTrue("Ensure that Client is public!",
+                    Modifier.isPublic(modifiers));
+            Assert.assertFalse("Ensure that Client is not abstract!",
+                    Modifier.isAbstract(modifiers));
+            Assert.assertEquals("Ensure that Client implements ClientInterface!",
+                    1, superinterfaces.length);
+        }
+
+        @Test(timeout = 1000)
+        public void ChatServerClassDeclarationTest() {
+            Class<?> clazz;
+            int modifiers;
+            Class<?> superclass;
+            Class<?>[] superinterfaces;
+
+            clazz = ChatServer.class;
+            modifiers = clazz.getModifiers();
+            superclass = clazz.getSuperclass();
+            superinterfaces = clazz.getInterfaces();
+
+            Assert.assertTrue("Ensure that ChatServer is public!",
+                    Modifier.isPublic(modifiers));
+            Assert.assertFalse("Ensure that ChatServer is not abstract!",
+                    Modifier.isAbstract(modifiers));
+            Assert.assertEquals("Ensure that ChatServer implements ServerInterface!",
+                    1, superinterfaces.length);
+        }
+
+        @Test(timeout = 1000)
+        public void ClientHandlerClassDeclarationTest() {
+            Class<?> clazz;
+            int modifiers;
+            Class<?> superclass;
+            Class<?>[] superinterfaces;
+
+            clazz = ClientHandler.class;
+            modifiers = clazz.getModifiers();
+            superclass = clazz.getSuperclass();
+            superinterfaces = clazz.getInterfaces();
+
+            Assert.assertTrue("Ensure that ClientHandler is public!",
+                    Modifier.isPublic(modifiers));
+            Assert.assertFalse("Ensure that ClientHandler is not abstract!",
+                    Modifier.isAbstract(modifiers));
+            Assert.assertEquals("Ensure that ClientHandler implements Runnable!",
+                    1, superinterfaces.length);
+        }
+
+        @Test(timeout = 1000)
         public void testMessageMethods() {
             Profile p1 = new Profile("first", "password", "world", true, null, null, null);
             Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
@@ -400,7 +460,7 @@ public class RunLocalTest {
                 assertEquals("Make sure readProfile() works properly!", entry.getValue(), actualProfiles.get(entry.getKey()));
             }
             for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
-                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().getFirst().getUsername(), actualChats.get(entry.getKey()).getProfiles().getFirst().getUsername());
+                assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
             }
 
             database.outputProfile();
