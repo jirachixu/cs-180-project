@@ -7,7 +7,7 @@ public interface DatabaseInterface {
     public void sendMessage(Message message);
     public void editMessage(Message message, String newContent) throws MessageError;
     public void deleteMessage(Message message) throws MessageError;
-    public boolean createProfile(String username, String password);
+    public boolean createProfile(String username, String password, String displayName, boolean receiveAll);
     public boolean deleteProfile(String username);
     public boolean editDisplayName(String username, String newDisplayName);
     public boolean editPassword(String username, String newPassword);

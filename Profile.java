@@ -155,4 +155,8 @@ public class Profile implements Serializable, ProfileInterface {
     public boolean equals(Object o) {
         return o instanceof Profile && ((Profile) o).getUsername().equals(username);
     }
+
+    public String toString() {
+
+    }
 }

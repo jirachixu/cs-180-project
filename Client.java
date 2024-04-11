@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -12,21 +9,29 @@ public class Client implements ClientInterface {
         Socket socket;
         BufferedReader inFromServer;
         PrintWriter outToServer;
+        ObjectInputStream objectInputStream;
 
         // TODO IO: SERVER CONNECTION SHOULD BE FIRST THING DONE ON RUN
         try {
             socket = new Socket("localhost",8080);
+            inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            outToServer = new PrintWriter(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);    // TODO: Fail to connect error
         }
 
         Profile profile = new Profile();    // TODO IO: Should be assigned empty profile by server
 
-        while (profile.getUsername() == null) {    // Loop while account is still empty
-            switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
-                case 1 -> profile = createNewUser(scan, socket);
-                case 2 -> profile = login(scan, socket);
+        try {
+            while (profile.getUsername() == null) {    // Loop while account is still empty
+                switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
+                    case 1 -> profile = createNewUser(scan, inFromServer, outToServer);
+                    case 2 -> profile = login(scan, outToServer, objectInputStream);
+                }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         while (true) {
@@ -34,47 +39,73 @@ public class Client implements ClientInterface {
         }    // TODO: Loop of main functionality
     }
 
-    private static Profile createNewUser(Scanner scan, Socket socket) {    // Creates an account
+    private static Profile createNewUser(Scanner scan, BufferedReader br, PrintWriter pw) throws IOException {    // Creates an account
         String username;
         String password;
         String display;
-        boolean receiveAll;
+        String receiveAll;
 
+        pw.println("createNewUser");
+        pw.flush();
         boolean loop = true;
         do {
             // TODO: Replace with GUI input rather than command line input
             System.out.println("Enter your desired username: ");
             username = scan.nextLine();
-
-            loop = false;    // TODO IO: Server sends boolean to confirm username is valid
+            pw.println(username);
+            pw.flush();
+            loop = !br.readLine().equals("true");
         } while (loop);
 
         loop = true;
         do {
             // TODO: Replace with GUI input rather than command line input
             System.out.println("Enter your desired password");
-            password = scan.nextLine();
-
-            loop = false;    // TODO IO: Server sends boolean to confirm password is valid
+            password = scan.nextLine(); // TODO: check valid password
+            pw.println(password);
+            pw.flush();
+            loop = !br.readLine().equals("true");
         } while (loop);
 
         display = scan.nextLine();
-        receiveAll = Boolean.parseBoolean(scan.nextLine());
+        pw.println(display);
+        pw.flush();
+        do {
+            receiveAll = scan.nextLine();
+        } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
+        pw.println(receiveAll);
+        pw.flush();
+        boolean successful = br.readLine().equals("true");
 
-        return new Profile(username, password, display, receiveAll);
+        if (successful) {
+            return new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
+        }
+        // TODO: unsuccessful message
+        return new Profile();
     }
 
-    private static Profile login(Scanner scan, Socket socket) {    // Log into an account
+    private static Profile login(Scanner scan, PrintWriter pw, ObjectInputStream ois) throws IOException {    // Log into an account
+        pw.println("login");
+        pw.flush();
         String username = scan.nextLine();
         String password = scan.nextLine();
 
-        // TODO: Send username and password to server to find account
+        pw.println(username);
+        pw.flush();
+        pw.println(password);
+        pw.flush();
 
-        Profile profile;
-        do {
-            profile = new Profile("TODO");    // TODO IO: Receive a profile from server
-        } while (profile.getUsername() == null);
+        Object o;
+        try {
+            o = ois.readObject();
+            if (!(o instanceof Profile)) {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            // TODO: error message
+            return new Profile();
+        }
 
-        return profile;
+        return (Profile) o;
     }
 }
