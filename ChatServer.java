@@ -31,21 +31,28 @@ public class ChatServer implements ServerInterface {
                 inFromUser = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 outToUser = new PrintWriter(clientSocket.getOutputStream());
                 outToClient = new ObjectOutputStream(clientSocket.getOutputStream());
+
                 new Thread(new ClientHandler(clientSocket)).start();
                 String fromUser = inFromUser.readLine();
+
                 switch (fromUser) {
                     case "createNewUser":
                         String username;
                         do {
                             username = inFromUser.readLine();
                         } while (database.getProfiles().containsKey(username));
+
                         outToUser.println("true");
                         outToUser.flush();
+
                         String password = inFromUser.readLine();
+
                         outToUser.println("true");
                         outToUser.flush();
+
                         String displayName = inFromUser.readLine();
                         String receiveAll = inFromUser.readLine();
+
                         if (database.createProfile(username, password, displayName,
                                 Boolean.parseBoolean(receiveAll))) {
                             outToUser.println("true");
@@ -55,14 +62,17 @@ public class ChatServer implements ServerInterface {
                         outToUser.println("false");
                         outToUser.flush();
                         break;
+
                     case "login":
                         String user = inFromUser.readLine();
                         String pwd = inFromUser.readLine();
+
                         if (database.login(user, pwd)) {
                             outToClient.writeObject(database.getProfiles().get(user));
                             outToClient.flush();
                             break;
                         }
+
                         outToClient.writeObject(null);
                         outToClient.flush();
                         break;
