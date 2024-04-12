@@ -25,15 +25,11 @@ public class Client implements ClientInterface {
 
         profile = new Profile();    // TODO IO: Should be assigned empty profile by server
 
-        try {
-            while (profile.getUsername() == null) {    // Loop while account is still empty
-                switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
-                    case 1 -> createNewUser(scan, inFromServer, outToServer); //profile = createNewUser(scan, inFromServer, outToServer);
-                    case 2 -> profile = login(scan, outToServer, objectInputStream);
-                }
+        while (profile.getUsername() == null) {    // Loop while account is still empty
+            switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
+                case 1 -> createNewUser(scan, inFromServer, outToServer);
+                case 2 -> login(scan, outToServer, objectInputStream);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
         while (true) {
@@ -76,7 +72,7 @@ public class Client implements ClientInterface {
                     password = scan.nextLine();
                 } while(checkValidPassword(password));
 
-                pw.println(password);    // TODO: Move all server communications further down and together?
+                pw.println(password);    // TODO: Move all server communications as packet?
                 pw.flush();
 
                 loop = !br.readLine().equals("true");
@@ -94,7 +90,7 @@ public class Client implements ClientInterface {
             receiveAll = scan.nextLine();
         } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
 
-        pw.println(receiveAll);    // TODO: Move all server communications further down and together?
+        pw.println(receiveAll);    // TODO: Move all server communications as packet?
         pw.flush();
 
         boolean successful;
@@ -104,12 +100,12 @@ public class Client implements ClientInterface {
             return;
         }
 
-        if (successful) {
+        if (successful) {    // Might need to make as packets s.t. copy gets put in database as well
             profile = new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
+        } else {
+            System.out.println("Please try again!");
+            profile = new Profile();
         }
-
-        // TODO: unsuccessful message
-        profile = new Profile();
     }
 
     private boolean checkValidPassword(String password) {
@@ -148,10 +144,14 @@ public class Client implements ClientInterface {
     }
 
     // TODO: Fix profile login
-    public Profile login(Scanner scan, PrintWriter pw, ObjectInputStream ois) throws IOException {    // Log into an account
+    public void login(Scanner scan, PrintWriter pw, ObjectInputStream ois) {    // Log into an account
         pw.println("login");
         pw.flush();
+
+        // TODO: Replace with GUI input rather than command line input
+        System.out.println("Please enter username:");
         String username = scan.nextLine();
+        System.out.println("Please enter password:");
         String password = scan.nextLine();
 
         pw.println(username);
@@ -162,19 +162,14 @@ public class Client implements ClientInterface {
         Object o;
         try {
             o = ois.readObject();
-            if (!(o instanceof Profile)) {
-                throw new Exception();
+            if (o instanceof Profile) {
+                profile = (Profile) o;
             }
         } catch (Exception e) {
             // TODO: error message
-            return new Profile();
+            return;
         }
-
-        return (Profile) o;
     }
-
-
-
 
 
     public int blockUser(Profile profile) {

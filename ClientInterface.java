@@ -7,7 +7,7 @@ import java.util.Scanner;
 public interface ClientInterface {
     public void run();
     public void createNewUser(Scanner scan, BufferedReader br, PrintWriter pw);
-    public Profile login(Scanner scan, PrintWriter pw, ObjectInputStream ois) throws IOException;
+    public void login(Scanner scan, PrintWriter pw, ObjectInputStream ois);
     public int blockUser(Profile profile);
     public int unblockUser(Profile profile);
     public int friendUser(Profile profile);
