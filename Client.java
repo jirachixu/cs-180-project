@@ -113,7 +113,7 @@ public class Client implements ClientInterface, Runnable {
             // Get user receive all preference
             // TODO: Replace with GUI input rather than command line input
             do {
-                System.out.println("Would you like to receive messages from everyone?");
+                System.out.println("Would you like to receive messages from everyone (true/false)?");
                 receiveAll = scan.nextLine();
             } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
 
