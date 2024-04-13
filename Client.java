@@ -167,25 +167,25 @@ public class Client implements ClientInterface, Runnable {
             outToServer.flush();
 
             // TODO: Replace with GUI input rather than command line input
-            System.out.println("Please enter username:");
-            String username = scan.nextLine();
-            System.out.println("Please enter password:");
-            String password = scan.nextLine();
-
+            String username;
+            do {
+                System.out.println("Please enter username:");
+                username = scan.nextLine();
+            } while (username.isEmpty());
             outToServer.writeObject(username);
             outToServer.flush();
+
+            String password;
+            do {
+                System.out.println("Please enter password:");
+                password = scan.nextLine();
+            } while (password.isEmpty());
             outToServer.writeObject(password);
             outToServer.flush();
 
-            Object o;
-            try {
-                o = inFromServer.readObject();
-                if (o instanceof Profile) {
-                    profile = (Profile) o;
-                }
-            } catch (Exception e) {
-                // TODO: error message
-                return;
+            Object o = inFromServer.readObject();
+            if (o != null) {
+                profile = (Profile) o;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -3,11 +3,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ChatServer implements ServerInterface, Runnable {
+public class Server implements ServerInterface, Runnable {
     private final Socket socket;
     static Database database;
 
-    public ChatServer(Socket socket) {
+    public Server(Socket socket) {
         this.socket = socket;
     }
 
@@ -27,16 +27,7 @@ public class ChatServer implements ServerInterface, Runnable {
             while (command != null) {
                 switch ((String) command) {    // Select operation to perform
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
-                    case "login" -> {
-                        // TODO: Make match syntax of client
-                        if (database.login((String) inFromUser.readObject(), (String) inFromUser.readObject())) {
-                            outToUser.writeObject(true);
-                            outToUser.flush();
-                        } else {
-                            outToUser.writeObject(false);
-                            outToUser.flush();
-                        }
-                    }
+                    case "login" -> login(inFromUser, outToUser);
                 }
 
                 command = inFromUser.readObject();
@@ -48,6 +39,9 @@ public class ChatServer implements ServerInterface, Runnable {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            database.outputChat();
+            database.outputProfile();
         }
     }
 
@@ -63,8 +57,8 @@ public class ChatServer implements ServerInterface, Runnable {
         if (scan.nextLine().equalsIgnoreCase("yes")) {
             profileIn = "profileTest.txt";
             chatsIn = "chatTest.txt";
-            profileOut = "profileTestOut.txt";
-            chatsOut = "chatTestOut.txt";
+            profileOut = "profileTest.txt";
+            chatsOut = "chatTest.txt";
         } else {
             System.out.println("Enter the name of the file from which to read profiles: ");
             profileIn = scan.nextLine();
@@ -87,7 +81,7 @@ public class ChatServer implements ServerInterface, Runnable {
             System.out.println("Waiting for server connection");
             Socket socket = serverSocket.accept();
             System.out.println("Server connected");
-            ChatServer server = new ChatServer(socket);
+            Server server = new Server(socket);
             new Thread(server).start();
         }
     }
@@ -121,6 +115,24 @@ public class ChatServer implements ServerInterface, Runnable {
             database.createProfile(username, password, display, receiveAll);
 
             System.out.println("Profile successfully created!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void login(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String username = (String) inFromUser.readObject();
+            String password = (String) inFromUser.readObject();
+
+            if (database.login(username, password)){
+                System.out.println("Sending profile " + username);
+                outToUser.writeObject(database.getProfile(username));
+            } else {
+                System.out.println("Profile not found");
+                outToUser.writeObject(null);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

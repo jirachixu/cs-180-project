@@ -127,13 +127,13 @@ public class RunLocalTest {
         }
 
         @Test(timeout = 1000)
-        public void ChatServerClassDeclarationTest() {
+        public void ServerClassDeclarationTest() {
             Class<?> clazz;
             int modifiers;
             Class<?> superclass;
             Class<?>[] superinterfaces;
 
-            clazz = ChatServer.class;
+            clazz = Server.class;
             modifiers = clazz.getModifiers();
             superclass = clazz.getSuperclass();
             superinterfaces = clazz.getInterfaces();
