@@ -21,22 +21,12 @@ public class ChatServer implements ServerInterface, Runnable {
             outToUser = new ObjectOutputStream(socket.getOutputStream());
             outToUser.flush();
             inFromUser = new ObjectInputStream(socket.getInputStream());
+
             command = inFromUser.readObject();
 
             while (command != null) {
-                switch ((String) command) {
-                    case "createNewUser" -> {
-                        // TODO: Make match syntax of client
-                        if (database.createProfile((String) inFromUser.readObject(), (String) inFromUser.readObject(),
-                                (String) inFromUser.readObject(), (Boolean) inFromUser.readObject())) {
-
-                            outToUser.writeObject(true);
-                            outToUser.flush();
-                        } else {
-                            outToUser.writeObject(false);
-                            outToUser.flush();
-                        }
-                    }
+                switch ((String) command) {    // Select operation to perform
+                    case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> {
                         // TODO: Make match syntax of client
                         if (database.login((String) inFromUser.readObject(), (String) inFromUser.readObject())) {
@@ -62,7 +52,7 @@ public class ChatServer implements ServerInterface, Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in);
+        Scanner scan = new Scanner(System.in);
 
         String profileIn;
         String chatsIn;
@@ -70,20 +60,20 @@ public class ChatServer implements ServerInterface, Runnable {
         String chatsOut;
 
         System.out.println("Would you like to load default files?");
-        if (sc.nextLine().equalsIgnoreCase("yes")) {
+        if (scan.nextLine().equalsIgnoreCase("yes")) {
             profileIn = "profileTest.txt";
             chatsIn = "chatTest.txt";
             profileOut = "profileTestOut.txt";
             chatsOut = "chatTestOut.txt";
         } else {
             System.out.println("Enter the name of the file from which to read profiles: ");
-            profileIn = sc.nextLine();
+            profileIn = scan.nextLine();
             System.out.println("Enter the name of the file from which to read chats: ");
-            chatsIn = sc.nextLine();
+            chatsIn = scan.nextLine();
             System.out.println("Enter the name of the file to which to write profiles: ");
-            profileOut = sc.nextLine();
+            profileOut = scan.nextLine();
             System.out.println("Enter the name of the file to which to write chats: ");
-            chatsOut = sc.nextLine();
+            chatsOut = scan.nextLine();
         }
 
         database = new Database(profileIn, chatsIn, profileOut, chatsOut);
@@ -99,6 +89,41 @@ public class ChatServer implements ServerInterface, Runnable {
             System.out.println("Server connected");
             ChatServer server = new ChatServer(socket);
             new Thread(server).start();
+        }
+    }
+
+    public void createNewUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String username;
+            String password;
+            String display;
+            boolean receiveAll;
+            boolean loop;
+
+            do {    // Mirrors username input for account creation
+                System.out.println("Awaiting valid username input");
+                username = (String) inFromUser.readObject();
+                loop = database.usernameFree(username);
+                outToUser.writeBoolean(loop);
+                outToUser.flush();
+            } while(loop);
+
+            System.out.println("Awaiting valid password input");
+            password = (String) inFromUser.readObject();
+
+            System.out.println("Awaiting valid display name input");
+            display = (String) inFromUser.readObject();
+
+            System.out.println("Awaiting valid receiveAll input");
+            receiveAll = inFromUser.readBoolean();
+
+            System.out.println("Received all inputs!");
+            database.createProfile(username, password, display, receiveAll);
+
+            System.out.println("Profile successfully created!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

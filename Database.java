@@ -183,4 +183,7 @@ public class Database implements DatabaseInterface {
         }
         return searchResults;
     }
+    public synchronized boolean usernameFree(String username) {
+        return profiles.get(username) != null;
+    }
 }
