@@ -12,5 +12,5 @@ public interface ClientInterface extends Runnable {
     String editMessage(Message message, String newMessage);
     String deleteMessage(Message message);
     void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void editProfile(String newDisplayName);
+    void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
 }

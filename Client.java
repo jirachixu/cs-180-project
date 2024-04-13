@@ -51,7 +51,7 @@ public class Client implements ClientInterface {
                     case "unblock" -> i = 6;
                     case "friend" -> i = 7;
                     case "unfriend" -> i = 8;
-                    case "editProfile" -> i = 9;
+                    case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                     case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}
                     default -> System.out.println(i);    // TODO: Update chats
@@ -105,6 +105,11 @@ public class Client implements ClientInterface {
                 do { // Check valid password
                     System.out.println("Enter your desired password");
                     password = scan.nextLine();
+
+                    System.out.println("Enter your desired password again");
+                    if (!scan.nextLine().equals(password)) {
+                        continue;
+                    }
                 } while (!checkValidPassword(password));
 
                 outToServer.writeObject(password);
@@ -233,8 +238,57 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void editProfile(String newDisplayName) {
-        return;    // TODO
+    public void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeObject("editProfile");
+            outToServer.flush();
+
+            outToServer.writeObject(profile.getUsername());
+            outToServer.flush();
+
+            System.out.println("What would you like to change: Display Name? Password?");
+            String input = scan.nextLine();
+
+            if (input.equalsIgnoreCase("Display Name")) {
+                outToServer.writeObject("display");
+                outToServer.flush();
+
+                String newDisplay;
+                do {    // Get user input for new username
+                    System.out.println("What you you liked to be called?");
+                    newDisplay = scan.nextLine();
+                } while (newDisplay.isEmpty());
+
+                outToServer.writeObject(newDisplay);
+                outToServer.flush();
+
+                profile = (Profile) inFromServer.readObject();    // Receive edited profile
+
+            } else if (input.equalsIgnoreCase("Password")) {
+                outToServer.writeObject("password");
+                outToServer.flush();
+
+                String newPassword;
+
+                do {    // Enter old password before editing password
+                    System.out.println("Enter your current password");
+                } while (!scan.nextLine().equals(profile.getPassword()));
+
+                do { // Check valid password
+                    System.out.println("Enter your desired password");
+                    newPassword = scan.nextLine();
+
+                    System.out.println("Enter your desired password again");
+                } while (!scan.nextLine().equals(newPassword) && !checkValidPassword(newPassword));
+
+                outToServer.writeObject(newPassword);
+                outToServer.flush();
+
+                profile = (Profile) inFromServer.readObject();    // Receive edited profile
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to edit account");
+        }
     }
 
     public int blockUser(Profile profile) {

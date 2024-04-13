@@ -26,6 +26,7 @@ public class Server implements ServerInterface {
                     case "login" -> login(inFromUser, outToUser);
                     case "logout" -> logout(outToUser);
                     case "deleteProfile" -> deleteProfile(inFromUser, outToUser);
+                    case "editProfile" -> editProfile(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -95,7 +96,7 @@ public class Server implements ServerInterface {
             boolean receiveAll;
             boolean loop;
 
-            // Mirrors input for createNewUser on Client
+            // Mirrors input for createNewUser in Client
             do {
                 System.out.println("Awaiting valid username input");
                 username = (String) inFromUser.readObject();
@@ -126,7 +127,7 @@ public class Server implements ServerInterface {
     }
 
     public void login(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
-        // Mirrors input for login on Client
+        // Mirrors input for login in Client
         try {
             String username = (String) inFromUser.readObject();
             String password = (String) inFromUser.readObject();
@@ -145,7 +146,7 @@ public class Server implements ServerInterface {
     }
 
     public void logout(ObjectOutputStream outToUser) {
-        // Mirrors input for logout on Client
+        // Mirrors input for logout in Client
         try {
             outToUser.writeObject(new Profile());
             outToUser.flush();
@@ -157,14 +158,34 @@ public class Server implements ServerInterface {
     }
 
     public void deleteProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
-        // Mirrors input for logout on Client
+        // Mirrors input for deleteProfile in Client
         try {
             Profile profile = (Profile) inFromUser.readObject();
             database.deleteProfile(profile.getUsername());
 
             System.out.println("Profile " + profile.getUsername() + " deleted");
         } catch (Exception e) {
-            System.out.println("Error occurred while logging out");
+            System.out.println("Error occurred while deleting profile");
+        }
+    }
+
+    public void editProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        // Mirrors input for editProfile in Client
+        try {
+            String username = (String) inFromUser.readObject();
+            String choice = (String) inFromUser.readObject();
+
+            if (choice.equals("display")) {
+                database.editDisplayName(username, (String) inFromUser.readObject());
+                outToUser.writeObject(database.getProfile(username));
+                outToUser.flush();
+            } else if (choice.equalsIgnoreCase("password")) {
+                database.editPassword(username, (String) inFromUser.readObject());
+                outToUser.writeObject(database.getProfile(username));
+                outToUser.flush();
+            }
+        } catch (Exception e) {
+            System.out.println("Error occurred while deleting profile");
         }
     }
 }
