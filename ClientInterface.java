@@ -2,15 +2,15 @@ import java.io.*;
 import java.util.Scanner;
 
 public interface ClientInterface extends Runnable {
-    public void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    public int blockUser(Profile profile);
-    public int unblockUser(Profile profile);
-    public int friendUser(Profile profile);
-    public int unfriendUser(Profile profile);
-    public String sendMessage(Message message);
-    public String editMessage(Message message, String newMessage);
-    public String deleteMessage(Message message);
-    public int deleteProfile();
-    public void editProfile(String newDisplayName);
+    void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    int blockUser(Profile profile);
+    int unblockUser(Profile profile);
+    int friendUser(Profile profile);
+    int unfriendUser(Profile profile);
+    String sendMessage(Message message);
+    String editMessage(Message message, String newMessage);
+    String deleteMessage(Message message);
+    int deleteProfile();
+    void editProfile(String newDisplayName);
 }

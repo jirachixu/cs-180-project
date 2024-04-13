@@ -1,5 +1,6 @@
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public interface ServerInterface extends Runnable {  // TODO
-    public static void main(String[] args) {
-        // idk if im supposed to put anything here
-    }
+    void createNewUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser);
 }
