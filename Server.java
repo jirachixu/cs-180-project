@@ -165,6 +165,8 @@ public class Server implements ServerInterface {
     }
 
     public void editProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        // FIXME: See comment in Client editProfile
+
         // Mirrors input for editProfile in Client
         try {
             String username = (String) inFromUser.readObject();
@@ -172,18 +174,19 @@ public class Server implements ServerInterface {
 
             if (choice.equals("display")) {
                 database.editDisplayName(username, (String) inFromUser.readObject());
-                outToUser.writeObject(database.getProfile(username));
+
+                Profile newProfile = database.getProfile(username);
+                outToUser.writeObject(newProfile);
+
                 outToUser.flush();
 
             } else if (choice.equalsIgnoreCase("password")) {
-                System.out.println(database.getProfile(username).getPassword());    // TODO
                 database.editPassword(username, (String) inFromUser.readObject());
 
-                System.out.println(database.getProfile(username).getPassword());    // TODO
+                Profile newProfile = database.getProfile(username);
+                outToUser.writeObject(newProfile);
 
-                outToUser.writeObject(database.getProfile(username));
                 outToUser.flush();
-                System.out.println(database.getProfile(username).getPassword());    // TODO
             }
         } catch (Exception e) {
             System.out.println("Error occurred while deleting profile");

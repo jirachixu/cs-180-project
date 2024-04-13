@@ -138,7 +138,7 @@ public class Client implements ClientInterface {
             outToServer.writeBoolean(Boolean.parseBoolean(receiveAll));
             outToServer.flush();
 
-            profile = (Profile) inFromServer.readObject();
+            this.profile = (Profile) inFromServer.readObject();
         } catch (Exception e) {
             System.out.println("An error occurred while trying to create an account");
         }
@@ -149,7 +149,7 @@ public class Client implements ClientInterface {
             outToServer.writeObject("logout");
             outToServer.flush();
 
-            profile = (Profile) inFromServer.readObject();
+            this.profile = (Profile) inFromServer.readObject();
         } catch (Exception e) {
             System.out.println("Failed to Logout");
         }
@@ -228,7 +228,7 @@ public class Client implements ClientInterface {
                 outToServer.writeObject("deleteProfile");
                 outToServer.flush();
 
-                outToServer.writeObject(profile);
+                outToServer.writeObject(this.profile);
                 outToServer.flush();
 
                 logout(inFromServer, outToServer);
@@ -240,6 +240,8 @@ public class Client implements ClientInterface {
 
     public void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
+            // FIXME: Server doesn't always return the updated profile and this past hour has been making my head hurt from trying to find out why cause it still updates correctly in the server
+
             outToServer.writeObject("editProfile");
             outToServer.flush();
 
@@ -262,7 +264,7 @@ public class Client implements ClientInterface {
                 outToServer.writeObject(newDisplay);
                 outToServer.flush();
 
-                profile = (Profile) inFromServer.readObject();    // Receive edited profile
+                this.profile = (Profile) inFromServer.readObject();
 
             } else if (input.equalsIgnoreCase("Password")) {
                 outToServer.writeObject("password");
@@ -270,11 +272,11 @@ public class Client implements ClientInterface {
 
                 String newPassword;
 
-                do {    // Enter old password before editing password
+                do {     // Enter old password before editing password
                     System.out.println("Enter your current password");
                 } while (!scan.nextLine().equals(profile.getPassword()));
 
-                do { // Check valid password
+                do {     // Check valid password
                     System.out.println("Enter your desired password");
                     newPassword = scan.nextLine();
 
@@ -284,11 +286,7 @@ public class Client implements ClientInterface {
                 outToServer.writeObject(newPassword);
                 outToServer.flush();
 
-                System.out.println(profile.getPassword());
-
-                profile = (Profile) inFromServer.readObject();    // Receive edited profile
-
-                System.out.println(profile.getPassword());
+                this.profile = (Profile) inFromServer.readObject();
             }
         } catch (Exception e) {
             System.out.println("Failed to edit account");
