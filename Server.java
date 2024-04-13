@@ -26,7 +26,7 @@ public class Server implements ServerInterface {
                 switch ((String) command) {    // Select operation to perform
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> login(inFromUser, outToUser);
-                    case "logout" -> logout(inFromUser, outToUser);
+                    case "logout" -> logout(outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -144,7 +144,7 @@ public class Server implements ServerInterface {
         }
     }
 
-    public void logout(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+    public void logout(ObjectOutputStream outToUser) {
         try {
             outToUser.writeObject(new Profile());
             outToUser.flush();

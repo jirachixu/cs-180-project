@@ -46,7 +46,7 @@ public class Client implements ClientInterface {
                     case "sendMessage" -> i = 1;
                     case "editMessage" -> i = 2;
                     case "deleteMessage" -> i = 3;
-                    case "logout" -> logout(scan, inFromServer, outToServer);
+                    case "logout" -> logout(inFromServer, outToServer);
                     case "block" -> i = 5;
                     case "unblock" -> i = 6;
                     case "friend" -> i = 7;
@@ -139,7 +139,7 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void logout(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeObject("logout");
             outToServer.flush();
