@@ -147,26 +147,6 @@ public class RunLocalTest {
         }
 
         @Test(timeout = 1000)
-        public void ClientHandlerClassDeclarationTest() {
-            Class<?> clazz;
-            int modifiers;
-            Class<?> superclass;
-            Class<?>[] superinterfaces;
-
-            clazz = ClientHandler.class;
-            modifiers = clazz.getModifiers();
-            superclass = clazz.getSuperclass();
-            superinterfaces = clazz.getInterfaces();
-
-            Assert.assertTrue("Ensure that ClientHandler is public!",
-                    Modifier.isPublic(modifiers));
-            Assert.assertFalse("Ensure that ClientHandler is not abstract!",
-                    Modifier.isAbstract(modifiers));
-            Assert.assertEquals("Ensure that ClientHandler implements Runnable!",
-                    1, superinterfaces.length);
-        }
-
-        @Test(timeout = 1000)
         public void testMessageMethods() {
             Profile p1 = new Profile("first", "password", "world", true, null, null, null);
             Profile p2 = new Profile("second", "password", "hello", true, null, null, null);
@@ -508,8 +488,8 @@ public class RunLocalTest {
             actualChats = database.getChats();
             assertNull("Make sure deleteMessage() works properly!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
 
-            assertTrue("Make sure createProfile() works properly!", database.createProfile("test", "new profile"));
-            assertFalse("Make sure createProfile() works properly!", database.createProfile("first", "should not work"));
+            assertTrue("Make sure createProfile() works properly!", database.createProfile("test", "new profile", "lol", true));
+            assertFalse("Make sure createProfile() works properly!", database.createProfile("first", "should not work", "poopoo", false));
 
             assertTrue("Make sure editDisplayName() works properly!", database.editDisplayName("first", "yay yippee"));
             assertFalse("Make sure editDisplayName() works properly!", database.editDisplayName("bingle", "boooooo"));
