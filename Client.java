@@ -126,9 +126,20 @@ public class Client implements ClientInterface {
             outToServer.writeBoolean(Boolean.parseBoolean(receiveAll));
             outToServer.flush();
 
-            profile = new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
+            profile = (Profile) inFromServer.readObject();
         } catch (Exception e) {
             System.out.println("An error occurred while trying to create an account");
+        }
+    }
+
+    public void logout(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeObject("logout");
+            outToServer.flush();
+
+            profile = new Profile();
+        } catch (Exception e) {
+            System.out.println("Failed to Logout");
         }
     }
 
@@ -198,8 +209,12 @@ public class Client implements ClientInterface {
         }
     }
     public int deleteProfile() {
+
+
+
         return 1;    // TODO
     }
+
     public void editProfile(String newDisplayName) {
         return;    // TODO
     }

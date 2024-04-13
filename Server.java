@@ -32,7 +32,7 @@ public class Server implements ServerInterface {
             inFromUser.close();
             outToUser.close();
         } catch (Exception e) {
-            System.out.println("An error occurred while running");
+            System.out.println("Client disconnected");
         } finally {
             database.outputChat();
             database.outputProfile();
@@ -110,10 +110,12 @@ public class Server implements ServerInterface {
             System.out.println("Awaiting valid receiveAll input");
             receiveAll = inFromUser.readBoolean();
 
-            System.out.println("Received all inputs!");
             database.createProfile(username, password, display, receiveAll);
 
-            System.out.println("Profile successfully created!");
+            outToUser.writeObject(database.getProfile(username));
+            outToUser.flush();
+
+            System.out.println("Profile successfully created and sent to user!");
 
         } catch (Exception e) {
             System.out.println("Error occurred while creating account");

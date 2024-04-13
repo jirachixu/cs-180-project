@@ -134,8 +134,8 @@ public class Database implements DatabaseInterface {
 
     public synchronized boolean createProfile(String username, String password,
                                               String displayName, boolean receiveAll) {
-        Profile newProfile = new Profile(username, password, displayName, receiveAll,
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>()); // The new profile being created
+
+        Profile newProfile = new Profile(username, password, displayName, receiveAll); // The new profile being created
         if (profiles.containsKey(username)) {
             return false;
         }
