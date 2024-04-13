@@ -12,17 +12,13 @@ public class Server implements ServerInterface, Runnable {
     }
 
     public void run() {
-        ObjectInputStream inFromUser;
-        ObjectOutputStream outToUser;
-        Object command;
-
         try {
             // Connect the object streams together
-            outToUser = new ObjectOutputStream(socket.getOutputStream());
+            ObjectOutputStream outToUser= new ObjectOutputStream(socket.getOutputStream());
             outToUser.flush();
-            inFromUser = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream inFromUser = new ObjectInputStream(socket.getInputStream());
 
-            command = inFromUser.readObject();
+            Object command = inFromUser.readObject();
 
             while (command != null) {
                 switch ((String) command) {    // Select operation to perform
@@ -46,6 +42,8 @@ public class Server implements ServerInterface, Runnable {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
+
+        // Load database into server
         String profileIn;
         String chatsIn;
         String profileOut;
@@ -68,11 +66,11 @@ public class Server implements ServerInterface, Runnable {
             chatsOut = scan.nextLine();
         }
 
-        database = new Database(profileIn, chatsIn, profileOut, chatsOut);
+        database = new Database(profileIn, chatsIn, profileOut, chatsOut);    // TODO: Try catch if files do not exist
         database.readProfile();
         database.readChat();
 
-
+        // Open server socket
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
             //noinspection InfiniteLoopStatement
             while (true) {
