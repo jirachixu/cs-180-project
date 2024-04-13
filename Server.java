@@ -18,20 +18,23 @@ public class Server implements ServerInterface {
             outToUser.flush();
             ObjectInputStream inFromUser = new ObjectInputStream(socket.getInputStream());
 
-            Object command = inFromUser.readObject();
 
-            while (command != null) {
+
+            loop :
+            while (true) {
+                Object command = inFromUser.readObject();
                 switch ((String) command) {    // Select operation to perform
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> login(inFromUser, outToUser);
                     case "logout" -> logout(inFromUser, outToUser);
+                    case "exit" -> {break loop;}
                 }
-
-                command = inFromUser.readObject();
             }
 
+            // Exit condition
             inFromUser.close();
             outToUser.close();
+
         } catch (Exception e) {
             System.out.println("Client disconnected");
         } finally {

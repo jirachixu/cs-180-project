@@ -36,6 +36,7 @@ public class Client implements ClientInterface {
                     switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
                         case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
                         case "login" -> login(scan, inFromServer, outToServer);
+                        case "exit" -> {break loop;}
                     }
                 }
 
@@ -45,7 +46,7 @@ public class Client implements ClientInterface {
                     case "sendMessage" -> i = 1;
                     case "editMessage" -> i = 2;
                     case "deleteMessage" -> i = 3;
-                    case "logout" -> i = 4;
+                    case "logout" -> logout(scan, inFromServer, outToServer);
                     case "block" -> i = 5;
                     case "unblock" -> i = 6;
                     case "friend" -> i = 7;
@@ -56,6 +57,12 @@ public class Client implements ClientInterface {
                     default -> System.out.println(i);    // TODO: Update chats
                 }
             }
+
+            // Exit process
+            outToServer.writeObject("exit");
+            outToServer.flush();
+            outToServer.close();
+            inFromServer.close();
 
         } catch (IOException e) {
             System.out.println("Failed to connect to server");    // TODO GUI: Fail to connect error
@@ -208,6 +215,7 @@ public class Client implements ClientInterface {
             System.out.println("An error occurred while trying to login");
         }
     }
+
     public int deleteProfile() {
 
 
