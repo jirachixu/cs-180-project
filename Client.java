@@ -28,17 +28,17 @@ public class Client implements ClientInterface {
 
             profile = new Profile();
 
-            while (profile.getUsername() == null) {    // Loop while account is still empty
-                System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
-                switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
-                    case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
-                    case "login" -> login(scan, inFromServer, outToServer);
-                }
-            }
-
             int i = 0;  // TODO: PLACEHOLDER TO AVOID ERRORS
             loop :
             while (true) {
+                while (profile.getUsername() == null) {    // Loop while account is still empty
+                    System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
+                    switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
+                        case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
+                        case "login" -> login(scan, inFromServer, outToServer);
+                    }
+                }
+
                 System.out.println("Enter action:");    // TODO GUI
                 switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
                     // TODO: Replace with appropriate method calls
@@ -137,7 +137,7 @@ public class Client implements ClientInterface {
             outToServer.writeObject("logout");
             outToServer.flush();
 
-            profile = new Profile();
+            profile = (Profile) inFromServer.readObject();
         } catch (Exception e) {
             System.out.println("Failed to Logout");
         }

@@ -24,6 +24,7 @@ public class Server implements ServerInterface {
                 switch ((String) command) {    // Select operation to perform
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> login(inFromUser, outToUser);
+                    case "logout" -> logout(inFromUser, outToUser);
                 }
 
                 command = inFromUser.readObject();
@@ -137,6 +138,17 @@ public class Server implements ServerInterface {
 
         } catch (Exception e) {
             System.out.println("Error occurred while logging in");
+        }
+    }
+
+    public void logout(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            outToUser.writeObject(new Profile());
+            outToUser.flush();
+            System.out.println("Client logged out");
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while logging out");
         }
     }
 }
