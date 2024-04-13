@@ -284,7 +284,11 @@ public class Client implements ClientInterface {
                 outToServer.writeObject(newPassword);
                 outToServer.flush();
 
+                System.out.println(profile.getPassword());
+
                 profile = (Profile) inFromServer.readObject();    // Receive edited profile
+
+                System.out.println(profile.getPassword());
             }
         } catch (Exception e) {
             System.out.println("Failed to edit account");

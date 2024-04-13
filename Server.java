@@ -98,20 +98,15 @@ public class Server implements ServerInterface {
 
             // Mirrors input for createNewUser in Client
             do {
-                System.out.println("Awaiting valid username input");
                 username = (String) inFromUser.readObject();
                 loop = database.usernameFree(username);
                 outToUser.writeBoolean(loop);
                 outToUser.flush();
             } while(loop);
 
-            System.out.println("Awaiting valid password input");
+
             password = (String) inFromUser.readObject();
-
-            System.out.println("Awaiting valid display name input");
             display = (String) inFromUser.readObject();
-
-            System.out.println("Awaiting valid receiveAll input");
             receiveAll = inFromUser.readBoolean();
 
             database.createProfile(username, password, display, receiveAll);
@@ -179,10 +174,16 @@ public class Server implements ServerInterface {
                 database.editDisplayName(username, (String) inFromUser.readObject());
                 outToUser.writeObject(database.getProfile(username));
                 outToUser.flush();
+
             } else if (choice.equalsIgnoreCase("password")) {
+                System.out.println(database.getProfile(username).getPassword());    // TODO
                 database.editPassword(username, (String) inFromUser.readObject());
+
+                System.out.println(database.getProfile(username).getPassword());    // TODO
+
                 outToUser.writeObject(database.getProfile(username));
                 outToUser.flush();
+                System.out.println(database.getProfile(username).getPassword());    // TODO
             }
         } catch (Exception e) {
             System.out.println("Error occurred while deleting profile");
