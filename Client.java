@@ -59,7 +59,7 @@ public class Client implements ClientInterface {
             }
 
             // Exit process
-            outToServer.writeObject("exit");
+            outToServer.writeUnshared("exit");
             outToServer.flush();
             outToServer.close();
             inFromServer.close();
@@ -76,7 +76,7 @@ public class Client implements ClientInterface {
         String receiveAll;
 
         try {
-            outToServer.writeObject("createNewUser");
+            outToServer.writeUnshared("createNewUser");
             outToServer.flush();
 
             boolean loop = true;
@@ -90,7 +90,7 @@ public class Client implements ClientInterface {
                         continue;
                     }
 
-                    outToServer.writeObject(username);
+                    outToServer.writeUnshared(username);
                     outToServer.flush();
 
                     loop = inFromServer.readBoolean();
@@ -112,7 +112,7 @@ public class Client implements ClientInterface {
                     }
                 } while (!checkValidPassword(password));
 
-                outToServer.writeObject(password);
+                outToServer.writeUnshared(password);
                 outToServer.flush();
 
             } catch (IOException e) {    // If socket is lost exit method
@@ -125,7 +125,7 @@ public class Client implements ClientInterface {
             do {
                 display = scan.nextLine();
             } while (display.isEmpty());
-            outToServer.writeObject(display);
+            outToServer.writeUnshared(display);
             outToServer.flush();
 
             // Get user receive all preference
@@ -146,7 +146,7 @@ public class Client implements ClientInterface {
 
     public void logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            outToServer.writeObject("logout");
+            outToServer.writeUnshared("logout");
             outToServer.flush();
 
             this.profile = (Profile) inFromServer.readObject();
@@ -192,7 +192,7 @@ public class Client implements ClientInterface {
 
     public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {    // Log into an account
         try {
-            outToServer.writeObject("login");
+            outToServer.writeUnshared("login");
             outToServer.flush();
 
             // TODO: Replace with GUI input rather than command line input
@@ -201,7 +201,7 @@ public class Client implements ClientInterface {
                 System.out.println("Please enter username:");
                 username = scan.nextLine();
             } while (username.isEmpty());
-            outToServer.writeObject(username);
+            outToServer.writeUnshared(username);
             outToServer.flush();
 
             String password;
@@ -209,7 +209,7 @@ public class Client implements ClientInterface {
                 System.out.println("Please enter password:");
                 password = scan.nextLine();
             } while (password.isEmpty());
-            outToServer.writeObject(password);
+            outToServer.writeUnshared(password);
             outToServer.flush();
 
             Object o = inFromServer.readObject();
@@ -225,10 +225,10 @@ public class Client implements ClientInterface {
         System.out.println("Are you sure you want to delete this account?");
         if (scan.nextLine().equalsIgnoreCase("yes")) {
             try {
-                outToServer.writeObject("deleteProfile");
+                outToServer.writeUnshared("deleteProfile");
                 outToServer.flush();
 
-                outToServer.writeObject(this.profile);
+                outToServer.writeUnshared(this.profile);
                 outToServer.flush();
 
                 logout(inFromServer, outToServer);
@@ -242,17 +242,17 @@ public class Client implements ClientInterface {
         try {
             // FIXME: Server doesn't always return the updated profile and this past hour has been making my head hurt from trying to find out why cause it still updates correctly in the server
 
-            outToServer.writeObject("editProfile");
+            outToServer.writeUnshared("editProfile");
             outToServer.flush();
 
-            outToServer.writeObject(profile.getUsername());
+            outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
             System.out.println("What would you like to change: Display Name? Password?");
             String input = scan.nextLine();
 
             if (input.equalsIgnoreCase("Display Name")) {
-                outToServer.writeObject("display");
+                outToServer.writeUnshared("display");
                 outToServer.flush();
 
                 String newDisplay;
@@ -261,13 +261,13 @@ public class Client implements ClientInterface {
                     newDisplay = scan.nextLine();
                 } while (newDisplay.isEmpty());
 
-                outToServer.writeObject(newDisplay);
+                outToServer.writeUnshared(newDisplay);
                 outToServer.flush();
 
                 this.profile = (Profile) inFromServer.readObject();
 
             } else if (input.equalsIgnoreCase("Password")) {
-                outToServer.writeObject("password");
+                outToServer.writeUnshared("password");
                 outToServer.flush();
 
                 String newPassword;
@@ -283,7 +283,7 @@ public class Client implements ClientInterface {
                     System.out.println("Enter your desired password again");
                 } while (!scan.nextLine().equals(newPassword) && !checkValidPassword(newPassword));
 
-                outToServer.writeObject(newPassword);
+                outToServer.writeUnshared(newPassword);
                 outToServer.flush();
 
                 this.profile = (Profile) inFromServer.readObject();

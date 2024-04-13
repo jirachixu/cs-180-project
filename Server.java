@@ -111,7 +111,7 @@ public class Server implements ServerInterface {
 
             database.createProfile(username, password, display, receiveAll);
 
-            outToUser.writeObject(database.getProfile(username));
+            outToUser.writeUnshared(database.getProfile(username));
             outToUser.flush();
 
             System.out.println("Profile successfully created and sent to user!");
@@ -129,10 +129,10 @@ public class Server implements ServerInterface {
 
             if (database.login(username, password)){
                 System.out.println("Sending profile " + username);
-                outToUser.writeObject(database.getProfile(username));
+                outToUser.writeUnshared(database.getProfile(username));
             } else {
                 System.out.println("Profile not found");
-                outToUser.writeObject(null);
+                outToUser.writeUnshared(null);
             }
 
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class Server implements ServerInterface {
     public void logout(ObjectOutputStream outToUser) {
         // Mirrors input for logout in Client
         try {
-            outToUser.writeObject(new Profile());
+            outToUser.writeUnshared(new Profile());
             outToUser.flush();
             System.out.println("Client logged out");
 
@@ -176,7 +176,7 @@ public class Server implements ServerInterface {
                 database.editDisplayName(username, (String) inFromUser.readObject());
 
                 Profile newProfile = database.getProfile(username);
-                outToUser.writeObject(newProfile);
+                outToUser.writeUnshared(newProfile);
 
                 outToUser.flush();
 
@@ -184,7 +184,7 @@ public class Server implements ServerInterface {
                 database.editPassword(username, (String) inFromUser.readObject());
 
                 Profile newProfile = database.getProfile(username);
-                outToUser.writeObject(newProfile);
+                outToUser.writeUnshared(newProfile);
 
                 outToUser.flush();
             }
