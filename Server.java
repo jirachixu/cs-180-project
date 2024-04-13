@@ -3,7 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class Server implements ServerInterface, Runnable {
+public class Server implements ServerInterface {
     private final Socket socket;
     static Database database;
 
