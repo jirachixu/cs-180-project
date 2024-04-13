@@ -24,6 +24,7 @@ public class Database implements DatabaseInterface {
     private String chatOut; // File that chats are read out to
     private HashMap<String, Profile> profiles = new HashMap<>(); // HashMap of profiles
     private HashMap<String, Chat> chats = new HashMap<>(); // HashMap (dictionary) of chats
+    private final static Object gatekeeper = new Object();
 
     public Database(String profileIn, String chatIn, String profileOut, String chatOut) {
         this.profileIn = profileIn;
@@ -45,12 +46,16 @@ public class Database implements DatabaseInterface {
 
     // For testing purposes
     public HashMap<String, Profile> getProfiles() {
-        return profiles;
+        synchronized (gatekeeper) {
+            return profiles;
+        }
     }
 
     // For testing purposes
     public HashMap<String, Chat> getChats() {
-        return chats;
+        synchronized (gatekeeper) {
+            return chats;
+        }
     }
 
     // Reads in all the profiles from the profile file.
@@ -58,7 +63,9 @@ public class Database implements DatabaseInterface {
     public boolean readProfile() {
         try {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
-                profiles = (HashMap<String, Profile>) ois.readObject();
+                synchronized (gatekeeper) {
+                    profiles = (HashMap<String, Profile>) ois.readObject();
+                }
             } catch (ClassNotFoundException e) {
                 return false;
             }
@@ -73,7 +80,9 @@ public class Database implements DatabaseInterface {
     public boolean readChat() {
         try {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
-                chats = (HashMap<String, Chat>) ois.readObject();
+                synchronized (gatekeeper) {
+                    chats = (HashMap<String, Chat>) ois.readObject();
+                }
             } catch (ClassNotFoundException e) {
                 return false;
             }
@@ -85,7 +94,9 @@ public class Database implements DatabaseInterface {
 
     public boolean outputProfile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut))) {
-            oos.writeObject(profiles);
+            synchronized (gatekeeper) {
+                oos.writeObject(profiles);
+            }
         } catch (IOException e) {
             return false;
         }
@@ -94,7 +105,9 @@ public class Database implements DatabaseInterface {
 
     public boolean outputChat() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut))) {
-            oos.writeObject(chats);
+            synchronized (gatekeeper) {
+                oos.writeObject(chats);
+            }
         } catch (IOException e) {
             return false;
         }
@@ -102,91 +115,117 @@ public class Database implements DatabaseInterface {
     }
 
     public void clearDatabase() {
-        profiles = null;
-        chats = null;
+        synchronized (gatekeeper) {
+            profiles = null;
+            chats = null;
+        }
     }
 
     public boolean login(String username, String password) {
-        return profiles.containsKey(username) && profiles.get(username).getPassword().equals(password);
-    }
-
-    public synchronized void sendMessage(Message message) {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
-        if (chats.containsKey(key)) {
-            Chat chat = chats.get(key); // The chat to send the message to
-            chat.sendMessage(message);
-        } else {
-            chats.put(key, new Chat(message));
+        synchronized (gatekeeper) {
+            return profiles.containsKey(username) && profiles.get(username).getPassword().equals(password);
         }
     }
 
-    public synchronized void editMessage(Message message, String newContent) throws MessageError {
+    public void sendMessage(Message message) {
         String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
-        Chat chat = chats.get(key); // The chat to edit a message in
-        chat.editMessage(message, newContent);
+
+        synchronized (gatekeeper) {
+            if (chats.containsKey(key)) {
+                Chat chat = chats.get(key); // The chat to send the message to
+                chat.sendMessage(message);
+            } else {
+                chats.put(key, new Chat(message));
+            }
+        }
     }
 
-    public synchronized void deleteMessage(Message message) throws MessageError {
+    public void editMessage(Message message, String newContent) throws MessageError {
         String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
-        Chat chat = chats.get(key); // Chat to delete a message in
-        chat.deleteMessage(message);
+        synchronized (gatekeeper) {
+            Chat chat = chats.get(key); // The chat to edit a message in
+            chat.editMessage(message, newContent);
+        }
     }
 
-    public synchronized boolean createProfile(String username, String password,
-                                              String displayName, boolean receiveAll) {
+    public void deleteMessage(Message message) throws MessageError {
+        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        synchronized (gatekeeper) {
+            Chat chat = chats.get(key); // Chat to delete a message in
+            chat.deleteMessage(message);
+        }
+    }
 
+    public boolean createProfile(String username, String password, String displayName, boolean receiveAll) {
         Profile newProfile = new Profile(username, password, displayName, receiveAll); // The new profile being created
-        if (profiles.containsKey(username)) {
-            return false;
-        }
-        profiles.put(username, newProfile);
-        return true;
-    }
+        synchronized (gatekeeper) {
+            if (profiles.containsKey(username)) {
+                return false;
+            }
 
-    public synchronized boolean editDisplayName(String username, String newDisplayName) {
-        if (profiles.containsKey(username)) {
-            profiles.get(username).setDisplayName(newDisplayName);
+            profiles.put(username, newProfile);
             return true;
         }
-        return false;
+    }
+
+    public boolean editDisplayName(String username, String newDisplayName) {
+        synchronized (gatekeeper) {
+            if (profiles.containsKey(username)) {
+                profiles.get(username).setDisplayName(newDisplayName);
+                return true;
+            }
+            return false;
+        }
     }
 
     // probably doesn't have to be synchronized because nobody's using your account password as you change it
     public boolean editPassword(String username, String newPassword) {
-        if (profiles.containsKey(username)) {
-            profiles.get(username).setPassword(newPassword);
-            return true;
+        synchronized (gatekeeper) {
+            if (profiles.containsKey(username)) {
+                profiles.get(username).setPassword(newPassword);
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
-    public synchronized boolean editReceiveAll(String username, boolean newReceiveAll) {
-        if (profiles.containsKey(username)) {
-            profiles.get(username).setReceiveAll(newReceiveAll);
-            return true;
+    public boolean editReceiveAll(String username, boolean newReceiveAll) {
+        synchronized (gatekeeper) {
+            if (profiles.containsKey(username)) {
+                profiles.get(username).setReceiveAll(newReceiveAll);
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
-    public synchronized boolean deleteProfile(String username) {
-        return profiles.remove(username) != null;
+    public boolean deleteProfile(String username) {
+        synchronized (gatekeeper) {
+            return profiles.remove(username) != null;
+        }
     }
 
-    public synchronized ArrayList<Profile> findProfiles(String toFind) {
+    public ArrayList<Profile> findProfiles(String toFind) {
         ArrayList<Profile> searchResults = new ArrayList<>(); // Results of the search
         String toFindIgnoreCase = toFind.toLowerCase(); // The string to find in lowercase
-        for (Profile p : profiles.values()) {
-            if (p.getUsername().toLowerCase().startsWith(toFindIgnoreCase)
-                    || p.getDisplayName().toLowerCase().startsWith(toFindIgnoreCase)) {
-                searchResults.add(p);
+        synchronized (gatekeeper) {
+            for (Profile p : profiles.values()) {
+                if (p.getUsername().toLowerCase().startsWith(toFindIgnoreCase)
+                        || p.getDisplayName().toLowerCase().startsWith(toFindIgnoreCase)) {
+                    searchResults.add(p);
+                }
             }
         }
         return searchResults;
     }
-    public synchronized boolean usernameFree(String username) {
-        return profiles.get(username) != null;
+    public boolean usernameFree(String username) {
+        synchronized (gatekeeper) {
+            return profiles.get(username) != null;
+        }
     }
-    public synchronized Profile getProfile(String username) {
-        return profiles.get(username);
+    public Profile getProfile(String username) {
+        synchronized (gatekeeper) {
+            return profiles.get(username);
+        }
     }
 }
