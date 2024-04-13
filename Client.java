@@ -170,33 +170,53 @@ public class Client implements ClientInterface {
             return;
         }
     }
-
-
-    public int blockUser(Profile profile) {
-        return 1;    // TODO
-    }
-    public int unblockUser(Profile profile) {
-        return 1;    // TODO
-    }
-    public int friendUser(Profile profile) {
-        return 1;    // TODO
-    }
-    public int unfriendUser(Profile profile) {
-        return 1;    // TODO
-    }
-    public String sendMessage(Message message) {
-        return null;    // TODO
-    }
-    public String editMessage(Message message, String newMessage) {
-        return null;    // TODO
-    }
-    public String deleteMessage(Message message) {
-        return null;    // TODO
-    }
     public int deleteProfile() {
         return 1;    // TODO
     }
     public void editProfile(String newDisplayName) {
         return;    // TODO
+    }
+
+    public int blockUser(Profile profile) {
+        /** Add the profile passed to this.profile and then send this.profile to server to store the updated profile in
+         * the database. Probably can just return void rather than string so updated in interface as well.
+         */
+        return 1;
+    }
+    public int unblockUser(Profile profile) {
+        /** Reference blockUser with the appropriate lists within this.profile
+         */
+        return 1;
+    }
+    public int friendUser(Profile profile) {
+        /** Reference blockUser with the appropriate lists within this.profile
+         */
+        return 1;    // TODO
+    }
+    public int unfriendUser(Profile profile) {
+        /** Reference blockUser with the appropriate lists within this.profile
+         */
+        return 1;    // TODO
+    }
+    public String sendMessage(Message message) {
+        /** Needs to take in the message and send it to the server. The server then needs to find the corresponding chat
+         * and add the new message to the chat. Probably can just return void rather than string so updated in interface
+         * as well.
+         */
+        return null;
+    }
+    public String editMessage(Message message, String newMessage) {
+        /** Needs to take in the old message and send it to the server with the new message. The server then needs to
+         * find the corresponding chat and message and use the edit method. Probably can just return void rather than
+         * string so updated in interface as well.
+         */
+        return null;
+    }
+    public String deleteMessage(Message message) {
+        /** Needs to take in the old message and send it to the server. The server then needs to find the corresponding
+         * chat and message and use the delete method. Probably can just return void rather than string so updated in
+         * interface as well.
+         */
+        return null;
     }
 }
