@@ -35,17 +35,15 @@ public class Server implements ServerInterface, Runnable {
 
             inFromUser.close();
             outToUser.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while running");
         } finally {
             database.outputChat();
             database.outputProfile();
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
         String profileIn;
@@ -75,14 +73,17 @@ public class Server implements ServerInterface, Runnable {
         database.readChat();
 
 
-        ServerSocket serverSocket;
-        serverSocket = new ServerSocket(8080);
-        while (true) {
-            System.out.println("Waiting for server connection");
-            Socket socket = serverSocket.accept();
-            System.out.println("Server connected");
-            Server server = new Server(socket);
-            new Thread(server).start();
+        try (ServerSocket serverSocket = new ServerSocket(8080)) {
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                System.out.println("Waiting for server connection");
+                Socket socket = serverSocket.accept();
+                System.out.println("Server connected");
+                Server server = new Server(socket);
+                new Thread(server).start();
+            }
+        } catch (Exception e) {
+            System.out.println("Server socket failed to start");
         }
     }
 
@@ -117,7 +118,7 @@ public class Server implements ServerInterface, Runnable {
             System.out.println("Profile successfully created!");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error occurred while creating account");
         }
     }
 
@@ -135,7 +136,7 @@ public class Server implements ServerInterface, Runnable {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error occurred while logging in");
         }
     }
 }
