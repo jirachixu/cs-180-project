@@ -52,7 +52,7 @@ public class Client implements ClientInterface {
                     case "friend" -> i = 7;
                     case "unfriend" -> i = 8;
                     case "editProfile" -> i = 9;
-                    case "deleteProfile" -> i = 10;
+                    case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}
                     default -> System.out.println(i);    // TODO: Update chats
                 }
@@ -216,11 +216,21 @@ public class Client implements ClientInterface {
         }
     }
 
-    public int deleteProfile() {
+    public void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        System.out.println("Are you sure you want to delete this account?");
+        if (scan.nextLine().equalsIgnoreCase("yes")) {
+            try {
+                outToServer.writeObject("deleteProfile");
+                outToServer.flush();
 
+                outToServer.writeObject(profile);
+                outToServer.flush();
 
-
-        return 1;    // TODO
+                logout(inFromServer, outToServer);
+            } catch (Exception e) {
+                System.out.println("Failed to delete account");
+            }
+        }
     }
 
     public void editProfile(String newDisplayName) {

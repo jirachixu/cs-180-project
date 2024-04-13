@@ -18,8 +18,6 @@ public class Server implements ServerInterface {
             outToUser.flush();
             ObjectInputStream inFromUser = new ObjectInputStream(socket.getInputStream());
 
-
-
             loop :
             while (true) {
                 Object command = inFromUser.readObject();
@@ -27,6 +25,7 @@ public class Server implements ServerInterface {
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> login(inFromUser, outToUser);
                     case "logout" -> logout(outToUser);
+                    case "deleteProfile" -> deleteProfile(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -45,7 +44,6 @@ public class Server implements ServerInterface {
 
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-
 
         // Load database into server
         String profileIn;
@@ -97,7 +95,8 @@ public class Server implements ServerInterface {
             boolean receiveAll;
             boolean loop;
 
-            do {    // Mirrors username input for account creation
+            // Mirrors input for createNewUser on Client
+            do {
                 System.out.println("Awaiting valid username input");
                 username = (String) inFromUser.readObject();
                 loop = database.usernameFree(username);
@@ -127,6 +126,7 @@ public class Server implements ServerInterface {
     }
 
     public void login(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        // Mirrors input for login on Client
         try {
             String username = (String) inFromUser.readObject();
             String password = (String) inFromUser.readObject();
@@ -145,11 +145,24 @@ public class Server implements ServerInterface {
     }
 
     public void logout(ObjectOutputStream outToUser) {
+        // Mirrors input for logout on Client
         try {
             outToUser.writeObject(new Profile());
             outToUser.flush();
             System.out.println("Client logged out");
 
+        } catch (Exception e) {
+            System.out.println("Error occurred while logging out");
+        }
+    }
+
+    public void deleteProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        // Mirrors input for logout on Client
+        try {
+            Profile profile = (Profile) inFromUser.readObject();
+            database.deleteProfile(profile.getUsername());
+
+            System.out.println("Profile " + profile.getUsername() + " deleted");
         } catch (Exception e) {
             System.out.println("Error occurred while logging out");
         }
