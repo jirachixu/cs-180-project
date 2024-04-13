@@ -1,13 +1,9 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Scanner;
 
 public interface ClientInterface {
-    public void run();
-    public void createNewUser(Scanner scan, BufferedReader br, PrintWriter pw);
-    public void login(Scanner scan, PrintWriter pw, ObjectInputStream ois);
+    public void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     public int blockUser(Profile profile);
     public int unblockUser(Profile profile);
     public int friendUser(Profile profile);

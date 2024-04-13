@@ -3,32 +3,47 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client implements ClientInterface {
+public class Client implements ClientInterface, Runnable {
+    // Object specific to client
     Profile profile;
+    ArrayList<Chat> chats;
 
-    public void run() {    // TODO: Should probably become a run method
-        Scanner scan = new Scanner(System.in);
+    public Client() {
+        profile = null;
+        chats = null;
+    }
+
+    public static void main(String[] args) {
+        new Thread(new Client()).start();
+    }
+
+    public void run() {
+        Scanner scan = new Scanner(System.in);    // TODO: Replace with GUI
+
+        // Network IO objects
         Socket socket;
-        BufferedReader inFromServer;
-        PrintWriter outToServer;
-        ObjectInputStream objectInputStream;
+        ObjectInputStream inFromServer;
+        ObjectOutputStream outToServer;
 
-        // TODO IO: SERVER CONNECTION SHOULD BE FIRST THING DONE ON RUN
-        try {
+
+        try {    // Network connection
             socket = new Socket("localhost",8080);
-            inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            outToServer = new PrintWriter(socket.getOutputStream());
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            inFromServer = new ObjectInputStream(socket.getInputStream());
+            outToServer = new ObjectOutputStream(socket.getOutputStream());
+            outToServer.flush();
+
         } catch (IOException e) {
-            throw new RuntimeException(e);    // TODO: Fail to connect error
+            System.out.println("Failed to connect");
+            return;    // TODO GUI: Fail to connect error
         }
 
         profile = new Profile();    // TODO IO: Should be assigned empty profile by server
 
         while (profile.getUsername() == null) {    // Loop while account is still empty
+            System.out.println("Enter action:");    // TODO GUI: Main interface
             switch (Integer.parseInt(scan.nextLine())) {    // TODO: Replace with action listeners and buttons rather than a switch
                 case 1 -> createNewUser(scan, inFromServer, outToServer);
-                case 2 -> login(scan, outToServer, objectInputStream);
+                case 2 -> login(scan, inFromServer, outToServer);
             }
         }
 
@@ -37,78 +52,81 @@ public class Client implements ClientInterface {
         }    // TODO: Loop of main functionality
     }
 
-    public void createNewUser(Scanner scan, BufferedReader br, PrintWriter pw) {    // Creates an account
+    public void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {    // Creates an account
         String username;
         String password;
         String display;
         String receiveAll;
-
-        pw.println("createNewUser");
-        pw.flush();
-        boolean loop = true;
-
-        do {    // Get and validate username with server
-            try {
-                // TODO: Replace with GUI input rather than command line input
-                System.out.println("Enter your desired username: ");
-                username = scan.nextLine();
-
-                pw.println(username);    // TODO: Move all server communications further down and together?
-                pw.flush();
-
-                loop = !br.readLine().equals("true");
-
-            } catch (IOException e) {    // If socket is lost exit method
-                return;
-            }
-        } while (loop);
-
-        loop = true;
-        do {
-            try {
-                // TODO: Replace with GUI input rather than command line input
-                do { // Check valid password
-                    System.out.println("Enter your desired password");
-                    password = scan.nextLine();
-                } while(checkValidPassword(password));
-
-                pw.println(password);    // TODO: Move all server communications as packet?
-                pw.flush();
-
-                loop = !br.readLine().equals("true");
-
-            } catch (IOException e) {    // If socket is lost exit method
-                return;
-            }
-        } while (loop);
-
-        display = scan.nextLine();
-        pw.println(display);
-        pw.flush();
-
-        do {
-            receiveAll = scan.nextLine();
-        } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
-
-        pw.println(receiveAll);    // TODO: Move all server communications as packet?
-        pw.flush();
-
-        boolean successful;
         try {
-            successful = br.readLine().equals("true");
-        } catch (IOException e) {    // If socket is lost exit method
-            return;
-        }
+            outToServer.writeObject("createNewUser");
+            outToServer.flush();
 
-        if (successful) {    // Might need to make as packets s.t. copy gets put in database as well
-            profile = new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
-        } else {
-            System.out.println("Please try again!");
-            profile = new Profile();
+            boolean loop = true;
+            do {    // Get and validate username with server
+                try {
+                    // TODO: Replace with GUI input rather than command line input
+                    System.out.println("Enter your desired username: ");
+                    username = scan.nextLine();
+
+                    outToServer.writeObject(username);
+                    outToServer.flush();
+
+                    loop = inFromServer.readBoolean();
+
+                } catch (IOException e) {    // If socket is lost exit method
+                    return;
+                }
+            } while (loop);
+
+            loop = true;
+            do {
+                try {
+                    // TODO: Replace with GUI input rather than command line input
+                    do { // Check valid password
+                        System.out.println("Enter your desired password");
+                        password = scan.nextLine();
+                    } while (checkValidPassword(password));
+
+                    outToServer.writeObject(password);
+                    outToServer.flush();
+
+                    loop = inFromServer.readBoolean();
+
+                } catch (IOException e) {    // If socket is lost exit method
+                    return;
+                }
+            } while (loop);
+
+            display = scan.nextLine();
+            outToServer.writeObject(display);
+            outToServer.flush();
+
+            do {
+                receiveAll = scan.nextLine();
+            } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
+
+            outToServer.writeObject(Boolean.parseBoolean(receiveAll));
+            outToServer.flush();
+
+            boolean successful;
+            try {
+                successful = inFromServer.readBoolean();
+            } catch (IOException e) {    // If socket is lost exit method
+                return;
+            }
+
+            if (successful) {    // Might need to make as packets s.t. copy gets put in database as well
+                profile = new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
+            } else {
+                System.out.println("Please try again!");
+                profile = new Profile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private boolean checkValidPassword(String password) {
+    private static boolean checkValidPassword(String password) {    // Helper method to check if a password is valid
         boolean uppercase = false;
         boolean lowercase = false;
         boolean number = false;
@@ -144,30 +162,34 @@ public class Client implements ClientInterface {
     }
 
     // TODO: Fix profile login
-    public void login(Scanner scan, PrintWriter pw, ObjectInputStream ois) {    // Log into an account
-        pw.println("login");
-        pw.flush();
-
-        // TODO: Replace with GUI input rather than command line input
-        System.out.println("Please enter username:");
-        String username = scan.nextLine();
-        System.out.println("Please enter password:");
-        String password = scan.nextLine();
-
-        pw.println(username);
-        pw.flush();
-        pw.println(password);
-        pw.flush();
-
-        Object o;
+    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {    // Log into an account
         try {
-            o = ois.readObject();
-            if (o instanceof Profile) {
-                profile = (Profile) o;
+            outToServer.writeObject("login");
+            outToServer.flush();
+
+            // TODO: Replace with GUI input rather than command line input
+            System.out.println("Please enter username:");
+            String username = scan.nextLine();
+            System.out.println("Please enter password:");
+            String password = scan.nextLine();
+
+            outToServer.writeObject(username);
+            outToServer.flush();
+            outToServer.writeObject(password);
+            outToServer.flush();
+
+            Object o;
+            try {
+                o = inFromServer.readObject();
+                if (o instanceof Profile) {
+                    profile = (Profile) o;
+                }
+            } catch (Exception e) {
+                // TODO: error message
+                return;
             }
         } catch (Exception e) {
-            // TODO: error message
-            return;
+            e.printStackTrace();
         }
     }
     public int deleteProfile() {

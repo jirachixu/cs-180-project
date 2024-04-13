@@ -506,5 +506,10 @@ public class RunLocalTest {
             ArrayList<Profile> actualFind = database.findProfiles("IR");
             assertEquals("Make sure findProfiles() works properly!", 0, actualFind.size());
         }
+
+        @Test(timeout = 1000)
+        public void testNetwork() {
+
+        }
     }
 }
