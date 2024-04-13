@@ -20,40 +20,45 @@ public class Client implements ClientInterface, Runnable {
     public void run() {
         Scanner scan = new Scanner(System.in);    // TODO: Replace with GUI
 
-        // Network IO objects
-        Socket socket;
-        ObjectInputStream inFromServer;
-        ObjectOutputStream outToServer;
-
-
-        try {    // Network connection
-            socket = new Socket("localhost",8080);
-            inFromServer = new ObjectInputStream(socket.getInputStream());
-            outToServer = new ObjectOutputStream(socket.getOutputStream());
+        try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
+            // Setup network connection
+            ObjectInputStream inFromServer = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream outToServer = new ObjectOutputStream(socket.getOutputStream());
             outToServer.flush();
 
+            profile = new Profile();
+
+            while (profile.getUsername() == null) {    // Loop while account is still empty
+                System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
+                switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
+                    case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
+                    case "login" -> login(scan, inFromServer, outToServer);
+                }
+            }
+
+            int i = 0;  // TODO: PLACEHOLDER TO AVOID ERRORS
+            loop :
+            while (true) {
+                System.out.println("Enter action:");    // TODO GUI
+                switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
+                    // TODO: Replace with appropriate method calls
+                    case "sendMessage" -> i = 1;
+                    case "editMessage" -> i = 2;
+                    case "deleteMessage" -> i = 3;
+                    case "logout" -> i = 4;
+                    case "block" -> i = 5;
+                    case "unblock" -> i = 6;
+                    case "friend" -> i = 7;
+                    case "unfriend" -> i = 8;
+                    case "editProfile" -> i = 9;
+                    case "deleteProfile" -> i = 10;
+                    case "exit" -> {break loop;}
+                    default -> System.out.println(i);    // TODO: Update chats
+                }
+            }
+
         } catch (IOException e) {
-            System.out.println("Failed to connect");
-            return;    // TODO GUI: Fail to connect error
-        }
-
-        profile = new Profile();    // TODO IO: Should be assigned empty profile by server
-
-        while (profile.getUsername() == null) {    // Loop while account is still empty
-            System.out.println("New createNewUser or login?");    // TODO GUI: Main interface
-            switch (scan.nextLine()) {    // TODO GUI: Replace with action listeners and buttons rather than a switch
-                case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
-                case "login" -> login(scan, inFromServer, outToServer);
-            }
-        }
-
-        int i;
-        while (true) {
-            System.out.println("Enter action:");    // TODO GUI: Main interface
-            switch (scan.nextLine()) {    // TODO GUI: Replace with action listeners and buttons rather than a switch
-                case "sendMessage" -> i = 1;
-                case "editMessage" -> i = 2;
-            }
+            System.out.println("Failed to connect to server");    // TODO GUI: Fail to connect error
         }
     }
 
@@ -62,6 +67,7 @@ public class Client implements ClientInterface, Runnable {
         String password;
         String display;
         String receiveAll;
+
         try {
             outToServer.writeObject("createNewUser");
             outToServer.flush();
@@ -69,7 +75,7 @@ public class Client implements ClientInterface, Runnable {
             boolean loop = true;
             do {    // Get and validate username with server
                 try {
-                    // TODO: Replace with GUI input rather than command line input
+                    // TODO GUI
                     System.out.println("Enter your desired username: ");
                     username = scan.nextLine();
 
@@ -88,7 +94,7 @@ public class Client implements ClientInterface, Runnable {
             } while (loop);
 
             try {
-                // TODO: Replace with GUI input rather than command line input
+                // TODO GUI
                 do { // Check valid password
                     System.out.println("Enter your desired password");
                     password = scan.nextLine();
@@ -102,7 +108,7 @@ public class Client implements ClientInterface, Runnable {
             }
 
             // Get user display name
-            // TODO: Replace with GUI input rather than command line input
+            // TODO GUI
             System.out.println("What you you liked to be called?");
             do {
                 display = scan.nextLine();
@@ -111,7 +117,7 @@ public class Client implements ClientInterface, Runnable {
             outToServer.flush();
 
             // Get user receive all preference
-            // TODO: Replace with GUI input rather than command line input
+            // TODO GUI
             do {
                 System.out.println("Would you like to receive messages from everyone (true/false)?");
                 receiveAll = scan.nextLine();
@@ -122,7 +128,7 @@ public class Client implements ClientInterface, Runnable {
 
             profile = new Profile(username, password, display, Boolean.parseBoolean(receiveAll));
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while trying to create an account");
         }
     }
 
@@ -188,7 +194,7 @@ public class Client implements ClientInterface, Runnable {
                 profile = (Profile) o;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("An error occurred while trying to login");
         }
     }
     public int deleteProfile() {
