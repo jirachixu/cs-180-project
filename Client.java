@@ -300,6 +300,14 @@ public class Client implements ClientInterface {
         }
     }
 
+    public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        // TODO: Check for any newly updated chats in server
+    }
+
+    public void searchUsers() {
+        // TODO: Search for other users
+    }
+
     public int blockUser(Profile profile) {
         /** Add the profile passed to this.profile and then send this.profile to server to store the updated profile in
          * the database. Probably can just return void rather than string so updated in interface as well.
@@ -321,12 +329,38 @@ public class Client implements ClientInterface {
          */
         return 1;    // TODO
     }
-    public String sendMessage(Message message) {
+    public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("sendMessage");
+            outToServer.flush();
+            Profile receiver;
+
+            do {
+                System.out.println("Who would you like to send a message to?");
+                outToServer.writeUnshared(scan.nextLine());    // Send profile name to server
+                outToServer.flush();
+
+                receiver = (Profile) inFromServer.readObject();
+            } while (receiver == null);
+
+            System.out.println("What would you like to say?");
+            String contents;
+            do {
+                contents = scan.nextLine();    // Get message contents
+            } while(contents.isEmpty());
+
+            // Send the message to the server
+            outToServer.writeObject(new Message(profile, receiver, contents));
+            outToServer.flush();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred when sending the message");
+        }
+
         /** Needs to take in the message and send it to the server. The server then needs to find the corresponding chat
          * and add the new message to the chat. Probably can just return void rather than string so updated in interface
          * as well.
          */
-        return null;
     }
     public String editMessage(Message message, String newMessage) {
         /** Needs to take in the old message and send it to the server with the new message. The server then needs to

@@ -27,6 +27,7 @@ public class Server implements ServerInterface {
                     case "logout" -> logout(outToUser);
                     case "deleteProfile" -> deleteProfile(inFromUser);
                     case "editProfile" -> editProfile(inFromUser, outToUser);
+                    case "sendMessage" -> sendMessage(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -54,10 +55,10 @@ public class Server implements ServerInterface {
 
         System.out.println("Would you like to load default files?");
         if (scan.nextLine().equalsIgnoreCase("yes")) {
-            profileIn = "profileTest.txt";
-            chatsIn = "chatTest.txt";
-            profileOut = "profileTest.txt";
-            chatsOut = "chatTest.txt";
+            profileIn = "profileData";
+            chatsIn = "chatData";
+            profileOut = "profileData";
+            chatsOut = "chatData";
         } else {
             System.out.println("Enter the name of the file from which to read profiles: ");
             profileIn = scan.nextLine();
@@ -69,14 +70,17 @@ public class Server implements ServerInterface {
             chatsOut = scan.nextLine();
         }
 
-        database = new Database(profileIn, chatsIn, profileOut, chatsOut);    // TODO: Try catch if files do not exist
-        database.readProfile();
-        database.readChat();
+        database = new Database(profileIn, chatsIn, profileOut, chatsOut);
+        if (!database.readProfile()) {
+            System.out.println("Server failed to read profiles");
+        } else if (!database.readChat()) {
+            System.out.println("Server failed to read chats");
+        }
 
         // Open server socket
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
             //noinspection InfiniteLoopStatement
-            while (true) {
+            while (true) {    // Starts a new thread for every client
                 System.out.println("Waiting for server connection");
                 Socket socket = serverSocket.accept();
                 System.out.println("Server connected");
@@ -187,6 +191,22 @@ public class Server implements ServerInterface {
             }
         } catch (Exception e) {
             System.out.println("Error occurred while deleting profile");
+        }
+    }
+
+    public void sendMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            Profile receiver;
+            do {    // TODO: Should be unnecessary in phase 3 but needed now for testing
+                receiver = database.getProfile((String) inFromUser.readObject());    // Search for receiver by username
+                outToUser.writeUnshared(receiver);    // Send to sender
+                outToUser.flush();
+            } while (receiver == null);
+
+            database.sendMessage((Message) inFromUser.readObject());    // Receives and sends the messages
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while sending message");
         }
     }
 }

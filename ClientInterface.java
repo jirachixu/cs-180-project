@@ -8,7 +8,7 @@ public interface ClientInterface extends Runnable {
     int unblockUser(Profile profile);
     int friendUser(Profile profile);
     int unfriendUser(Profile profile);
-    String sendMessage(Message message);
+    void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     String editMessage(Message message, String newMessage);
     String deleteMessage(Message message);
     void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
