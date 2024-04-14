@@ -307,10 +307,17 @@ public class Client implements ClientInterface {
 
             chats = (ArrayList<Chat>) inFromServer.readObject();
 
-
             for (Chat chat : chats) {
                 for (Message message : chat.getMessages()) {
-                    System.out.println(message.getSender().getDisplayName() + ": " + message.getContents());
+                    String fromTag;
+                    // Ensure message has the most up-to-date display information
+                    if (message.getSender().getUsername().equals(chat.getProfiles().get(0).getUsername())) {
+                        fromTag = chat.getProfiles().get(0).getDisplayName();
+                    } else {
+                        fromTag = chat.getProfiles().get(1).getDisplayName();
+                    }
+
+                    System.out.println(fromTag + ": " + message.getContents());
                 }
 
                 System.out.println();
@@ -318,7 +325,7 @@ public class Client implements ClientInterface {
 
         } catch (Exception e) {
             System.out.println("An error occurred when updating chats");
-        } // TODO: Check for any newly updated chats in server
+        }
     }
 
     public void searchUsers() {
@@ -367,7 +374,7 @@ public class Client implements ClientInterface {
             } while(contents.isEmpty());
 
             // Send the message to the server
-            outToServer.writeObject(new Message(profile, receiver, contents));
+            outToServer.writeUnshared(new Message(profile, receiver, contents));
             outToServer.flush();
 
         } catch (Exception e) {

@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 
 public class Chat implements ChatInterface {
-    private final ArrayList<Profile> profiles;    // Users in the chat
+    private ArrayList<Profile> profiles;    // Users in the chat
     private ArrayList<Message> messages;    // All messages sent in the chat
     private long timestamp;    // Time of the last sent chat
 
@@ -35,6 +35,11 @@ public class Chat implements ChatInterface {
 
     public ArrayList<Profile> getProfiles() {
         return profiles;
+    }
+
+    public void setProfiles(Profile profile1, Profile profile2) {
+        profiles.set(0, profile1);
+        profiles.set(1, profile2);
     }
 
     public ArrayList<Message> getMessages() {

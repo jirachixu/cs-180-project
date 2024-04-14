@@ -85,7 +85,7 @@ public class Database implements DatabaseInterface {
     }
 
     public boolean outputProfile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut, false))) {
             synchronized (gatekeeper) {
                 oos.writeObject(profiles);
                 return true;
@@ -96,7 +96,7 @@ public class Database implements DatabaseInterface {
     }
 
     public boolean outputChat() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut, false))) {
             synchronized (gatekeeper) {
                 oos.writeObject(chats);
                 return true;
@@ -234,6 +234,13 @@ public class Database implements DatabaseInterface {
         synchronized (gatekeeper) {
             for (String key : chats.keySet()) {
                 if (key.contains(profile.getUsername())) {
+                    Chat toSend = chats.get(key);
+                    Message lastMessage = toSend.getMessages().get(0);
+
+                    // Ensure profiles are the most recent ones in the database for display purposes
+                    toSend.setProfiles(profiles.get(lastMessage.getReceiver().getUsername()),
+                            profiles.get(lastMessage.getSender().getUsername()));
+
                     userChats.add(chats.get(key));
                 }
             }

@@ -201,6 +201,7 @@ public class Server implements ServerInterface {
             Profile profile = (Profile) inFromUser.readObject();
             ArrayList<Chat> usersChats = database.getUserChats(profile);
 
+            outToUser.reset();
             outToUser.writeUnshared(usersChats);
             outToUser.flush();
 
