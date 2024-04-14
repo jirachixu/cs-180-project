@@ -49,7 +49,7 @@ public class Client implements Runnable, ClientInterface {
                     case "logout" -> logout(inFromServer, outToServer);
                     case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
                     case "blockUser" -> blockUser(scan, inFromServer, outToServer);
-                    case "unblockUser" -> i = 6;
+                    case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
                     case "friendUser" -> i = 7;
                     case "unfriendUser" -> i = 8;
                     case "editProfile" -> editProfile(scan, inFromServer, outToServer);
@@ -380,20 +380,74 @@ public class Client implements Runnable, ClientInterface {
             System.out.println("An error occurred while blocking user");
         }
     }
-    public int unblockUser(Profile profile) {
-        /** Reference blockUser with the appropriate lists within this.profile
-         */
-        return 1;
+    public void unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("unblockUser");
+            outToServer.flush();
+
+            outToServer.writeUnshared(profile.getUsername());
+            outToServer.flush();
+
+            System.out.println("Who would you like to unblock?");
+            String toUnblock;
+            do {
+                toUnblock = scan.nextLine();
+            } while(toUnblock.isEmpty());
+
+            outToServer.writeUnshared(toUnblock);
+            outToServer.flush();
+
+            profile = (Profile) inFromServer.readObject();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while unblocking user");
+        }
     }
-    public int friendUser(Profile profile) {
-        /** Reference blockUser with the appropriate lists within this.profile
-         */
-        return 1;    // TODO
+    public void friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("friendUser");
+            outToServer.flush();
+
+            outToServer.writeUnshared(profile.getUsername());
+            outToServer.flush();
+
+            System.out.println("Who would you like to friend?");
+            String toFriend;
+            do {
+                toFriend = scan.nextLine();
+            } while(toFriend.isEmpty());
+
+            outToServer.writeUnshared(toFriend);
+            outToServer.flush();
+
+            profile = (Profile) inFromServer.readObject();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while friending user");
+        }
     }
-    public int unfriendUser(Profile profile) {
-        /** Reference blockUser with the appropriate lists within this.profile
-         */
-        return 1;    // TODO
+    public void unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("unfriendUser");
+            outToServer.flush();
+
+            outToServer.writeUnshared(profile.getUsername());
+            outToServer.flush();
+
+            System.out.println("Who would you like to unfriend?");
+            String toUnfriend;
+            do {
+                toUnfriend = scan.nextLine();
+            } while(toUnfriend.isEmpty());
+
+            outToServer.writeUnshared(toUnfriend);
+            outToServer.flush();
+
+            profile = (Profile) inFromServer.readObject();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while unfriending user");
+        }
     }
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
