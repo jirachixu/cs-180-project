@@ -227,4 +227,18 @@ public class Database implements DatabaseInterface {
             return profiles.get(username);
         }
     }
+
+    public ArrayList<Chat> getUserChats(Profile profile) {
+        ArrayList<Chat> userChats = new ArrayList<Chat>();
+
+        synchronized (gatekeeper) {
+            for (String key : chats.keySet()) {
+                if (key.contains(profile.getUsername())) {
+                    userChats.add(chats.get(key));
+                }
+            }
+        }
+
+        return userChats;
+    }
 }

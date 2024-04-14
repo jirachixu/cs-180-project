@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Server implements ServerInterface {
@@ -28,6 +29,7 @@ public class Server implements ServerInterface {
                     case "deleteProfile" -> deleteProfile(inFromUser);
                     case "editProfile" -> editProfile(inFromUser, outToUser);
                     case "sendMessage" -> sendMessage(inFromUser, outToUser);
+                    case "updateChats" -> updateChats(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -194,6 +196,19 @@ public class Server implements ServerInterface {
         }
     }
 
+    public void updateChats(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            Profile profile = (Profile) inFromUser.readObject();
+            ArrayList<Chat> usersChats = database.getUserChats(profile);
+
+            outToUser.writeUnshared(usersChats);
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while updating chats");
+        }
+    }
+
     public void sendMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
             Profile receiver;
@@ -209,4 +224,6 @@ public class Server implements ServerInterface {
             System.out.println("Error occurred while sending message");
         }
     }
+
+
 }

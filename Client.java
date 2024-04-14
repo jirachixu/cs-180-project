@@ -54,7 +54,7 @@ public class Client implements ClientInterface {
                     case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                     case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}
-                    default -> System.out.println(i);    // TODO: Update chats
+                    default -> updateChats(inFromServer, outToServer);
                 }
             }
 
@@ -302,10 +302,18 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared("updateChats");
             outToServer.flush();
 
+            outToServer.writeUnshared(profile);
+            outToServer.flush();
+
+            chats = (ArrayList<Chat>) inFromServer.readObject();
+
+
             for (Chat chat : chats) {
                 for (Message message : chat.getMessages()) {
                     System.out.println(message.getSender().getDisplayName() + ": " + message.getContents());
                 }
+
+                System.out.println();
             }
 
         } catch (Exception e) {
