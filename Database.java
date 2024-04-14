@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Team Project - Database
@@ -11,7 +13,7 @@ import java.util.HashMap;
  * through the server-side by calling
  * the appropriate classes and methods.
  *
- * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
  *
  * @version April 14, 2024
  *
@@ -127,9 +129,13 @@ public class Database implements DatabaseInterface {
             if (chats.containsKey(key1)) {
                 Chat chat = chats.get(key1); // The chat to send the message to
                 chat.sendMessage(message);
+                chats.remove(key1);
+                chats.put(key1, chat);
             }  else if (chats.containsKey(key2)) {
                 Chat chat = chats.get(key2); // The chat to send the message to
                 chat.sendMessage(message);
+                chats.remove(key2);
+                chats.put(key2, chat);
             } else {
                 chats.put(key1, new Chat(message));
             }
@@ -140,13 +146,17 @@ public class Database implements DatabaseInterface {
         String key1 = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
         String key2 = message.getReceiver().getUsername() + message.getSender().getUsername(); // The key
         synchronized (gatekeeper) {
-            Chat chat = chats.get(key1); // The chat to edit a message in
-
-            if (chat == null) {
-                chat = chats.get(key2);
+            if (chats.containsKey(key1)) {
+                Chat chat = chats.get(key1); // The chat to send the message to
+                chat.editMessage(message, newContent);
+                chats.remove(key1);
+                chats.put(key1, chat);
+            }  else if (chats.containsKey(key2)) {
+                Chat chat = chats.get(key2); // The chat to send the message to
+                chat.editMessage(message, newContent);
+                chats.remove(key2);
+                chats.put(key2, chat);
             }
-
-            chat.editMessage(message, newContent);
         }
     }
 
@@ -154,13 +164,17 @@ public class Database implements DatabaseInterface {
         String key1 = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
         String key2 = message.getReceiver().getUsername() + message.getSender().getUsername(); // The key
         synchronized (gatekeeper) {
-            Chat chat = chats.get(key1); // Chat to delete a message in
-
-            if (chat == null) {
-                chat = chats.get(key2);
+            if (chats.containsKey(key1)) {
+                Chat chat = chats.get(key1); // The chat to send the message to
+                chat.deleteMessage(message);
+                chats.remove(key1);
+                chats.put(key1, chat);
+            }  else if (chats.containsKey(key2)) {
+                Chat chat = chats.get(key2); // The chat to send the message to
+                chat.deleteMessage(message);
+                chats.remove(key2);
+                chats.put(key2, chat);
             }
-
-            chat.deleteMessage(message);
         }
     }
 
@@ -212,14 +226,21 @@ public class Database implements DatabaseInterface {
 
     public boolean deleteProfile(String username) {
         synchronized (gatekeeper) {
-            for (String key : chats.keySet()) {
-                if (key.contains(username)) {
-                    chats.remove(key);
+            if (profiles.containsKey(username)) {
+                // Using an iterator to be able to go over the hashmap without causing errors
+                Iterator<Map.Entry<String, Chat>> iterator = chats.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<String, Chat> entry = iterator.next();
+                    String key = entry.getKey();
+                    if (key.contains(username)) {
+                        iterator.remove();
+                    }
                 }
+                profiles.remove(username);
+                return true;
+            } else {
+                return false;
             }
-
-
-            return profiles.remove(username) != null;
         }
     }
 
@@ -238,7 +259,7 @@ public class Database implements DatabaseInterface {
     }
     public boolean usernameFree(String username) {
         synchronized (gatekeeper) {
-            return profiles.get(username) != null;
+            return profiles.get(username) == null;
         }
     }
     public Profile getProfile(String username) {
@@ -249,11 +270,11 @@ public class Database implements DatabaseInterface {
 
     public ArrayList<Chat> getUserChats(Profile profile) {
         ArrayList<Chat> userChats = new ArrayList<Chat>();
-
         synchronized (gatekeeper) {
             for (String key : chats.keySet()) {
                 if (key.contains(profile.getUsername())) {
                     Chat toSend = chats.get(key);
+                    System.out.println("got one");
 
                     if (!toSend.getMessages().isEmpty()) {
                         Message lastMessage = toSend.getMessages().get(0);
@@ -267,7 +288,8 @@ public class Database implements DatabaseInterface {
                 }
             }
         }
-
+        System.out.println(userChats.get(0).getProfiles().get(0).getUsername());
+        System.out.println(userChats.get(0).getMessages().get(0));
         return userChats;
     }
 

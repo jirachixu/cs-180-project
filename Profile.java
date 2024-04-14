@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * who they are friends with, who they have blocked,
  * and who has requested to be their friend.
  *
- * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
  *
  * @version Mar 31, 2024
  *
@@ -115,10 +115,19 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public boolean addFriend(Profile p) {
+        if (blocked.contains(p)) {
+            return false;
+        }
+        if (friends.contains(p)) {
+            return false;
+        }
         return friends.add(p);
     }
 
     public boolean removeFriend(Profile p) {
+        if (!friends.contains(p)) {
+            return false;
+        }
         return friends.remove(p);
     }
 
@@ -131,6 +140,9 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public boolean unblock(Profile p) {
+        if (!blocked.contains(p)) {
+            return false;
+        }
         return blocked.remove(p);
     }
 

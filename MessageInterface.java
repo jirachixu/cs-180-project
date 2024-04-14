@@ -1,4 +1,6 @@
-public interface MessageInterface {
+import java.io.Serializable;
+
+public interface MessageInterface extends Serializable {
     Profile getSender();
     Profile getReceiver();
     void edit(String contents) throws MessageError;

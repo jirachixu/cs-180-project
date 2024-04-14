@@ -3,7 +3,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client implements Runnable, ClientInterface {
+public class Client implements ClientInterface {
     // Object specific to client
     Profile profile;
     ArrayList<Chat> chats;
