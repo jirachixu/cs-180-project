@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public interface ChatInterface {
+public interface ChatInterface extends Serializable {
     ArrayList<Profile> getProfiles();
     ArrayList<Message> getMessages();
     long getTimestamp();

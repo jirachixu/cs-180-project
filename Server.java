@@ -55,10 +55,10 @@ public class Server implements ServerInterface {
 
         System.out.println("Would you like to load default files?");
         if (scan.nextLine().equalsIgnoreCase("yes")) {
-            profileIn = "profileData";
-            chatsIn = "chatData";
-            profileOut = "profileData";
-            chatsOut = "chatData";
+            profileIn = "profileData.txt";
+            chatsIn = "chatData.txt";
+            profileOut = "profileData.txt";
+            chatsOut = "chatData.txt";
         } else {
             System.out.println("Enter the name of the file from which to read profiles: ");
             profileIn = scan.nextLine();

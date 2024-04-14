@@ -120,14 +120,18 @@ public class Database implements DatabaseInterface {
     }
 
     public void sendMessage(Message message) {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key1 = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key2 = message.getReceiver().getUsername() + message.getSender().getUsername(); // The key
 
         synchronized (gatekeeper) {
-            if (chats.containsKey(key)) {
-                Chat chat = chats.get(key); // The chat to send the message to
+            if (chats.containsKey(key1)) {
+                Chat chat = chats.get(key1); // The chat to send the message to
+                chat.sendMessage(message);
+            }  else if (chats.containsKey(key2)) {
+                Chat chat = chats.get(key2); // The chat to send the message to
                 chat.sendMessage(message);
             } else {
-                chats.put(key, new Chat(message));
+                chats.put(key1, new Chat(message));
             }
         }
     }

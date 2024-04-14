@@ -43,7 +43,7 @@ public class Client implements ClientInterface {
                 System.out.println("Enter action:");    // TODO GUI
                 switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
                     // TODO: Replace with appropriate method calls
-                    case "sendMessage" -> i = 1;
+                    case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
                     case "editMessage" -> i = 2;
                     case "deleteMessage" -> i = 3;
                     case "logout" -> logout(inFromServer, outToServer);
@@ -107,10 +107,7 @@ public class Client implements ClientInterface {
                     password = scan.nextLine();
 
                     System.out.println("Enter your desired password again");
-                    if (!scan.nextLine().equals(password)) {
-                        continue;
-                    }
-                } while (!checkValidPassword(password));
+                } while (!scan.nextLine().equals(password) || !checkValidPassword(password));
 
                 outToServer.writeUnshared(password);
                 outToServer.flush();
@@ -279,7 +276,7 @@ public class Client implements ClientInterface {
                     newPassword = scan.nextLine();
 
                     System.out.println("Enter your desired password again");
-                } while (!scan.nextLine().equals(newPassword) && !checkValidPassword(newPassword));
+                } while (!scan.nextLine().equals(newPassword) || !checkValidPassword(newPassword));
 
                 outToServer.writeUnshared(newPassword);
                 outToServer.flush();
@@ -301,7 +298,19 @@ public class Client implements ClientInterface {
     }
 
     public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        // TODO: Check for any newly updated chats in server
+        try {
+            outToServer.writeUnshared("updateChats");
+            outToServer.flush();
+
+            for (Chat chat : chats) {
+                for (Message message : chat.getMessages()) {
+                    System.out.println(message.getSender().getDisplayName() + ": " + message.getContents());
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("An error occurred when updating chats");
+        } // TODO: Check for any newly updated chats in server
     }
 
     public void searchUsers() {
@@ -356,12 +365,8 @@ public class Client implements ClientInterface {
         } catch (Exception e) {
             System.out.println("An error occurred when sending the message");
         }
-
-        /** Needs to take in the message and send it to the server. The server then needs to find the corresponding chat
-         * and add the new message to the chat. Probably can just return void rather than string so updated in interface
-         * as well.
-         */
     }
+
     public String editMessage(Message message, String newMessage) {
         /** Needs to take in the old message and send it to the server with the new message. The server then needs to
          * find the corresponding chat and message and use the edit method. Probably can just return void rather than

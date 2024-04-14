@@ -14,7 +14,7 @@ import java.util.ArrayList;
  *
  */
 
-public class Chat implements Serializable, ChatInterface {
+public class Chat implements ChatInterface {
     private final ArrayList<Profile> profiles;    // Users in the chat
     private ArrayList<Message> messages;    // All messages sent in the chat
     private long timestamp;    // Time of the last sent chat
