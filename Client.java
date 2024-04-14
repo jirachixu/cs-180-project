@@ -408,18 +408,27 @@ public class Client implements ClientInterface {
         }
     }
 
-    public String editMessage(Message message, String newMessage) {
-        /** Needs to take in the old message and send it to the server with the new message. The server then needs to
-         * find the corresponding chat and message and use the edit method. Probably can just return void rather than
-         * string so updated in interface as well.
-         */
-        return null;
-    }
-    public String deleteMessage(Message message) {
-        /** Needs to take in the old message and send it to the server. The server then needs to find the corresponding
-         * chat and message and use the delete method. Probably can just return void rather than string so updated in
-         * interface as well.
-         */
-        return null;
+    public void deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) {
+        try {
+            if (chatId.isEmpty()) {
+                System.out.println("Chat ID cannot be empty.");
+                return;
+            }
+
+            outToServer.writeUnshared("deleteMessage");
+            outToServer.flush();
+
+            outToServer.writeUnshared(chatId); // Send the ID of the chat
+            outToServer.flush();
+
+            outToServer.writeInt(messageIndex); // Send the index of the message to delete
+            outToServer.flush();
+
+            String response = (String) inFromServer.readObject();
+            System.out.println(response);
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while trying to delete the message: " + e.getMessage());
+        }
     }
 }
