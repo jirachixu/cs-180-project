@@ -47,6 +47,7 @@ public class Client implements ClientInterface {
                     case "editMessage" -> i = 2;
                     case "deleteMessage" -> i = 3;
                     case "logout" -> logout(inFromServer, outToServer);
+                    case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
                     case "block" -> i = 5;
                     case "unblock" -> i = 6;
                     case "friend" -> i = 7;
@@ -307,7 +308,10 @@ public class Client implements ClientInterface {
 
             chats = (ArrayList<Chat>) inFromServer.readObject();
 
+            int j = 0;
             for (Chat chat : chats) {
+                int i = 0;
+                System.out.println("Chat " + j++);
                 for (Message message : chat.getMessages()) {
                     String fromTag;
                     // Ensure message has the most up-to-date display information
@@ -317,7 +321,7 @@ public class Client implements ClientInterface {
                         fromTag = chat.getProfiles().get(1).getDisplayName();
                     }
 
-                    System.out.println(fromTag + ": " + message.getContents());
+                    System.out.println("\t" + i++ + " - " + fromTag + ": " + message.getContents());
                 }
 
                 System.out.println();
@@ -328,7 +332,29 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void searchUsers() {
+    public void searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("searchUsers");
+            outToServer.flush();
+
+            System.out.println("Enter your search query:");
+            String query;
+            do {
+                query = scan.nextLine();
+            } while(query.isEmpty());
+
+            outToServer.writeUnshared(query);
+            outToServer.flush();
+
+            ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
+
+            for (Profile option : results) {
+                System.out.println(option.getDisplayName() + "-" + option.getUsername());
+            }
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while searching for users");
+        }
         // TODO: Search for other users
     }
 

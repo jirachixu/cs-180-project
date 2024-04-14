@@ -28,6 +28,7 @@ public class Server implements ServerInterface {
                     case "logout" -> logout(outToUser);
                     case "deleteProfile" -> deleteProfile(inFromUser);
                     case "editProfile" -> editProfile(inFromUser, outToUser);
+                    case "searchUsers" -> searchUsers(inFromUser, outToUser);
                     case "sendMessage" -> sendMessage(inFromUser, outToUser);
                     case "updateChats" -> updateChats(inFromUser, outToUser);
                     case "exit" -> {break loop;}
@@ -127,6 +128,8 @@ public class Server implements ServerInterface {
 
         } catch (Exception e) {
             System.out.println("Error occurred while creating account");
+        } finally {
+            database.outputProfile();
         }
     }
 
@@ -200,6 +203,19 @@ public class Server implements ServerInterface {
             System.out.println("Error occurred while deleting profile");
         } finally {
             database.outputProfile();
+        }
+    }
+
+    public void searchUsers(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String query = (String) inFromUser.readObject();
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.findProfiles(query));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while searching users");
         }
     }
 
