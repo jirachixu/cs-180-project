@@ -280,4 +280,43 @@ public class Database implements DatabaseInterface {
             }
         }
     }
+
+    public boolean unblockUser(String unblockerUsername, String unblockeeUsername) {
+        synchronized (gatekeeper) {
+            Profile unblocker = profiles.get(unblockerUsername);
+            Profile unblockee = profiles.get(unblockeeUsername);
+
+            if (unblocker == null || unblockee == null) {
+                return false;
+            } else {
+                return unblocker.unblock(unblockee);
+            }
+        }
+    }
+
+    public boolean friendUser(String frienderUsername, String friendeeUsername) {
+        synchronized (gatekeeper) {
+            Profile friender = profiles.get(frienderUsername);
+            Profile friendee = profiles.get(friendeeUsername);
+
+            if (friender == null || friendee == null) {
+                return false;
+            } else {
+                return friender.addFriend(friendee);
+            }
+        }
+    }
+
+    public boolean unfriendUser(String unfrienderUsername, String unfriendeeUsername) {
+        synchronized (gatekeeper) {
+            Profile unfriender = profiles.get(unfrienderUsername);
+            Profile unfriendee = profiles.get(unfriendeeUsername);
+
+            if (unfriender == null || unfriendee == null) {
+                return false;
+            } else {
+                return unfriender.unblock(unfriendee);
+            }
+        }
+    }
 }

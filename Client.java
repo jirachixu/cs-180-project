@@ -48,10 +48,10 @@ public class Client implements Runnable, ClientInterface {
                     case "deleteMessage" -> deleteMessage(scan, outToServer);
                     case "logout" -> logout(inFromServer, outToServer);
                     case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
-                    case "block" -> blockUser(scan, inFromServer, outToServer);
-                    case "unblock" -> i = 6;
-                    case "friend" -> i = 7;
-                    case "unfriend" -> i = 8;
+                    case "blockUser" -> blockUser(scan, inFromServer, outToServer);
+                    case "unblockUser" -> i = 6;
+                    case "friendUser" -> i = 7;
+                    case "unfriendUser" -> i = 8;
                     case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                     case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}

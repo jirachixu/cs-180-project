@@ -118,21 +118,8 @@ public class Profile implements Serializable, ProfileInterface {
         return requests;
     }
 
-    public boolean requestFriend(Profile p) {
-        if (p.getRequests().contains(this) || p.getFriends().contains(this)) {    // Returns false if request sent already or already friends
-            return false;
-        }
-        return p.getRequests().add(this);
-    }
-
-    public boolean acceptRequest(Profile p) {
-        if (requests.contains(p) && !friends.contains(p)) {
-            friends.add(p);
-            p.getFriends().add(this);
-            requests.remove(p);
-            return true;
-        }
-        return false;
+    public boolean addFriend(Profile p) {
+        return friends.add(p);
     }
 
     public boolean removeFriend(Profile p) {

@@ -227,6 +227,21 @@ public class Server implements Runnable, ServerInterface {
             Profile profile = (Profile) inFromUser.readObject();
             ArrayList<Chat> usersChats = database.getUserChats(profile);
 
+            for(int i = usersChats.size() - 1; i >=0; i--) {
+                Chat chat = usersChats.get(i);
+                Profile receiver = chat.getProfiles().get(0);
+
+                if (receiver.equals(profile)) {
+                    receiver = chat.getProfiles().get(1);
+                }
+
+                if (profile.getBlocked().contains(receiver)) {
+                    usersChats.remove(i);
+                } else if (!profile.isReceiveAll() && !profile.getFriends().contains(receiver)) {
+                    usersChats.remove(i);
+                }
+            }
+
             outToUser.reset();
             outToUser.writeUnshared(usersChats);
             outToUser.flush();
