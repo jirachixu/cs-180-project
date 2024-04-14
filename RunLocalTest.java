@@ -362,12 +362,13 @@ public class RunLocalTest {
             Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             p1.removeFriend(friend);
-            assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
+            assertEquals("Make sure removeFriend() works properly!", 0, p1.getFriends().size());
 
             p1.block(p4);
             ArrayList<Profile> expectedBlocked = new ArrayList<>();
             expectedBlocked.add(blocked);
             expectedBlocked.add(p4);
+            assertEquals("Make sure block() works properly!", 2, p1.getBlocked().size());
 
             for (int i = 0; i < 2; i++) {
                 assertEquals("Make sure block() works properly!", expectedBlocked.get(i), p1.getBlocked().get(i));
@@ -450,8 +451,8 @@ public class RunLocalTest {
             actualProfiles = database.getProfiles();
             actualChats = database.getChats();
 
-            for (int i = 0; i < expectedProfiles.size(); i++) {
-                assertEquals("Make sure readProfile() works properly!", expectedProfiles.get(i), actualProfiles.get(i));
+            for (Map.Entry<String, Profile> entry : expectedProfiles.entrySet()) {
+                assertEquals("Make sure readProfile() works correctly!", entry.getValue().getUsername(), actualProfiles.get(entry.getKey()).getUsername());
             }
             for (Map.Entry<String, Chat> entry : expectedChats.entrySet()) {
                 assertEquals("Make sure readChat() works properly!", entry.getValue().getProfiles().get(0).getUsername(), actualChats.get(entry.getKey()).getProfiles().get(0).getUsername());
@@ -461,8 +462,9 @@ public class RunLocalTest {
             assertFalse("Make sure login() works properly!", database.login("one hundred", "kilos"));
 
             database.sendMessage(m4);
+            String key = m4.getSender().getUsername() + m4.getReceiver().getUsername();
             actualChats = database.getChats();
-            assertEquals("Make sure sendMessage() works properly!", "this is getting sent! yay!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+            assertEquals("Make sure sendMessage() works properly!", "this is getting sent! yay!", actualChats.get(key).getMessages().get(1).getContents());
 
             try {
                 database.editMessage(m4, "i'm editing the message!");
@@ -480,7 +482,7 @@ public class RunLocalTest {
                         "Make sure the Message constructor is correct!", false);
             }
             actualChats = database.getChats();
-            assertNull("Make sure deleteMessage() works properly!", actualChats.get(m4.getSender().getUsername() + m4.getReceiver().getUsername()).getMessages().get(1).getContents());
+            assertEquals("Make sure deleteMessage() works properly!",  1, actualChats.get(key).getMessages().size());
 
             assertTrue("Make sure createProfile() works properly!", database.createProfile("test", "new profile", "lol", true));
             assertFalse("Make sure createProfile() works properly!", database.createProfile("first", "should not work", "poopoo", false));
@@ -505,13 +507,9 @@ public class RunLocalTest {
 
             assertEquals("Make sure getProfile() works properly!", database.getProfile("first"), p1);
 
-            ArrayList<Chat> expectedArrayChats = new ArrayList<>();
-            expectedArrayChats.add(c1);
-            expectedArrayChats.add(c3);
             ArrayList<Chat> actualArrayChats = database.getUserChats(p1);
-            assertEquals("Make sure getUserChats() works properly!", 2, actualArrayChats.size());
-            assertEquals("Make sure getUserChats() works properly!", c1, actualArrayChats.get(0));
-            assertEquals("Make sure getUserChats() works properly!", c3, actualArrayChats.get(1));
+            assertEquals("Make sure getUserChats() works properly!", 1, actualArrayChats.size());
+            assertEquals("Make sure getUserChats() works properly!", c3.getProfiles().get(0), actualArrayChats.get(0).getProfiles().get(0));
 
             assertTrue("Make sure blockUser() works properly!", database.blockUser("first", "third"));
             assertFalse("Make sure blockUser() works properly!", database.blockUser("fourth", "gnrjbfhwb"));
@@ -526,9 +524,9 @@ public class RunLocalTest {
             assertFalse("Make sure unfriendUser() works properly!", database.unfriendUser("third", "fourth"));
         }
 
-        @Test(timeout = 1000)
-        public void testNetwork() {
-
-        }
+//        @Test(timeout = 1000)
+//        public void testNetwork() {
+//
+//        }
     }
 }

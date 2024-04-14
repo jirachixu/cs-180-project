@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * who they are friends with, who they have blocked,
  * and who has requested to be their friend.
  *
- * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
  *
  * @version Mar 31, 2024
  *

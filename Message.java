@@ -9,7 +9,7 @@ import java.io.Serializable;
  * whether it has been edited or deleted
  * and when it was sent.
  *
- * @author Jared, Ruiqi, Aneesh, Caasi (lab section 24)
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
  *
  * @version Mar 31, 2024
  *
