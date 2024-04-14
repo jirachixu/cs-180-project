@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Server implements ServerInterface {
+public class Server implements Runnable, ServerInterface {
     private final Socket socket;
     static Database database;
 
@@ -246,6 +246,31 @@ public class Server implements ServerInterface {
 
         } catch (Exception e) {
             System.out.println("Error occurred while sending message");
+        } finally {
+            database.outputChat();
+        }
+    }
+
+    public void editMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String chatId = (String) inFromUser.readObject();
+            Chat chat = database.getChats().get(chatId);
+            Message messageToEdit = chat.getMessages().get((Integer) inFromUser.readObject());
+            database.editMessage(messageToEdit, (String) inFromUser.readObject());
+        } catch (Exception e) {
+            System.out.println("Error occurred while editing message");
+        } finally {
+            database.outputChat();
+        }
+    }
+
+    public void deleteMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String chatId = (String) inFromUser.readObject();
+            Chat chat = database.getChats().get(chatId);
+            database.deleteMessage(chat.getMessages().get((Integer) inFromUser.readObject()));
+        } catch (Exception e) {
+            System.out.println("Error occurred while deleting message");
         } finally {
             database.outputChat();
         }

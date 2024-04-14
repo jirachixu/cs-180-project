@@ -3,7 +3,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client implements ClientInterface {
+public class Client implements Runnable, ClientInterface {
     // Object specific to client
     Profile profile;
     ArrayList<Chat> chats;
@@ -408,6 +408,36 @@ public class Client implements ClientInterface {
         }
     }
 
+    // My attempt at writing an edit message method to hopefully alleviate some workload
+    public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) {
+        try {
+            if (chatId.isEmpty()) {
+                System.out.println("Chat ID cannot be empty.");
+                return;
+            }
+            outToServer.writeUnshared("editMessage");
+            outToServer.flush();
+
+            outToServer.writeUnshared(chatId);
+            outToServer.flush();
+
+            outToServer.writeInt(messageIndex);
+            outToServer.flush();
+
+            System.out.println("What would you like to edit the message to?");
+            String contents;
+            do {
+                contents = scan.nextLine();
+            } while (contents.isEmpty());
+
+            outToServer.writeUnshared(contents);
+            outToServer.flush();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred when editing the message");
+        }
+    }
+
     public void deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) {
         try {
             if (chatId.isEmpty()) {
@@ -424,8 +454,10 @@ public class Client implements ClientInterface {
             outToServer.writeInt(messageIndex); // Send the index of the message to delete
             outToServer.flush();
 
-            String response = (String) inFromServer.readObject();
-            System.out.println(response);
+            // This is currently looking for a response that won't come, so I commented it out
+            // If necessary, you can edit the Database and Chat methods to return booleans
+//            String response = (String) inFromServer.readObject();
+//            System.out.println(response);
 
         } catch (Exception e) {
             System.out.println("An error occurred while trying to delete the message: " + e.getMessage());

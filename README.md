@@ -1,12 +1,31 @@
 # CS 180 Project
 ## How to Run
-Currently, the client side has not been implemented, so this can't be used as a proper app. You can test the server
-side methods and classes which compose the database by running RunLocalTest.java.
+You can test the server side methods and classes which compose the database by running RunLocalTest.java. You can test
+the client side methods and classes by running Client.java.
 
 ## Submission
 Phase 1 was submitted by Jared Bright on Brightspace on 04/01/2024.
+Phase 2 was submitted by - on Brightspace on -.
 
 ## Server-Side Classes
+
+### Server
+The Server class is where the server and all of its functionality is run. The Client class sends its inputs to the
+server, which then sends those inputs to the database to process and get values and then send them back to the client.
+
+#### Fields
+| Field Name | Type            | Description                                                   |
+|------------|-----------------|---------------------------------------------------------------|
+| socket     | final Socket    | The client socket that will be used to create another thread. |
+| database   | static Database | The database that every Server will call back to.             |
+
+#### Methods
+| Method Name                                                               | Return      | Description                                                             |
+|---------------------------------------------------------------------------|-------------|-------------------------------------------------------------------------|
+| run()                                                                     | void        | What runs when the thread is started. Calls other commands as prompted. |
+| createNewUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) | void        | Creates a new Profile using the input from the client.                  |
+| login(ObjectInputStream inFromUser, ObjectOutputStream outToUser)         | void        | Logs in to a Profile using the input from the client.                   |
+| main(String[] args)                                                       | static void | Creates the database and accepts clients in to different threads.       |s
 
 ### Profile
 The Profile class holds the user's information. This controls who can message the user, as well as who is friends with 
@@ -120,7 +139,27 @@ side.
 
 ## Client-Side Classes
 ### Client
+The Client class is responsible for getting GUI inputs from the client and sending them to the server so that it can do
+processing.
+
+#### Fields
+| Field Name | Type             | Description                                     |
+|------------|------------------|-------------------------------------------------|
+| profile    | Profile          | The profile being used for the current client.  |
+| chats      | ArrayList\<Chat> | The chats that the current client is a part of. |
+
+#### Methods
+| Method Name                                                                                                                | Return | Description                           |
+|----------------------------------------------------------------------------------------------------------------------------|--------|---------------------------------------|
+| createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Creates a new Profile for the client. |
+| login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                        | void   | Logs in to a Profile for the client.  |
+| sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void   | Sends a message to a chat.            |
+| editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) | void   | Edits a message in a chat.            |
+| deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Deletes a message in a chat.          |
+| deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Deletes the Profile the client is on. |
+| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void   | Edits the Profile the client is on.   |
 
 ## Testing
 All of these classes are tested in RunLocalTest.java, where all methods are rigorously tested to make sure they function
 properly and also so that they error properly for invalid inputs.
+The Client class also includes a main method so that we could test it without having to test the Network I/O.
