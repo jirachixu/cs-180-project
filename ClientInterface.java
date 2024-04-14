@@ -13,4 +13,7 @@ public interface ClientInterface extends Runnable {
     void deleteMessage(Scanner scan, ObjectOutputStream outToServer);
     void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
 }

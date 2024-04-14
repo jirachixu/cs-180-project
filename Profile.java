@@ -114,10 +114,6 @@ public class Profile implements Serializable, ProfileInterface {
         this.blocked = blocked;
     }
 
-    public ArrayList<Profile> getRequests() {
-        return requests;
-    }
-
     public boolean addFriend(Profile p) {
         return friends.add(p);
     }

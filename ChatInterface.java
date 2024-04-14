@@ -9,4 +9,5 @@ public interface ChatInterface extends Serializable {
     void sendMessage(Message message);
     void editMessage(Message message, String newContents) throws MessageError;
     void deleteMessage(Message message)  throws MessageError;
+    void setProfiles(Profile profile1, Profile profile2);
 }
