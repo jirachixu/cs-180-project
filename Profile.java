@@ -115,10 +115,19 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public boolean addFriend(Profile p) {
+        if (blocked.contains(p)) {
+            return false;
+        }
+        if (friends.contains(p)) {
+            return false;
+        }
         return friends.add(p);
     }
 
     public boolean removeFriend(Profile p) {
+        if (!friends.contains(p)) {
+            return false;
+        }
         return friends.remove(p);
     }
 
@@ -131,6 +140,9 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public boolean unblock(Profile p) {
+        if (!blocked.contains(p)) {
+            return false;
+        }
         return blocked.remove(p);
     }
 

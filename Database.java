@@ -238,7 +238,7 @@ public class Database implements DatabaseInterface {
     }
     public boolean usernameFree(String username) {
         synchronized (gatekeeper) {
-            return profiles.get(username) != null;
+            return profiles.get(username) == null;
         }
     }
     public Profile getProfile(String username) {

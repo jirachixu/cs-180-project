@@ -138,11 +138,11 @@ public class RunLocalTest {
             superclass = clazz.getSuperclass();
             superinterfaces = clazz.getInterfaces();
 
-            Assert.assertTrue("Ensure that ChatServer is public!",
+            Assert.assertTrue("Ensure that Server is public!",
                     Modifier.isPublic(modifiers));
-            Assert.assertFalse("Ensure that ChatServer is not abstract!",
+            Assert.assertFalse("Ensure that Server is not abstract!",
                     Modifier.isAbstract(modifiers));
-            Assert.assertEquals("Ensure that ChatServer implements ServerInterface!",
+            Assert.assertEquals("Ensure that Server implements ServerInterface!",
                     1, superinterfaces.length);
         }
 
@@ -388,6 +388,7 @@ public class RunLocalTest {
             Profile p1 = new Profile("first", "password", "world", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             Profile p2 = new Profile("second", "password", "hello", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             Profile p3 = new Profile("third", "password", "boom", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            Profile p4 = new Profile("fourth", "password", "wiggle", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
             expectedProfiles.put(p1.getUsername(), p1);
             expectedProfiles.put(p2.getUsername(), p2);
@@ -498,6 +499,31 @@ public class RunLocalTest {
 
             ArrayList<Profile> actualFind = database.findProfiles("IR");
             assertEquals("Make sure findProfiles() works properly!", 0, actualFind.size());
+
+            assertTrue("Make sure usernameFree() works properly!", database.usernameFree("googly moogly"));
+            assertFalse("Make sure usernameFree() works properly!", database.usernameFree("first"));
+
+            assertEquals("Make sure getProfile() works properly!", database.getProfile("first"), p1);
+
+            ArrayList<Chat> expectedArrayChats = new ArrayList<>();
+            expectedArrayChats.add(c1);
+            expectedArrayChats.add(c3);
+            ArrayList<Chat> actualArrayChats = database.getUserChats(p1);
+            assertEquals("Make sure getUserChats() works properly!", 2, actualArrayChats.size());
+            assertEquals("Make sure getUserChats() works properly!", c1, actualArrayChats.get(0));
+            assertEquals("Make sure getUserChats() works properly!", c3, actualArrayChats.get(1));
+
+            assertTrue("Make sure blockUser() works properly!", database.blockUser("first", "third"));
+            assertFalse("Make sure blockUser() works properly!", database.blockUser("fourth", "gnrjbfhwb"));
+
+            assertTrue("Make sure unblockUser() works properly!", database.unblockUser("first", "third"));
+            assertFalse("Make sure unblockUser() works properly!", database.unblockUser("dingle", "first"));
+
+            assertTrue("Make sure friendUser() works properly!", database.friendUser("first", "fourth"));
+            assertFalse("Make sure friendUser() works properly!", database.friendUser("second", "womp"));
+
+            assertTrue("Make sure unfriendUser() works properly!", database.unfriendUser("fourth", "first"));
+            assertFalse("Make sure unfriendUser() works properly!", database.unfriendUser("third", "fourth"));
         }
 
         @Test(timeout = 1000)

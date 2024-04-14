@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Server implements Runnable, ServerInterface {
+public class Server implements ServerInterface {
     private final Socket socket;
     static Database database;
 
