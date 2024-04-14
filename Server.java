@@ -91,6 +91,9 @@ public class Server implements ServerInterface {
             }
         } catch (Exception e) {
             System.out.println("Server socket failed to start");
+        } finally {
+            database.outputProfile();
+            database.outputChat();
         }
     }
 
@@ -167,6 +170,8 @@ public class Server implements ServerInterface {
             System.out.println("Profile " + profile.getUsername() + " deleted");
         } catch (Exception e) {
             System.out.println("Error occurred while deleting profile");
+        } finally {
+            database.outputProfile();
         }
     }
 
@@ -193,6 +198,8 @@ public class Server implements ServerInterface {
             }
         } catch (Exception e) {
             System.out.println("Error occurred while deleting profile");
+        } finally {
+            database.outputProfile();
         }
     }
 
@@ -223,8 +230,8 @@ public class Server implements ServerInterface {
 
         } catch (Exception e) {
             System.out.println("Error occurred while sending message");
+        } finally {
+            database.outputChat();
         }
     }
-
-
 }
