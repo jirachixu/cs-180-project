@@ -30,6 +30,8 @@ public class Server implements Runnable, ServerInterface {
                     case "editProfile" -> editProfile(inFromUser, outToUser);
                     case "searchUsers" -> searchUsers(inFromUser, outToUser);
                     case "sendMessage" -> sendMessage(inFromUser, outToUser);
+                    case "editMessage" -> editMessage(inFromUser, outToUser);
+                    case "deleteMessage" -> deleteMessage(inFromUser, outToUser);
                     case "updateChats" -> updateChats(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
@@ -75,9 +77,9 @@ public class Server implements Runnable, ServerInterface {
 
         database = new Database(profileIn, chatsIn, profileOut, chatsOut);
         if (!database.readProfile()) {
-            System.out.println("Server failed to read profiles");
+            System.out.println("Server failed to read profiles. Starting new file of same name");
         } else if (!database.readChat()) {
-            System.out.println("Server failed to read chats");
+            System.out.println("Server failed to read chats. Starting new file of same name");
         }
 
         // Open server socket
@@ -253,10 +255,8 @@ public class Server implements Runnable, ServerInterface {
 
     public void editMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
-            String chatId = (String) inFromUser.readObject();
-            Chat chat = database.getChats().get(chatId);
-            Message messageToEdit = chat.getMessages().get((Integer) inFromUser.readObject());
-            database.editMessage(messageToEdit, (String) inFromUser.readObject());
+            Message toEdit = (Message) inFromUser.readObject();
+            database.editMessage(toEdit, (String) inFromUser.readObject());
         } catch (Exception e) {
             System.out.println("Error occurred while editing message");
         } finally {

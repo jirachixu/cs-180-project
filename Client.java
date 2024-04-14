@@ -44,8 +44,8 @@ public class Client implements Runnable, ClientInterface {
                 switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
                     // TODO: Replace with appropriate method calls
                     case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
-                    case "editMessage" -> i = 2;
-                    case "deleteMessage" -> i = 3;
+                    case "editMessage" -> editMessage(scan, inFromServer, outToServer);
+                    case "deleteMessage" -> deleteMessage(scan, outToServer);
                     case "logout" -> logout(inFromServer, outToServer);
                     case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
                     case "block" -> i = 5;
@@ -355,14 +355,26 @@ public class Client implements Runnable, ClientInterface {
         } catch (Exception e) {
             System.out.println("An error occurred while searching for users");
         }
-        // TODO: Search for other users
     }
 
-    public int blockUser(Profile profile) {
+    public void blockUser(Scanner scan, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("searchUsers");
+            outToServer.flush();
+
+            System.out.println("Who would you like to block?");
+            String query;
+            do {
+                query = scan.nextLine();
+            } while(query.isEmpty());
+
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while blocking user");
+        }
         /** Add the profile passed to this.profile and then send this.profile to server to store the updated profile in
          * the database. Probably can just return void rather than string so updated in interface as well.
          */
-        return 1;
     }
     public int unblockUser(Profile profile) {
         /** Reference blockUser with the appropriate lists within this.profile
@@ -408,20 +420,55 @@ public class Client implements Runnable, ClientInterface {
         }
     }
 
-    // My attempt at writing an edit message method to hopefully alleviate some workload
-    public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) {
+    public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            if (chatId.isEmpty()) {
-                System.out.println("Chat ID cannot be empty.");
-                return;
-            }
             outToServer.writeUnshared("editMessage");
             outToServer.flush();
 
-            outToServer.writeUnshared(chatId);
-            outToServer.flush();
+            // TODO GUI
+            Message toEdit;
+            do {    // Get a valid method from chats
+                int chatIndex;
+                do {
+                    System.out.println("Enter chat index");
+                    try {
+                        chatIndex = Integer.parseInt(scan.nextLine());
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Chat index must be an integer");
+                    }
+                } while (true);
 
-            outToServer.writeInt(messageIndex);
+                int messageIndex;
+                do {
+                    System.out.println("Enter message index");
+                    try {
+                        messageIndex = Integer.parseInt(scan.nextLine());
+
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Chat index must be an integer");
+                    }
+                } while (true);
+
+                try {
+                    toEdit = chats.get(chatIndex).getMessages().get(messageIndex);
+
+                    if (!toEdit.getSender().equals(profile)) {
+                        System.out.println("You can only edit messages you sent!");
+                        toEdit = null;
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Indices must be within bounds");
+                    toEdit = null;
+                }
+            } while (toEdit == null);
+
+            System.out.println("Old message: " + toEdit.getContents());
+
+            outToServer.reset();
+            outToServer.writeUnshared(toEdit);
             outToServer.flush();
 
             System.out.println("What would you like to edit the message to?");
@@ -438,26 +485,54 @@ public class Client implements Runnable, ClientInterface {
         }
     }
 
-    public void deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) {
+    public void deleteMessage(Scanner scan, ObjectOutputStream outToServer) {
         try {
-            if (chatId.isEmpty()) {
-                System.out.println("Chat ID cannot be empty.");
-                return;
-            }
-
             outToServer.writeUnshared("deleteMessage");
             outToServer.flush();
 
-            outToServer.writeUnshared(chatId); // Send the ID of the chat
-            outToServer.flush();
+            // TODO GUI
+            Message toDelete;
+            do {    // Get a valid method from chats
+                int chatIndex;
+                do {
+                    System.out.println("Enter chat index");
+                    try {
+                        chatIndex = Integer.parseInt(scan.nextLine());
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Chat index must be an integer");
+                    }
+                } while (true);
 
-            outToServer.writeInt(messageIndex); // Send the index of the message to delete
-            outToServer.flush();
+                int messageIndex;
+                do {
+                    System.out.println("Enter message index");
+                    try {
+                        messageIndex = Integer.parseInt(scan.nextLine());
 
-            // This is currently looking for a response that won't come, so I commented it out
-            // If necessary, you can edit the Database and Chat methods to return booleans
-//            String response = (String) inFromServer.readObject();
-//            System.out.println(response);
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Chat index must be an integer");
+                    }
+                } while (true);
+
+                try {
+                    toDelete = chats.get(chatIndex).getMessages().get(messageIndex);
+
+                    if (!toDelete.getSender().equals(profile)) {
+                        System.out.println("You can only edit messages you sent!");
+                        toDelete = null;
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Indices must be within bounds");
+                    toDelete = null;
+                }
+            } while (toDelete == null);
+
+            outToServer.reset();
+            outToServer.writeUnshared(toDelete); // Send the message to delete
+            outToServer.flush();
 
         } catch (Exception e) {
             System.out.println("An error occurred while trying to delete the message: " + e.getMessage());

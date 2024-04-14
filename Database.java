@@ -137,17 +137,29 @@ public class Database implements DatabaseInterface {
     }
 
     public void editMessage(Message message, String newContent) throws MessageError {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key1 = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key2 = message.getReceiver().getUsername() + message.getSender().getUsername(); // The key
         synchronized (gatekeeper) {
-            Chat chat = chats.get(key); // The chat to edit a message in
+            Chat chat = chats.get(key1); // The chat to edit a message in
+
+            if (chat == null) {
+                chat = chats.get(key2);
+            }
+
             chat.editMessage(message, newContent);
         }
     }
 
     public void deleteMessage(Message message) throws MessageError {
-        String key = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key1 = message.getSender().getUsername() + message.getReceiver().getUsername(); // The key
+        String key2 = message.getReceiver().getUsername() + message.getSender().getUsername(); // The key
         synchronized (gatekeeper) {
-            Chat chat = chats.get(key); // Chat to delete a message in
+            Chat chat = chats.get(key1); // Chat to delete a message in
+
+            if (chat == null) {
+                chat = chats.get(key2);
+            }
+
             chat.deleteMessage(message);
         }
     }
@@ -200,6 +212,13 @@ public class Database implements DatabaseInterface {
 
     public boolean deleteProfile(String username) {
         synchronized (gatekeeper) {
+            for (String key : chats.keySet()) {
+                if (key.contains(username)) {
+                    chats.remove(key);
+                }
+            }
+
+
             return profiles.remove(username) != null;
         }
     }

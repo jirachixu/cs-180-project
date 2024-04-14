@@ -86,6 +86,7 @@ public class Chat implements ChatInterface {
             throw new MessageError("Message does not exist in Chat");
         } else {
             messages.get(i).delete();
+            messages.remove(i);
         }
     }
 }
