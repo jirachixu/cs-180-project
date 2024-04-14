@@ -59,10 +59,8 @@ public class Chat implements ChatInterface {
         Profile sender = message.getSender(); // Sender of the message
         Profile receiver = message.getReceiver(); // Receiver of the message
 
-        if (receiver.isReceiveAll() || receiver.isFriends(sender)) {
-            messages.add(message);
-            timestamp = System.currentTimeMillis();
-        }
+        messages.add(message);
+        timestamp = System.currentTimeMillis();
     }
 
     // Finds and edits a messages to change the contents of the method. Returns true if successful, returns false if the

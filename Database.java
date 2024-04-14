@@ -254,13 +254,16 @@ public class Database implements DatabaseInterface {
             for (String key : chats.keySet()) {
                 if (key.contains(profile.getUsername())) {
                     Chat toSend = chats.get(key);
-                    Message lastMessage = toSend.getMessages().get(0);
 
-                    // Ensure profiles are the most recent ones in the database for display purposes
-                    toSend.setProfiles(profiles.get(lastMessage.getReceiver().getUsername()),
-                            profiles.get(lastMessage.getSender().getUsername()));
+                    if (!toSend.getMessages().isEmpty()) {
+                        Message lastMessage = toSend.getMessages().get(0);
 
-                    userChats.add(chats.get(key));
+                        // Ensure profiles are the most recent ones in the database for display purposes
+                        toSend.setProfiles(profiles.get(lastMessage.getReceiver().getUsername()),
+                                profiles.get(lastMessage.getSender().getUsername()));
+
+                        userChats.add(chats.get(key));
+                    }
                 }
             }
         }
@@ -315,7 +318,7 @@ public class Database implements DatabaseInterface {
             if (unfriender == null || unfriendee == null) {
                 return false;
             } else {
-                return unfriender.unblock(unfriendee);
+                return unfriender.removeFriend(unfriendee);
             }
         }
     }

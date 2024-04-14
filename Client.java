@@ -50,8 +50,8 @@ public class Client implements Runnable, ClientInterface {
                     case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
                     case "blockUser" -> blockUser(scan, inFromServer, outToServer);
                     case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
-                    case "friendUser" -> i = 7;
-                    case "unfriendUser" -> i = 8;
+                    case "friendUser" -> friendUser(scan, inFromServer, outToServer);
+                    case "unfriendUser" -> unfriendUser(scan, inFromServer, outToServer);
                     case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                     case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}
@@ -380,6 +380,7 @@ public class Client implements Runnable, ClientInterface {
             System.out.println("An error occurred while blocking user");
         }
     }
+
     public void unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("unblockUser");
@@ -403,6 +404,7 @@ public class Client implements Runnable, ClientInterface {
             System.out.println("An error occurred while unblocking user");
         }
     }
+
     public void friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("friendUser");
@@ -426,6 +428,7 @@ public class Client implements Runnable, ClientInterface {
             System.out.println("An error occurred while friending user");
         }
     }
+
     public void unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("unfriendUser");
@@ -449,6 +452,7 @@ public class Client implements Runnable, ClientInterface {
             System.out.println("An error occurred while unfriending user");
         }
     }
+
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("sendMessage");

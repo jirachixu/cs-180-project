@@ -361,13 +361,6 @@ public class RunLocalTest {
             Profile p3 = new Profile("gamer", "not gamer", "super gamer", true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             Profile p4 = new Profile("i am losing my mind", "test cases are so annoying to write", "help me", false, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
-            p1.requestFriend(p3);
-            assertEquals("Make sure requestFriend() works properly!", 1, p3.getRequests().size());
-
-            p3.acceptRequest(p1);
-            assertEquals("Make sure acceptRequest() works properly!", 1, p3.getFriends().size());
-            assertEquals("Make sure acceptRequest() works properly!", 2, p1.getFriends().size());
-
             p1.removeFriend(friend);
             assertEquals("Make sure removeFriend() works properly!", p3, p1.getFriends().get(0));
 

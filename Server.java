@@ -192,16 +192,22 @@ public class Server implements Runnable, ServerInterface {
 
             if (choice.equals("display")) {
                 database.editDisplayName(username, (String) inFromUser.readObject());
+
+                outToUser.reset();
                 outToUser.writeUnshared(database.getProfile(username));
                 outToUser.flush();
 
             } else if (choice.equalsIgnoreCase("password")) {
                 database.editPassword(username, (String) inFromUser.readObject());
+
+                outToUser.reset();
                 outToUser.writeUnshared(database.getProfile(username));
                 outToUser.flush();
 
             } else if (choice.equalsIgnoreCase("receiveAll")) {
                 database.editReceiveAll(username, inFromUser.readBoolean());
+
+                outToUser.reset();
                 outToUser.writeUnshared(database.getProfile(username));
                 outToUser.flush();
             }
@@ -333,7 +339,7 @@ public class Server implements Runnable, ServerInterface {
         try {
             String friender = (String) inFromUser.readObject();
             String toFriend = (String) inFromUser.readObject();
-            database.blockUser(friender, toFriend);
+            database.friendUser(friender, toFriend);
 
             outToUser.reset();
             outToUser.writeUnshared(database.getProfile(friender));
@@ -350,7 +356,7 @@ public class Server implements Runnable, ServerInterface {
         try {
             String unfriender = (String) inFromUser.readObject();
             String toUnfriend = (String) inFromUser.readObject();
-            database.blockUser(unfriender, toUnfriend);
+            database.unfriendUser(unfriender, toUnfriend);
 
             outToUser.reset();
             outToUser.writeUnshared(database.getProfile(unfriender));
