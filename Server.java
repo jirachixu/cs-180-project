@@ -34,6 +34,9 @@ public class Server implements Runnable, ServerInterface {
                     case "deleteMessage" -> deleteMessage(inFromUser, outToUser);
                     case "updateChats" -> updateChats(inFromUser, outToUser);
                     case "blockUser" -> blockUser(inFromUser, outToUser);
+                    case "unblockUser" -> unblockUser(inFromUser, outToUser);
+                    case "friendUser" -> friendUser(inFromUser, outToUser);
+                    case "unfriendUser" -> unfriendUser(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -303,7 +306,58 @@ public class Server implements Runnable, ServerInterface {
             outToUser.flush();
 
         } catch (Exception e) {
-            System.out.println("Error occurred while deleting message");
+            System.out.println("Error occurred while blocking profile");
+        } finally {
+            database.outputProfile();
+        }
+    }
+
+    public void unblockUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String unblocker = (String) inFromUser.readObject();
+            String toUnblock = (String) inFromUser.readObject();
+            database.unblockUser(unblocker, toUnblock);
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.getProfile(unblocker));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while unblocking message");
+        } finally {
+            database.outputProfile();
+        }
+    }
+
+    public void friendUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String friender = (String) inFromUser.readObject();
+            String toFriend = (String) inFromUser.readObject();
+            database.blockUser(friender, toFriend);
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.getProfile(friender));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while friending profile");
+        } finally {
+            database.outputProfile();
+        }
+    }
+
+    public void unfriendUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String unfriender = (String) inFromUser.readObject();
+            String toUnfriend = (String) inFromUser.readObject();
+            database.blockUser(unfriender, toUnfriend);
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.getProfile(unfriender));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while unfriending profile");
         } finally {
             database.outputProfile();
         }
