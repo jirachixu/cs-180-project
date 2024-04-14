@@ -291,9 +291,7 @@ public class Server implements Runnable, ServerInterface {
 
     public void deleteMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
-            String chatId = (String) inFromUser.readObject();
-            Chat chat = database.getChats().get(chatId);
-            database.deleteMessage(chat.getMessages().get((Integer) inFromUser.readObject()));
+            database.deleteMessage((Message) inFromUser.readObject());
         } catch (Exception e) {
             System.out.println("Error occurred while deleting message");
         } finally {
