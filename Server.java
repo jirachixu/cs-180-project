@@ -33,6 +33,7 @@ public class Server implements Runnable, ServerInterface {
                     case "editMessage" -> editMessage(inFromUser, outToUser);
                     case "deleteMessage" -> deleteMessage(inFromUser, outToUser);
                     case "updateChats" -> updateChats(inFromUser, outToUser);
+                    case "blockUser" -> blockUser(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -273,6 +274,23 @@ public class Server implements Runnable, ServerInterface {
             System.out.println("Error occurred while deleting message");
         } finally {
             database.outputChat();
+        }
+    }
+
+    public void blockUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String blocker = (String) inFromUser.readObject();
+            String toBlock = (String) inFromUser.readObject();
+            database.blockUser(blocker, toBlock);
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.getProfile(blocker));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("Error occurred while deleting message");
+        } finally {
+            database.outputProfile();
         }
     }
 }

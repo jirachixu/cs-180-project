@@ -48,7 +48,7 @@ public class Client implements Runnable, ClientInterface {
                     case "deleteMessage" -> deleteMessage(scan, outToServer);
                     case "logout" -> logout(inFromServer, outToServer);
                     case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
-                    case "block" -> i = 5;
+                    case "block" -> blockUser(scan, inFromServer, outToServer);
                     case "unblock" -> i = 6;
                     case "friend" -> i = 7;
                     case "unfriend" -> i = 8;
@@ -357,24 +357,28 @@ public class Client implements Runnable, ClientInterface {
         }
     }
 
-    public void blockUser(Scanner scan, ObjectOutputStream outToServer) {
+    public void blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            outToServer.writeUnshared("searchUsers");
+            outToServer.writeUnshared("blockUser");
+            outToServer.flush();
+
+            outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
             System.out.println("Who would you like to block?");
-            String query;
+            String toBlock;
             do {
-                query = scan.nextLine();
-            } while(query.isEmpty());
+                toBlock = scan.nextLine();
+            } while(toBlock.isEmpty());
 
+            outToServer.writeUnshared(toBlock);
+            outToServer.flush();
+
+            profile = (Profile) inFromServer.readObject();
 
         } catch (Exception e) {
             System.out.println("An error occurred while blocking user");
         }
-        /** Add the profile passed to this.profile and then send this.profile to server to store the updated profile in
-         * the database. Probably can just return void rather than string so updated in interface as well.
-         */
     }
     public int unblockUser(Profile profile) {
         /** Reference blockUser with the appropriate lists within this.profile

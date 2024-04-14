@@ -267,4 +267,17 @@ public class Database implements DatabaseInterface {
 
         return userChats;
     }
+
+    public boolean blockUser(String blockerUsername, String blockeeUsername) {
+        synchronized (gatekeeper) {
+            Profile blocker = profiles.get(blockerUsername);
+            Profile blockee = profiles.get(blockeeUsername);
+
+            if (blocker == null || blockee == null) {
+                return false;
+            } else {
+                return blocker.block(blockee);
+            }
+        }
+    }
 }
