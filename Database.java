@@ -61,57 +61,49 @@ public class Database implements DatabaseInterface {
     // Reads in all the profiles from the profile file.
     // I'm assuming profiles are written in with ObjectInputStream.
     public boolean readProfile() {
-        try {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
-                synchronized (gatekeeper) {
-                    profiles = (HashMap<String, Profile>) ois.readObject();
-                }
-            } catch (ClassNotFoundException e) {
-                return false;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(profileIn))) {
+            synchronized (gatekeeper) {
+                profiles = (HashMap<String, Profile>) ois.readObject();
+                return true;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
-        return true;
     }
 
     // Reads in all the chats from the chat file.
     // I'm assuming chats are written in with ObjectInputStream.
     public boolean readChat() {
-        try {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
-                synchronized (gatekeeper) {
-                    chats = (HashMap<String, Chat>) ois.readObject();
-                }
-            } catch (ClassNotFoundException e) {
-                return false;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(chatIn))) {
+            synchronized (gatekeeper) {
+                chats = (HashMap<String, Chat>) ois.readObject();
+                return true;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
-        return true;
     }
 
     public boolean outputProfile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(profileOut))) {
             synchronized (gatekeeper) {
                 oos.writeObject(profiles);
+                return true;
             }
         } catch (IOException e) {
             return false;
         }
-        return true;
     }
 
     public boolean outputChat() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(chatOut))) {
             synchronized (gatekeeper) {
                 oos.writeObject(chats);
+                return true;
             }
         } catch (IOException e) {
             return false;
         }
-        return true;
     }
 
     public void clearDatabase() {
@@ -161,10 +153,10 @@ public class Database implements DatabaseInterface {
         synchronized (gatekeeper) {
             if (profiles.containsKey(username)) {
                 return false;
+            } else {
+                profiles.put(username, newProfile);
+                return true;
             }
-
-            profiles.put(username, newProfile);
-            return true;
         }
     }
 
@@ -173,8 +165,9 @@ public class Database implements DatabaseInterface {
             if (profiles.containsKey(username)) {
                 profiles.get(username).setDisplayName(newDisplayName);
                 return true;
+            } else {
+                return false;
             }
-            return false;
         }
     }
 
@@ -184,8 +177,9 @@ public class Database implements DatabaseInterface {
             if (profiles.containsKey(username)) {
                 profiles.get(username).setPassword(newPassword);
                 return true;
+            } else {
+                return false;
             }
-            return false;
         }
     }
 
@@ -194,8 +188,9 @@ public class Database implements DatabaseInterface {
             if (profiles.containsKey(username)) {
                 profiles.get(username).setReceiveAll(newReceiveAll);
                 return true;
+            } else {
+                return false;
             }
-            return false;
         }
     }
 

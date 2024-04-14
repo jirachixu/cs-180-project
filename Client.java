@@ -228,7 +228,7 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared("deleteProfile");
                 outToServer.flush();
 
-                outToServer.writeUnshared(this.profile);
+                outToServer.writeUnshared(profile);
                 outToServer.flush();
 
                 logout(inFromServer, outToServer);
@@ -240,15 +240,13 @@ public class Client implements ClientInterface {
 
     public void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            // FIXME: Server doesn't always return the updated profile and this past hour has been making my head hurt from trying to find out why cause it still updates correctly in the server
-
             outToServer.writeUnshared("editProfile");
             outToServer.flush();
 
             outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
-            System.out.println("What would you like to change: Display Name? Password?");
+            System.out.println("What would you like to change: Display Name? Password? Receive All?");
             String input = scan.nextLine();
 
             if (input.equalsIgnoreCase("Display Name")) {
@@ -264,7 +262,7 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(newDisplay);
                 outToServer.flush();
 
-                this.profile = (Profile) inFromServer.readObject();
+                profile = (Profile) inFromServer.readObject();
 
             } else if (input.equalsIgnoreCase("Password")) {
                 outToServer.writeUnshared("password");
@@ -286,7 +284,16 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(newPassword);
                 outToServer.flush();
 
-                this.profile = (Profile) inFromServer.readObject();
+                profile = (Profile) inFromServer.readObject();
+            } else if (input.equalsIgnoreCase("Receive All")) {
+                outToServer.writeUnshared("receiveAll");
+                outToServer.flush();
+
+                System.out.println("Would you like to receive messages from everyone (true/false)?");
+                outToServer.writeBoolean(Boolean.parseBoolean(scan.nextLine()));
+                outToServer.flush();
+
+                profile = (Profile) inFromServer.readObject();
             }
         } catch (Exception e) {
             System.out.println("Failed to edit account");

@@ -25,7 +25,7 @@ public class Server implements ServerInterface {
                     case "createNewUser" -> createNewUser(inFromUser, outToUser);
                     case "login" -> login(inFromUser, outToUser);
                     case "logout" -> logout(outToUser);
-                    case "deleteProfile" -> deleteProfile(inFromUser, outToUser);
+                    case "deleteProfile" -> deleteProfile(inFromUser);
                     case "editProfile" -> editProfile(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
@@ -152,7 +152,7 @@ public class Server implements ServerInterface {
         }
     }
 
-    public void deleteProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+    public void deleteProfile(ObjectInputStream inFromUser) {
         // Mirrors input for deleteProfile in Client
         try {
             Profile profile = (Profile) inFromUser.readObject();
@@ -165,8 +165,6 @@ public class Server implements ServerInterface {
     }
 
     public void editProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
-        // FIXME: See comment in Client editProfile
-
         // Mirrors input for editProfile in Client
         try {
             String username = (String) inFromUser.readObject();
@@ -174,18 +172,17 @@ public class Server implements ServerInterface {
 
             if (choice.equals("display")) {
                 database.editDisplayName(username, (String) inFromUser.readObject());
-
-                Profile newProfile = database.getProfile(username);
-                outToUser.writeUnshared(newProfile);
-
+                outToUser.writeUnshared(database.getProfile(username));
                 outToUser.flush();
 
             } else if (choice.equalsIgnoreCase("password")) {
                 database.editPassword(username, (String) inFromUser.readObject());
+                outToUser.writeUnshared(database.getProfile(username));
+                outToUser.flush();
 
-                Profile newProfile = database.getProfile(username);
-                outToUser.writeUnshared(newProfile);
-
+            } else if (choice.equalsIgnoreCase("receiveAll")) {
+                database.editReceiveAll(username, inFromUser.readBoolean());
+                outToUser.writeUnshared(database.getProfile(username));
                 outToUser.flush();
             }
         } catch (Exception e) {
