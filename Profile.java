@@ -12,7 +12,7 @@ import java.util.ArrayList;
  *
  * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
  *
- * @version Mar 31, 2024
+ * @version April 14, 2024
  *
  */
 
@@ -23,7 +23,6 @@ public class Profile implements Serializable, ProfileInterface {
     private boolean receiveAll; // Whether they can receive messages from everyone, or just friends
     private ArrayList<Profile> friends; // Their friends
     private ArrayList<Profile> blocked; // Who they have blocked (cannot send or receive messages)
-    private ArrayList<Profile> requests; // Who has requested to be their friend
 
     public Profile(String username, String password, String displayName, boolean receiveAll,
                    ArrayList<Profile> friends, ArrayList<Profile> blocked, ArrayList<Profile> requests) {
@@ -33,7 +32,6 @@ public class Profile implements Serializable, ProfileInterface {
         this.receiveAll = receiveAll;
         this.friends = friends;
         this.blocked = blocked;
-        this.requests = requests;
     }
 
     public Profile(String username, String password, String displayName, boolean receiveAll) {
@@ -43,7 +41,6 @@ public class Profile implements Serializable, ProfileInterface {
         this.receiveAll = receiveAll;
         this.friends = new ArrayList<Profile>();
         this.blocked = new ArrayList<Profile>();
-        this.requests = new ArrayList<Profile>();
     }
 
     public Profile(String username) {
@@ -53,7 +50,6 @@ public class Profile implements Serializable, ProfileInterface {
         this.receiveAll = false;
         this.friends = null;
         this.blocked = null;
-        this.requests = null;
     }
 
     public Profile() {
@@ -63,7 +59,6 @@ public class Profile implements Serializable, ProfileInterface {
         this.receiveAll = false;
         this.friends = null;
         this.blocked = null;
-        this.requests = null;
     }
 
     public String getUsername() {

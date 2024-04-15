@@ -68,6 +68,7 @@ the user and who is blocked by the user. This is used by the Chat, Message, and 
 | setDisplayName(String displayName)      | void                | Sets the display name.                                                       |
 | isReceiveAll()                          | boolean             | Gets whether the profile can receive messages from everyone or just friends. |
 | getFriends()                            | ArrayList\<Profile> | Gets the profile's friends.                                                  |
+| setReceiveAll(boolean receiveAll)       | void                | Sets the receive all status of a profile                                     |
 | setFriends(ArrayList\<Profile> friends) | void                | Sets the profile's friends.                                                  |
 | getBlocked()                            | ArrayList\<Profile> | Gets the profile's blocked profiles.                                         |
 | setBlocked(ArrayList\<Profile> blocked) | void                | Sets the profile's blocked profiles.                                         |
@@ -121,6 +122,7 @@ by the Database class.
 | Method Name                                                          | Return              | Description                                                                |
 |----------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------|
 | getProfiles()                                                        | ArrayList\<Profile> | Gets all the profiles in the chat.                                         |
+| setProfiles(Profile profile1, Profile profile2)                      | void                | Sets the profiles in the chat.                                             |
 | getMessages()                                                        | ArrayList\<Message> | Gets all the messages in the chat.                                         |
 | getTimestamp()                                                       | long                | Gets the current timestamp of the chat (when the latest message was sent). |
 | matchesProfiles(Profile profile1, Profile profile2)                  | boolean             | Checks if the two given profiles are in the profiles for the chat.         |
