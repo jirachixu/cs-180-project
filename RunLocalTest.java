@@ -399,6 +399,12 @@ public class RunLocalTest {
             expectedProfiles.put(p3.getUsername(), p3);
             expectedProfiles.put(p4.getUsername(), p4);
 
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("profileTest.txt"))){
+                oos.writeObject(expectedProfiles);
+            } catch (Exception e) {
+                Assert.fail("Failed to open file");
+            }
+
             Message m1 = null;
             Message m2 = null;
             Message m3 = null;
@@ -426,6 +432,12 @@ public class RunLocalTest {
             expectedChats.put(c1.getProfiles().get(0).getUsername() + c1.getProfiles().get(1).getUsername(), c1);
             expectedChats.put(c2.getProfiles().get(0).getUsername() + c2.getProfiles().get(1).getUsername(), c2);
             expectedChats.put(c3.getProfiles().get(0).getUsername() + c3.getProfiles().get(1).getUsername(), c3);
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chatTest.txt"))){
+                oos.writeObject(expectedChats);
+            } catch (Exception e) {
+                Assert.fail("Failed to open file");
+            }
 
             Database database = new Database("profileTest.txt", "chatTest.txt", "profileTest.txt", "chatTest.txt");
 
