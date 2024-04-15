@@ -110,8 +110,8 @@ public class Database implements DatabaseInterface {
 
     public void clearDatabase() {
         synchronized (gatekeeper) {
-            profiles = null;
-            chats = null;
+            profiles = new HashMap<>();
+            chats = new HashMap<>();
         }
     }
 
@@ -257,11 +257,13 @@ public class Database implements DatabaseInterface {
         }
         return searchResults;
     }
+
     public boolean usernameFree(String username) {
         synchronized (gatekeeper) {
             return profiles.get(username) == null;
         }
     }
+
     public Profile getProfile(String username) {
         synchronized (gatekeeper) {
             return profiles.get(username);

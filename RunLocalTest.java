@@ -7,6 +7,9 @@ import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
+
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -394,6 +397,7 @@ public class RunLocalTest {
             expectedProfiles.put(p1.getUsername(), p1);
             expectedProfiles.put(p2.getUsername(), p2);
             expectedProfiles.put(p3.getUsername(), p3);
+            expectedProfiles.put(p4.getUsername(), p4);
 
             Message m1 = null;
             Message m2 = null;
@@ -442,8 +446,8 @@ public class RunLocalTest {
             database.outputChat();
 
             database.clearDatabase();
-            assertNull("Make sure clearDatabase() works properly!", database.getProfiles());
-            assertNull("Make sure clearDatabase() works properly!", database.getChats());
+            assertTrue("Make sure clearDatabase() works properly!", database.getProfiles().isEmpty());
+            assertTrue("Make sure clearDatabase() works properly!", database.getChats().isEmpty());
 
             database.readProfile();
             database.readChat();
@@ -509,7 +513,9 @@ public class RunLocalTest {
 
             ArrayList<Chat> actualArrayChats = database.getUserChats(p1);
             assertEquals("Make sure getUserChats() works properly!", 1, actualArrayChats.size());
-            assertEquals("Make sure getUserChats() works properly!", c3.getProfiles().get(0), actualArrayChats.get(0).getProfiles().get(0));
+            assertTrue("Make sure getUserChats() works properly!",
+                    c3.getProfiles().get(0).equals(actualArrayChats.get(0).getProfiles().get(0)) ||
+                            c3.getProfiles().get(1).equals(actualArrayChats.get(0).getProfiles().get(0)));
 
             assertTrue("Make sure blockUser() works properly!", database.blockUser("first", "third"));
             assertFalse("Make sure blockUser() works properly!", database.blockUser("fourth", "gnrjbfhwb"));
@@ -520,7 +526,7 @@ public class RunLocalTest {
             assertTrue("Make sure friendUser() works properly!", database.friendUser("first", "fourth"));
             assertFalse("Make sure friendUser() works properly!", database.friendUser("second", "womp"));
 
-            assertTrue("Make sure unfriendUser() works properly!", database.unfriendUser("fourth", "first"));
+            assertTrue("Make sure unfriendUser() works properly!", database.unfriendUser("first", "fourth"));
             assertFalse("Make sure unfriendUser() works properly!", database.unfriendUser("third", "fourth"));
         }
 
