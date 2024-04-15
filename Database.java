@@ -69,6 +69,7 @@ public class Database implements DatabaseInterface {
                 return true;
             }
         } catch (Exception e) {
+            profiles = new HashMap<String, Profile>();
             return false;
         }
     }
@@ -82,6 +83,7 @@ public class Database implements DatabaseInterface {
                 return true;
             }
         } catch (Exception e) {
+            chats = new HashMap<String, Chat>();
             return false;
         }
     }
@@ -273,21 +275,25 @@ public class Database implements DatabaseInterface {
     public ArrayList<Chat> getUserChats(Profile profile) {
         ArrayList<Chat> userChats = new ArrayList<Chat>();
         synchronized (gatekeeper) {
-            for (String key : chats.keySet()) {
-                if (key.contains(profile.getUsername())) {
-                    Chat toSend = chats.get(key);
-                    System.out.println("got one");
+            if (!chats.isEmpty()) {
+                for (String key : chats.keySet()) {
+                    if (key.contains(profile.getUsername())) {
+                        Chat toSend = chats.get(key);
+                        System.out.println("got one");
 
-                    if (!toSend.getMessages().isEmpty()) {
-                        Message lastMessage = toSend.getMessages().get(0);
+                        if (!toSend.getMessages().isEmpty()) {
+                            Message lastMessage = toSend.getMessages().get(0);
 
-                        // Ensure profiles are the most recent ones in the database for display purposes
-                        toSend.setProfiles(profiles.get(lastMessage.getReceiver().getUsername()),
-                                profiles.get(lastMessage.getSender().getUsername()));
+                            // Ensure profiles are the most recent ones in the database for display purposes
+                            toSend.setProfiles(profiles.get(lastMessage.getReceiver().getUsername()),
+                                    profiles.get(lastMessage.getSender().getUsername()));
 
-                        userChats.add(chats.get(key));
+                            userChats.add(chats.get(key));
+                        }
                     }
                 }
+            } else {
+                return userChats;
             }
         }
         System.out.println(userChats.get(0).getProfiles().get(0).getUsername());
