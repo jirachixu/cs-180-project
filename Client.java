@@ -3,6 +3,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Team Project - Client
+ *
+ * This class is the class that interacts with the user. All methods are connected directly into methods within Server
+ * in order to handle network IO.
+ *
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
+ *
+ * @version April 14, 2024
+ *
+ */
 public class Client implements ClientInterface {
     // Object specific to client
     Profile profile;

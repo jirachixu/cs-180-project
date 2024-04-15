@@ -143,23 +143,38 @@ side.
 | chats      | ArrayList\<Chat>    | ArrayList of chats in the database    |
 
 #### Methods
-| Method Name                             | Return            | Description                                                                                     |
-|-----------------------------------------|-------------------|-------------------------------------------------------------------------------------------------|
-| readProfile()                           | boolean           | Reads in all of the profiles from the profile file (profileIn).                                 |
-| readChat()                              | boolean           | Reads in all of the chats from the chat file (chatIn).                                          |
-| outputProfile()                         | boolean           | Outputs all of the profiles to the profileOut file.                                             |
-| outputChat()                            | boolean           | Outputs all of the chats to the chatOut file.                                                   |
-| login(String username, String password) | boolean           | If the username and password match any of the profiles, returns true. Otherwise, returns false. |
-| sendMessage(Message message)            | synchronized void | Sends a message to a chat between two profiles.                                                 |
-| editMessage(Message message)            | synchronized void | Edits a message in a chat between two profiles.                                                 |
-| deleteMessage(Message message)          | synchronized void | Deletes a message in a chat between two profiles.                                               |
-
+| Method Name                                                                             | Return             | Description                                                                                     |
+|-----------------------------------------------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------|
+| readProfile()                                                                           | boolean            | Reads in all of the profiles from the profile file (profileIn).                                 |
+| readChat()                                                                              | boolean            | Reads in all of the chats from the chat file (chatIn).                                          |
+| outputProfile()                                                                         | boolean            | Outputs all of the profiles to the profileOut file.                                             |
+| outputChat()                                                                            | boolean            | Outputs all of the chats to the chatOut file.                                                   |
+| clearDatabase()                                                                         | void               | Sets database contents to empty arraylists                                                      |
+| login(String username, String password)                                                 | boolean            | If the username and password match any of the profiles, returns true. Otherwise, returns false. |
+| sendMessage(Message message)                                                            | void               | Sends a message to a chat between two profiles.                                                 |
+| editMessage(Message message)                                                            | void               | Edits a message in a chat between two profiles.                                                 |
+| deleteMessage(Message message)                                                          | void               | Deletes a message in a chat between two profiles.                                               |
+| createProfile(String username, String password, String displayName, boolean receiveAll) | boolean            | Creates a profile in the database                                                               |
+| editDisplayName(String username, String newDisplayName)                                 | boolean            | Edits the display name of a profile within the database                                         |
+| editPassword(String username, String newPassword)                                       | boolean            | Edits the password of a profile within the database                                             |
+| editReceiveAll(String username, boolean newReceiveAll)                                  | boolean            | Edits the receive all status of a profile within the database                                   |
+| deleteProfile(String username)                                                          | boolean            | Deletes a profile within the database                                                           |
+| findProfiles(String toFind)                                                             | ArrayList<Profile> | Returns a list of all profiles matching the search term                                         |
+| usernameFree(String username)                                                           | boolean            | Returns true if the username is free                                                            |
+| getProfile(String username)                                                             | Profile            | Returns a profile of a given username                                                           |
+| getUserChats(Profile profile)                                                           | ArrayList<Chat>    | Returns the chats that include profile                                                          |
+| blockUser(String blockerUsername, String blockeeUsername)                               | boolean            | Blocks a user                                                                                   |
+| unblockUser(String unblockerUsername, String unblockeeUsername)                         | boolean            | Unblocks a user                                                                                 |
+| friendUser(String frienderUsername, String friendeeUsername)                            | boolean            | Friends a user                                                                                  |
+| unfriendUser(String unfrienderUsername, String unfriendeeUsername)                      | boolean            | Unfriends a user                                                                                |
 
 
 ## Client-Side Classes
 ### Client
 The Client class is responsible for getting GUI inputs from the client and sending them to the server so that it can do
-processing.
+processing. It's fields hold onto the current profile that the server has given permission for it to have as well as the
+chats as of the last refresh. Client implements Runnable so that later testing can let multiple client run at the same
+time even if that testing is not currently done.
 
 #### Fields
 | Field Name | Type             | Description                                     |
@@ -168,15 +183,26 @@ processing.
 | chats      | ArrayList\<Chat> | The chats that the current client is a part of. |
 
 #### Methods
-| Method Name                                                                                                                | Return | Description                           |
-|----------------------------------------------------------------------------------------------------------------------------|--------|---------------------------------------|
-| createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Creates a new Profile for the client. |
-| login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                        | void   | Logs in to a Profile for the client.  |
-| sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void   | Sends a message to a chat.            |
-| editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) | void   | Edits a message in a chat.            |
-| deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Deletes a message in a chat.          |
-| deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void   | Deletes the Profile the client is on. |
-| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void   | Edits the Profile the client is on.   |
+| Method Name                                                                                                                | Return         | Description                                                                                                        |
+|----------------------------------------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------------------------------------------------|
+| main(String[] args)                                                                                                        | static void    | Creates a new Client thread.                                                                                       |
+| run()                                                                                                                      | void           | Organizes the calls to individual methods.                                                                         |
+| createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Creates a new Profile for the client.                                                                              |
+| logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                     | void           | Logs a profile out of client.                                                                                      |
+| checkValidPassword(String password)                                                                                        | static boolean | Checks if a given password is a valid password. (8 characters, uppercase, lowercase, number and special character) |
+| login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                        | void           | Logs into a Profile for the client.                                                                                |
+| deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Deletes the profile currently logged into client                                                                   |
+| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Edits the profile currently logged into client                                                                     |
+| updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                | void           | Updates all chats associated with client                                                                           |
+| searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Searches for a user and displays results                                                                           |
+| blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                    | void           | Blocks a profile                                                                                                   |
+| unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Unlocks a profile                                                                                                  |
+| friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                   | void           | Friends a profile                                                                                                  |
+| unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                 | void           | Unfriends a profile                                                                                                |
+| sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Sends a message to a chat.                                                                                         |
+| editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) | void           | Edits a message in a chat.                                                                                         |
+| deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Deletes a message in a chat.                                                                                       |
+| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Edits the Profile the client is on.                                                                                |
 
 ## Testing
 All of these classes are tested in RunLocalTest.java, where all methods are rigorously tested to make sure they function
