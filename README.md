@@ -1,17 +1,20 @@
 # CS 180 Project
 ## How to Run
 You can test the server side methods and classes which compose the database by running RunLocalTest.java. You can test
-the client side methods and classes by running Client.java.
+the client side methods and classes by following the instructions at the bottom of this README. In general, first start 
+the server and load the database by either entering "yes" or "no" and indicating the files to read from. Then start the
+client and follow all prompts
 
 ## Submission
 Phase 1 was submitted by Jared Bright on Brightspace on 04/01/2024.
-Phase 2 was submitted by - on Brightspace on -.
+Phase 2 was submitted by Jared Bright on Brightspace on 04/15/2024.
 
 ## Server-Side Classes
 
 ### Server
 The Server class is where the server and all of its functionality is run. The Client class sends its inputs to the
-server, which then sends those inputs to the database to process and get values and then send them back to the client.
+server, which then sends those inputs to the database to process and get values and then send them back to the client. 
+Implements Runnable via ServerInterface in order to make threads for each connected Client
 
 #### Fields
 | Field Name | Type            | Description                                                   |
@@ -25,7 +28,21 @@ server, which then sends those inputs to the database to process and get values 
 | run()                                                                     | void        | What runs when the thread is started. Calls other commands as prompted. |
 | createNewUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser) | void        | Creates a new Profile using the input from the client.                  |
 | login(ObjectInputStream inFromUser, ObjectOutputStream outToUser)         | void        | Logs in to a Profile using the input from the client.                   |
-| main(String[] args)                                                       | static void | Creates the database and accepts clients in to different threads.       |s
+| main(String[] args)                                                       | static void | Creates the database and accepts clients in to different threads.       |
+| logout(ObjectOutputStream outToUser)                                      | void        | Logs out of a profile using the inputs from the client.                 |
+| deleteProfile(ObjectOutputStream outToUser)                               | void        | Deletes a profile using the inputs from the client.                     |
+| editProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Edits a profile using the inputs from the client.                       |
+| searchUsers(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Sends profiles matching a query to client.                              |
+| updateChats(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Sends chats to the client.                                              |
+| sendMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Sends a message from Client into the appropriate chat.                  |
+| editMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Edits a message from Client in the appropriate chat.                    |
+| deleteMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) | void        | Deletes a message from Client in the appropriate chat.                  |
+| blockUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser)     | void        | Blocks a user.                                                          |
+| unblockUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Unblocks a user.                                                        |
+| friendUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser)    | void        | Friends a user.                                                         |
+| unfriendUser(ObjectInputStream inFromUser, ObjectOutputStream outToUser)  | void        | Unfriends a user.                                                       |
+| viewProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser)   | void        | Views a profile.                                                        |
+
 
 ### Profile
 The Profile class holds the user's information. This controls who can message the user, as well as who is friends with 

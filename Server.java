@@ -4,6 +4,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Team Project - Server
+ *
+ * This class is the interface on the server that communicates with the client. All methods are paired with methods
+ * within client in order to properly communicate
+ *
+ * @author Jared, Caasi, Ruiqi, Aneesh (lab section 24)
+ *
+ * @version April 14, 2024
+ *
+ */
 public class Server implements ServerInterface {
     private final Socket socket;
     static Database database;
