@@ -7,7 +7,7 @@ client and follow all prompts
 
 ## Submission
 Phase 1 was submitted by Jared Bright on Brightspace on 04/01/2024.
-Phase 2 was submitted by Jared Bright on Brightspace on 04/15/2024.
+Phase 2 was submitted by Caasi Boakye on Brightspace on 04/15/2024.
 
 ## Server-Side Classes
 

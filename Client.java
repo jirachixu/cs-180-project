@@ -201,7 +201,7 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {    // Log into an account
+    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) { // Log in
         try {
             outToServer.writeUnshared("login");
             outToServer.flush();
