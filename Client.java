@@ -54,6 +54,7 @@ public class Client implements ClientInterface {
                     case "unfriendUser" -> unfriendUser(scan, inFromServer, outToServer);
                     case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                     case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
+                    case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
                     case "exit" -> {break loop;}
                     default -> updateChats(inFromServer, outToServer);
                 }
@@ -599,6 +600,32 @@ public class Client implements ClientInterface {
 
         } catch (Exception e) {
             System.out.println("An error occurred while trying to delete the message: " + e.getMessage());
+        }
+    }
+
+    public void viewProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        try {
+            outToServer.writeUnshared("viewProfile");
+            outToServer.flush();
+
+            System.out.println("Who would you like to view?");
+            String toView;
+            do {
+                toView = scan.nextLine();
+            } while(toView.isEmpty());
+
+            outToServer.writeUnshared(toView);
+            outToServer.flush();
+
+            Profile viewMe = (Profile) inFromServer.readObject();
+
+            if (viewMe != null) {
+                System.out.printf("Display name: %s\nUsername: %s\n", viewMe.getUsername(), viewMe.getDisplayName());
+            } else {
+                System.out.println("User does not exist!");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred while viewing user");
         }
     }
 }

@@ -37,6 +37,7 @@ public class Server implements ServerInterface {
                     case "unblockUser" -> unblockUser(inFromUser, outToUser);
                     case "friendUser" -> friendUser(inFromUser, outToUser);
                     case "unfriendUser" -> unfriendUser(inFromUser, outToUser);
+                    case "viewProfile" -> viewProfile(inFromUser, outToUser);
                     case "exit" -> {break loop;}
                 }
             }
@@ -364,6 +365,19 @@ public class Server implements ServerInterface {
             System.out.println("Error occurred while unfriending profile");
         } finally {
             database.outputProfile();
+        }
+    }
+
+    public void viewProfile(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
+        try {
+            String toView = (String) inFromUser.readObject();
+
+            outToUser.reset();
+            outToUser.writeUnshared(database.getProfile(toView));
+            outToUser.flush();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while viewing user");
         }
     }
 }

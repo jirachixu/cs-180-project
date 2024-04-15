@@ -163,3 +163,67 @@ processing.
 All of these classes are tested in RunLocalTest.java, where all methods are rigorously tested to make sure they function
 properly and also so that they error properly for invalid inputs.
 The Client class also includes a main method so that we could test it without having to test the Network I/O.
+
+### Instructions for Detailed Testing of Network IO
+For testing of the network, perform all testing within the console of your device. Quotes indicates things that appear 
+in terminal. They should not be included when inputting prompts.
+1) If the files "profiles.txt" and "chats.txt" exist them, delete them, they will be rewritten through the course of 
+testing.
+2) Run "Server.java". When prompted to load default files, type "no". Then type in "profiles.txt", "chats.txt",
+"profiles.txt", and finally "chats.txt". This will load the empty files. A message that files failed to read is likely
+but this is expected because the files do not exist yet. The last message you should see is "Waiting for server 
+connection" which indicates the server is idling while waiting for a client to connect.
+3) In a different terminal run "Client.java". You should be prompted with "New createNewUser or login?". On the terminal
+associated with Server, you should see two new messages "Server connected", "Waiting for server connection" which
+indicates that the server successfully connected to the client and is awaiting more clients.
+4) Back on the client terminal, type "createNewUser" in order to initiate the dialog for a new account. Enter the 
+following: "User1", "Password123!", "Password123!", "User One", "true". This creates new account with username User1,
+password Password123!, display name User One and set to receive all messages. You should now see "Enter action:". On 
+this menu, actions can be executed by typing the appropriate command. Hitting return will load all conversations sent to
+this user. View the profile you created by typing "viewProfile", "User1". This shows the display name and username of 
+any given account username entered when prompted.
+5) No other profiles exist yet so end the program by typing "exit". Server should continue running. Run "Client.java"
+again and follow prompt 4 again with the following prompts: "User2", "Password123!", "Password123!", "User Two", "true"
+6) Send a message from User2 to User1 by typing: "sendMessage", "User1", "This is my first message!". Press enter to
+view the messages.
+7) Either start a new Client terminal by running "Client.java" or switch users by typing "logout" and then login with the 
+prompts to follow. For remainder of this testing, I will be using a second terminal so if you choose to only use one, 
+logout and login as needed
+8) Type "login", "User1", "Password123!" in order to log back into User1. View User1's messages by pressing enter. We 
+want to reply to User2 so follow the steps from step 6 but with "User2" to send the following messages "No way this is
+my first message too!", "This is super duper cool!". View messages by pressing enter, the three messages should be
+visible now. Go back to the User2 terminal and press enter to see the new messages (if the terminal has been idling you 
+may need to press enter again to wake it up).
+9) Test the ability to edit messages by entering "editMessage" in the User1 terminal. You will be prompted with a chat index, this number is 
+the same number viewed next to chat when viewing chats, type 0 to edit the messages in the first chat. Similarly, a 
+prompt for message index will appear, type 2 to edit the message "This is super-duper cool!". For the new message, type
+"This is super-duper extra cool! Wowzer!". View messages to see changes.
+10) Delete messages by using the same indexing as used to edit messages. In the User1 terminal, type "deleteMessage", 
+"0", "2" to delete the message that was just edited.
+11) Now let's edit profiles. On User1's terminal, type "editProfile", "Receive All", "false". Display name and password 
+can similarly be changed by following the prompts on the screen in the editProfile menu. Now when you press enter on the
+User1 screen, note how no messages appear because User1 is not friends with User2. 
+12) Add User2 as a friend by typing "friendUser", "User2". Now when you press enter, you can once again see the 
+messages.
+13) Blocking users can be done similarly. On the User2 terminal, let's have User2 block User1 (poor User1...they just
+wanted a friend :( ). Do this by typing "blockUser", "User1". This will block User1 and so now when viewing User2's
+messages, User1 will not show up because they have been blocked. 
+14) Undo both of these processes by following the same steps as 12 and 13 but instead typing "unblockUser" and 
+"unfriendUser". Now fix User2's rudeness by friending User1 by following step 12 but typing "User1". User1 accepts the 
+apology and should friend them back by following the same process as step 12.
+15) Now stop all running programs in any way you choose. Restart the server by following step 2. Log into User1 and 
+User2 on two different terminals again (Their passwords are Password123!). View that their messages were saved even
+after shutdown by viewing messages.
+16) After being offline for a bit, User1 had some time to think and actually realized they think they need a break from 
+social media and so are deleting there account. Do this by typing "deleteProfile" and then typing "yes". They are now 
+gone forever and so can end their terminal by typing "exit".
+17) User2 notices that all their messages with User1 disappeared (because their account and thus all chats associated 
+with the account) and so they want to check if their account even still exists. Type "searchUsers" followed by "User1"
+and note that their are no results. In contrast, if they search for themselves by typing User2, they show up and see
+their profile in the form "Display Name-Username".
+
+This was a brief walkthrough of all the Network IO methods. Feel free to experiment around, everything should protected
+against invalid inputs so that shouldn't be a concern. In addition, if you load the default profiles by typing "yes" on
+the first prompt when loading the servers, you'll open a server that already has an Admin with password "Admin123!" and 
+User1 - User4 with password "Password123!". Some messages have already been sent and some users are already friends so
+feel free to experiment!.
