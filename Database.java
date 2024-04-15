@@ -279,7 +279,6 @@ public class Database implements DatabaseInterface {
                 for (String key : chats.keySet()) {
                     if (key.contains(profile.getUsername())) {
                         Chat toSend = chats.get(key);
-                        System.out.println("got one");
 
                         if (!toSend.getMessages().isEmpty()) {
                             Message lastMessage = toSend.getMessages().get(0);
@@ -296,8 +295,7 @@ public class Database implements DatabaseInterface {
                 return userChats;
             }
         }
-        System.out.println(userChats.get(0).getProfiles().get(0).getUsername());
-        System.out.println(userChats.get(0).getMessages().get(0));
+
         return userChats;
     }
 

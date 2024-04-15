@@ -115,11 +115,10 @@ public class Server implements ServerInterface {
             // Mirrors input for createNewUser in Client
             do {
                 username = (String) inFromUser.readObject();
-                loop = database.usernameFree(username);
+                loop = !database.usernameFree(username);
                 outToUser.writeBoolean(loop);
                 outToUser.flush();
             } while(loop);
-
 
             password = (String) inFromUser.readObject();
             display = (String) inFromUser.readObject();
@@ -127,6 +126,7 @@ public class Server implements ServerInterface {
 
             database.createProfile(username, password, display, receiveAll);
 
+            outToUser.reset();
             outToUser.writeUnshared(database.getProfile(username));
             outToUser.flush();
 

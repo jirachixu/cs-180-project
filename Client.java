@@ -91,6 +91,7 @@ public class Client implements ClientInterface {
                         continue;
                     }
 
+                    outToServer.reset();
                     outToServer.writeUnshared(username);
                     outToServer.flush();
 
