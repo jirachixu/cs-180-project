@@ -212,6 +212,13 @@ public class RunLocalTest {
                     expectedMessage.toString());
 
             // Test the delete method within Message
+            try {
+                // RunLocalTest normally runs so fast that the timestamp doesn't change in time, so we sleep here
+                // In the real world, nobody is going to be sending and deleting messages within a millisecond
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // lol
+            }
             expectedMessage.delete();
             assertNull("Make sure the delete method is implemented correctly!", expectedMessage.getContents());
             assertEquals("Make sure the delete method is implemented correctly!", 2, expectedMessage.getStatus());
