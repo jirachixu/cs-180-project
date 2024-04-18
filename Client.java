@@ -1,3 +1,7 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -19,22 +23,81 @@ public class Client implements ClientInterface {
     Profile profile;
     ArrayList<Chat> chats;
 
+    //Listeners
+    ObjectInputStream inFromServer;
+    ObjectOutputStream outToServer;
+    Scanner scan; // Placeholder
+
+    // GUI stuff
+    JButton sendButton;
+    JButton editButton;
+    JButton deleteButton;
+    JTextField messageText;
+    JTextArea userMessages;
+
     public Client() {
         profile = null;
         chats = null;
     }
 
+    ActionListener actionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == sendButton) {
+                sendMessage(scan, inFromServer, outToServer);
+            }
+            if (e.getSource() == editButton) {
+                editMessage(scan, inFromServer, outToServer);
+            }
+            if (e.getSource() == deleteButton) {
+                deleteMessage(scan, outToServer);
+            }
+        }
+    };
+
     public static void main(String[] args) {
-        new Thread(new Client()).start();
+        SwingUtilities.invokeLater(new Client());
     }
 
     public void run() {
-        Scanner scan = new Scanner(System.in);    // TODO: Replace with GUI
+        JFrame frame = new JFrame("Direct Messaging");
+        Container content = frame.getContentPane();
+        JScrollPane chatPanel = new JScrollPane();
+        JPanel messagePanel = new JPanel();
+        JPanel usersPanel = new JPanel();
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        content.setLayout(new BorderLayout());
+        sendButton = new JButton("Send");
+        sendButton.addActionListener(actionListener);
+        editButton = new JButton("Edit");
+        editButton.addActionListener(actionListener);
+        deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(actionListener);
+        messageText = new JTextField("", 20);
+        userMessages = new JTextArea();
+        userMessages.setEditable(false);
+        messagePanel.setLayout(new FlowLayout());
+        messagePanel.add(messageText);
+        messagePanel.add(sendButton);
+        messagePanel.add(editButton);
+        messagePanel.add(deleteButton);
+        chatPanel.setViewportView(userMessages);
+        chatPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        content.add(chatPanel, BorderLayout.CENTER);
+        content.add(messagePanel, BorderLayout.SOUTH);
+        content.add(usersPanel, BorderLayout.WEST);
+
+        frame.setVisible(true);
+        scan = new Scanner(System.in);    // TODO: Replace with GUI
 
         try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
             // Setup network connection
-            ObjectInputStream inFromServer = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream outToServer = new ObjectOutputStream(socket.getOutputStream());
+            inFromServer = new ObjectInputStream(socket.getInputStream());
+            outToServer = new ObjectOutputStream(socket.getOutputStream());
             outToServer.flush();
 
             profile = new Profile();
@@ -473,17 +536,16 @@ public class Client implements ClientInterface {
             Profile receiver;
 
             do {
-                System.out.println("Who would you like to send a message to?");
-                outToServer.writeUnshared(scan.nextLine());    // Send profile name to server
+                String personToSend = JOptionPane.showInputDialog(null, "Who would you like to send a message to?", "Send Message", JOptionPane.QUESTION_MESSAGE);
+                outToServer.writeUnshared(personToSend);    // Send profile name to server
                 outToServer.flush();
 
                 receiver = (Profile) inFromServer.readObject();
             } while (receiver == null);
 
-            System.out.println("What would you like to say?");
             String contents;
             do {
-                contents = scan.nextLine();    // Get message contents
+                contents = JOptionPane.showInputDialog(null, "What would you like to say?", "Message Content", JOptionPane.QUESTION_MESSAGE);    // Get message contents
             } while(contents.isEmpty());
 
             // Send the message to the server
