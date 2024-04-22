@@ -97,56 +97,66 @@ public class Client implements ClientInterface {
 
     public void run() {
         scan = new Scanner(System.in);    // TODO: Replace with GUI
+        SwingWorker<Void, Void> connectionWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
+                    // Setup network connection
+                    inFromServer = new ObjectInputStream(socket.getInputStream());
+                    outToServer = new ObjectOutputStream(socket.getOutputStream());
+                    outToServer.flush();
 
-        try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
-            // Setup network connection
-            inFromServer = new ObjectInputStream(socket.getInputStream());
-            outToServer = new ObjectOutputStream(socket.getOutputStream());
-            outToServer.flush();
+                    profile = new Profile();
 
-            profile = new Profile();
+                    int i = 0;  // TODO: PLACEHOLDER TO AVOID ERRORS
+                    loop:
+                    while (true) {
+                        while (profile.getUsername() == null) {    // Loop while account is still empty
+                            System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
+                            switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
+                                case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
+                                case "login" -> login(scan, inFromServer, outToServer);
+                                case "exit" -> {
+                                    break loop;
+                                }
+                            }
+                        }
 
-            int i = 0;  // TODO: PLACEHOLDER TO AVOID ERRORS
-            loop :
-            while (true) {
-                while (profile.getUsername() == null) {    // Loop while account is still empty
-                    System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
-                    switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
-                        case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
-                        case "login" -> login(scan, inFromServer, outToServer);
-                        case "exit" -> {break loop;}
+                        System.out.println("Enter action:");    // TODO GUI
+                        switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
+                            // TODO: Replace with appropriate method calls
+                            case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
+                            case "editMessage" -> editMessage(scan, inFromServer, outToServer);
+                            case "deleteMessage" -> deleteMessage(scan, outToServer);
+                            case "logout" -> logout(inFromServer, outToServer);
+                            case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
+                            case "blockUser" -> blockUser(scan, inFromServer, outToServer);
+                            case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
+                            case "friendUser" -> friendUser(scan, inFromServer, outToServer);
+                            case "unfriendUser" -> unfriendUser(scan, inFromServer, outToServer);
+                            case "editProfile" -> editProfile(scan, inFromServer, outToServer);
+                            case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
+                            case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
+                            case "exit" -> {
+                                break loop;
+                            }
+                            default -> updateChats(inFromServer, outToServer);
+                        }
                     }
-                }
 
-                System.out.println("Enter action:");    // TODO GUI
-                switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
-                    // TODO: Replace with appropriate method calls
-                    case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
-                    case "editMessage" -> editMessage(scan, inFromServer, outToServer);
-                    case "deleteMessage" -> deleteMessage(scan, outToServer);
-                    case "logout" -> logout(inFromServer, outToServer);
-                    case "searchUsers" -> searchUsers(scan, inFromServer, outToServer);
-                    case "blockUser" -> blockUser(scan, inFromServer, outToServer);
-                    case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
-                    case "friendUser" -> friendUser(scan, inFromServer, outToServer);
-                    case "unfriendUser" -> unfriendUser(scan, inFromServer, outToServer);
-                    case "editProfile" -> editProfile(scan, inFromServer, outToServer);
-                    case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
-                    case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
-                    case "exit" -> {break loop;}
-                    default -> updateChats(inFromServer, outToServer);
+                    // Exit process
+                    outToServer.writeUnshared("exit");
+                    outToServer.flush();
+                    outToServer.close();
+                    inFromServer.close();
+
+                } catch (IOException e) {
+                    System.out.println("Failed to connect to server");    // TODO GUI: Fail to connect error
                 }
+                return null;
             }
-
-            // Exit process
-            outToServer.writeUnshared("exit");
-            outToServer.flush();
-            outToServer.close();
-            inFromServer.close();
-
-        } catch (IOException e) {
-            System.out.println("Failed to connect to server");    // TODO GUI: Fail to connect error
-        }
+        };
+        connectionWorker.execute();
     }
 
     public void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
@@ -534,31 +544,42 @@ public class Client implements ClientInterface {
     }
 
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        try {
-            outToServer.writeUnshared("sendMessage");
-            outToServer.flush();
-            Profile receiver;
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    outToServer.writeUnshared("sendMessage");
+                    outToServer.flush();
+                    Profile receiver;
 
-            do {
-                String personToSend = JOptionPane.showInputDialog(null, "Who would you like to send a message to?", "Send Message", JOptionPane.QUESTION_MESSAGE);
-                outToServer.writeUnshared(personToSend);    // Send profile name to server
-                outToServer.flush();
+                    do {
+                        String personToSend = JOptionPane.showInputDialog(null, "Who would you like to send a message to?", "Send Message", JOptionPane.QUESTION_MESSAGE);
+                        outToServer.writeUnshared(personToSend);    // Send profile name to server
+                        outToServer.flush();
 
-                receiver = (Profile) inFromServer.readObject();
-            } while (receiver == null);
+                        receiver = (Profile) inFromServer.readObject();
+                    } while (receiver == null);
 
-            String contents;
-            do {
-                contents = JOptionPane.showInputDialog(null, "What would you like to say?", "Message Content", JOptionPane.QUESTION_MESSAGE);    // Get message contents
-            } while(contents.isEmpty());
+                    String contents;
+                    do {
+                        contents = messageText.getText(); // Get message contents
+                    } while (contents.isEmpty());
 
-            // Send the message to the server
-            outToServer.writeUnshared(new Message(profile, receiver, contents));
-            outToServer.flush();
+                    // Send the message to the server
+                    outToServer.writeUnshared(new Message(profile, receiver, contents));
+                    outToServer.flush();
 
-        } catch (Exception e) {
-            System.out.println("An error occurred when sending the message");
-        }
+                } catch (Exception e) {
+                    System.out.println("An error occurred when sending the message");
+                }
+                return null;
+            }
+
+            protected void done() {
+                userMessages.append(messageText.getText() + "\n");
+            }
+        };
+        worker.execute();
     }
 
     public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
