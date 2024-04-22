@@ -38,6 +38,7 @@ public class Client implements ClientInterface {
     public Client() {
         profile = null;
         chats = null;
+        createGUI();
     }
 
     ActionListener actionListener = new ActionListener() {
@@ -59,7 +60,7 @@ public class Client implements ClientInterface {
         SwingUtilities.invokeLater(new Client());
     }
 
-    public void run() {
+    public void createGUI() {
         JFrame frame = new JFrame("Direct Messaging");
         Container content = frame.getContentPane();
         JScrollPane chatPanel = new JScrollPane();
@@ -92,6 +93,9 @@ public class Client implements ClientInterface {
         content.add(usersPanel, BorderLayout.WEST);
 
         frame.setVisible(true);
+    }
+
+    public void run() {
         scan = new Scanner(System.in);    // TODO: Replace with GUI
 
         try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
