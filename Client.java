@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -35,10 +36,19 @@ public class Client implements ClientInterface {
     JTextField messageText;
     JTextArea userMessages;
 
+    JButton loginButton;
+    JButton registerButton;
+    JButton loginEnterButton;
+    JButton registerEnterButton;
+    JTextField usernameField;
+    JPasswordField passwordField;
+    JFrame initialFrame;
+    JFrame loginFrame;
+
     public Client() {
         profile = null;
         chats = null;
-        createGUI();
+        initialFrame();
     }
 
     ActionListener actionListener = new ActionListener() {
@@ -53,11 +63,87 @@ public class Client implements ClientInterface {
             if (e.getSource() == deleteButton) {
                 deleteMessage(scan, outToServer);
             }
+            if (e.getSource() == loginButton) {
+                loginGUI();
+            }
+            if (e.getSource() == registerButton) {
+
+            }
+            if (e.getSource() == loginEnterButton) {
+                if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
+                        && !(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
+                    login(usernameField.getText(), Arrays.toString(passwordField.getPassword()),
+                            inFromServer, outToServer);
+                    loginFrame.dispose();
+                    initialFrame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(null,
+                            "Please enter a valid username/password",
+                            "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
+                    loginFrame.dispose();
+                }
+            }
         }
     };
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Client());
+    }
+
+    public void initialFrame() {
+        initialFrame = new JFrame("Login or Register");
+        Container initialPanel = initialFrame.getContentPane();
+        JPanel initialPanelContent = new JPanel(new GridBagLayout());
+        initialPanelContent.add(new JLabel(), new GridBagConstraints());
+        initialFrame.setSize(800, 600);
+        initialFrame.setLocationRelativeTo(null);
+        initialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        loginButton = new JButton("Login");
+        registerButton = new JButton("Register");
+        loginButton.addActionListener(actionListener);
+        registerButton.addActionListener(actionListener);
+        initialPanelContent.add(loginButton);
+        initialPanelContent.add(registerButton);
+        initialPanel.add(initialPanelContent, BorderLayout.CENTER);
+
+        initialFrame.setVisible(true);
+    }
+
+    public void loginGUI() {
+        loginFrame = new JFrame("Login");
+        Container loginPanel = loginFrame.getContentPane();
+        JPanel loginPanelContent = new JPanel(new GridBagLayout());
+        GridBagConstraints loginPanelConstraints = new GridBagConstraints();
+        loginPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        loginPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        loginFrame.setSize(800, 600);
+        loginFrame.setLocationRelativeTo(null);
+        loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        loginEnterButton = new JButton("Login");
+        loginEnterButton.addActionListener(actionListener);
+        usernameField = new JTextField("", 20);
+        passwordField = new JPasswordField("", 20);
+        JLabel usernameLabel = new JLabel("Username: ");
+        JLabel passwordLabel = new JLabel("Password: ");
+
+        JPanel usernamePanel = new JPanel(new GridBagLayout());
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameField);
+
+        JPanel passwordPanel = new JPanel(new GridBagLayout());
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(passwordField);
+
+        loginPanelContent.add(usernamePanel, loginPanelConstraints);
+        loginPanelContent.add(new JPanel(), loginPanelConstraints);
+        loginPanelContent.add(passwordPanel, loginPanelConstraints);
+        loginPanelContent.add(new JPanel(), loginPanelConstraints);
+        loginPanelContent.add(loginEnterButton);
+        loginPanel.add(loginPanelContent, BorderLayout.CENTER);
+
+        loginFrame.setVisible(true);
     }
 
     public void createGUI() {
@@ -112,14 +198,7 @@ public class Client implements ClientInterface {
                     loop:
                     while (true) {
                         while (profile.getUsername() == null) {    // Loop while account is still empty
-                            System.out.println("New createNewUser or login?");    // TODO GUI: Login interface
-                            switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
-                                case "createNewUser" -> createNewUser(scan, inFromServer, outToServer);
-                                case "login" -> login(scan, inFromServer, outToServer);
-                                case "exit" -> {
-                                    break loop;
-                                }
-                            }
+                            // loginOrRegister();
                         }
 
                         System.out.println("Enter action:");    // TODO GUI
@@ -278,25 +357,15 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) { // Log in
+    public void login(String username, String password, ObjectInputStream inFromServer,
+                      ObjectOutputStream outToServer) { // Log in
         try {
             outToServer.writeUnshared("login");
             outToServer.flush();
 
-            // TODO: Replace with GUI input rather than command line input
-            String username;
-            do {
-                System.out.println("Please enter username:");
-                username = scan.nextLine();
-            } while (username.isEmpty());
             outToServer.writeUnshared(username);
             outToServer.flush();
 
-            String password;
-            do {
-                System.out.println("Please enter password:");
-                password = scan.nextLine();
-            } while (password.isEmpty());
             outToServer.writeUnshared(password);
             outToServer.flush();
 
