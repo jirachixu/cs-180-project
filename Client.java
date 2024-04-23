@@ -41,10 +41,11 @@ public class Client implements ClientInterface {
     JButton editProfileButton;
     JButton chatButton;
     JButton viewButton;
-    JComboBox userDisplaySelection;
+    JComboBox<String> userDisplaySelection;
     DefaultListModel<Profile> displayList;
     JTextField messageText;
     JTextField usernameField;
+    JTextField searchQuery;
     JPasswordField passwordField;
     JTextField displayNameField;
 
@@ -137,17 +138,30 @@ public class Client implements ClientInterface {
             if (e.getSource() == userDisplaySelection) {
                 ArrayList<Profile> displayProfiles = null;
                 switch ((String) userDisplaySelection.getSelectedItem()) {
-                    case "Friends" -> displayProfiles = profile.getFriends();
-                    case "Blocked" -> displayProfiles = profile.getBlocked();
-                    case "Search" -> displayProfiles = searchUsers(scan, inFromServer, outToServer);
+                    case "Friends" :
+                        searchQuery.setText("");
+                        searchQuery.setEditable(false);
+                        displayProfiles = profile.getFriends();
+                        break;
+
+                    case "Blocked" :
+                        searchQuery.setText("");
+                        searchQuery.setEditable(false);
+                        displayProfiles = profile.getBlocked();
+                        break;
+
+                    case "Search" :
+                        searchQuery.setText("");
+                        searchQuery.setEditable(true);
+                        displayProfiles = searchUsers(scan, inFromServer, outToServer);
+                        break;
                 }
 
                 updateUserDisplay(displayProfiles);
+            }
 
-                frame.revalidate();
-                frame.repaint();
-
-                System.out.println(userDisplaySelection.getSelectedItem());
+            if (e.getSource() == searchQuery) {
+                updateUserDisplay(searchUsers(scan, inFromServer, outToServer));
             }
         }
     };
@@ -432,27 +446,18 @@ public class Client implements ClientInterface {
 
     public ArrayList<Profile> searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            outToServer.writeUnshared("searchUsers");
-            outToServer.flush();
+            String query = searchQuery.getText();
+            if (!query.isEmpty()) {
+                outToServer.writeUnshared("searchUsers");
+                outToServer.flush();
 
-//            System.out.println("Enter your search query:");
-//            String query;
-//            do {
-//                query = scan.nextLine();
-//            } while(query.isEmpty());
-//
-//            outToServer.writeUnshared(query);
-            outToServer.writeUnshared("u");    // TODO: Update to pull from a text field
-            outToServer.flush();
+                outToServer.writeUnshared(query);
+                outToServer.flush();
 
-            ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
-
-            for (Profile option : results) {
-                System.out.println(option.getDisplayName() + "-" + option.getUsername());
+                return (ArrayList<Profile>) inFromServer.readObject();
+            } else {
+                return new ArrayList<Profile>();
             }
-
-            return results;
-
         } catch (Exception e) {
             System.out.println("An error occurred while searching for users");
             return new ArrayList<Profile>();
@@ -916,13 +921,20 @@ public class Client implements ClientInterface {
         panelSplit.setRightComponent(chatArea);    // Add chat area to right half of panel
 
         // Create the user area
-        JPanel userPanel = new JPanel();
-        userPanel.setLayout(new BorderLayout());
+        JPanel userPanel = new JPanel(new BorderLayout());
+        JPanel searchPanel = new JPanel(new GridLayout(2, 1));
 
-        userDisplaySelection = new JComboBox(new String[] {"Friends", "Blocked", "Search"});    // Create a dropdown menu for selecting who is displayed
+        userDisplaySelection = new JComboBox<String>(new String[] {"Friends", "Blocked", "Search"});    // Create a dropdown menu for selecting who is displayed
         userDisplaySelection.addActionListener(actionListener);
 
-        userPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
+        searchQuery = new JTextField();
+        searchQuery.setEditable(false);
+        searchQuery.addActionListener(actionListener);
+
+        searchPanel.add(userDisplaySelection);    // Add the selection of display into the user panel
+        searchPanel.add(searchQuery);    // Add the selection of display into the user panel
+
+        userPanel.add(searchPanel, BorderLayout.NORTH);    // Add the selection of display into the user panel
 
         // Create the display of users
         ArrayList<Profile> displayProfiles = null;
