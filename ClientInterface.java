@@ -2,7 +2,8 @@ import java.io.*;
 import java.util.Scanner;
 
 public interface ClientInterface extends Runnable {
-    void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void createNewUser(String username, String password, String displayName, boolean receiveAll,
+                       ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void login(String username, String password, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);

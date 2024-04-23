@@ -44,6 +44,9 @@ public class Client implements ClientInterface {
     JPasswordField passwordField;
     JFrame initialFrame;
     JFrame loginFrame;
+    JFrame registerFrame;
+    JTextField displayNameField;
+    JCheckBox receiveAll;
 
     public Client() {
         profile = null;
@@ -67,20 +70,48 @@ public class Client implements ClientInterface {
                 loginGUI();
             }
             if (e.getSource() == registerButton) {
-
+                registerGUI();
             }
             if (e.getSource() == loginEnterButton) {
                 if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
                         && !(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
-                    login(usernameField.getText(), Arrays.toString(passwordField.getPassword()),
+                    login(usernameField.getText(), new String(passwordField.getPassword()),
                             inFromServer, outToServer);
                     loginFrame.dispose();
                     initialFrame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(null,
+                    JOptionPane.showMessageDialog(loginFrame,
                             "Please enter a valid username/password",
                             "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
                     loginFrame.dispose();
+                }
+            }
+            if (e.getSource() == registerEnterButton) {
+                if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
+                        && !(usernameField.getText() == null && !(passwordField.getPassword() == null))
+                        && !displayNameField.getText().isEmpty()) {
+                    if (checkValidPassword(new String(passwordField.getPassword()))) {
+                        createNewUser(usernameField.getText(), new String(passwordField.getPassword()),
+                                displayNameField.getText(), receiveAll.isSelected(), inFromServer, outToServer);
+
+                    } else {
+                        JOptionPane.showMessageDialog(registerFrame,
+                                "Invalid Password!",
+                                "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
+                    }
+                    if (profile != null) {
+                        registerFrame.dispose();
+                        initialFrame.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(registerFrame,
+                                "Username already exists!",
+                                "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(registerFrame,
+                            "Username/Password/Display Name cannot be empty",
+                            "Invalid Username/Password/Display Name", JOptionPane.ERROR_MESSAGE);
+                    registerFrame.dispose();
                 }
             }
         }
@@ -108,6 +139,58 @@ public class Client implements ClientInterface {
         initialPanel.add(initialPanelContent, BorderLayout.CENTER);
 
         initialFrame.setVisible(true);
+    }
+
+    public void registerGUI() {
+        registerFrame = new JFrame("Login");
+        Container registerPanel = registerFrame.getContentPane();
+        JPanel registerPanelContent = new JPanel(new GridBagLayout());
+        GridBagConstraints registerPanelConstraints = new GridBagConstraints();
+        registerPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        registerPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        registerFrame.setSize(800, 600);
+        registerFrame.setLocationRelativeTo(null);
+        registerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        registerEnterButton = new JButton("Register");
+        registerEnterButton.addActionListener(actionListener);
+        usernameField = new JTextField("", 20);
+        passwordField = new JPasswordField("", 20);
+        displayNameField = new JTextField("", 20);
+        receiveAll = new JCheckBox("Receive messages from all users (not only friends)?");
+        JLabel usernameLabel = new JLabel("Username: ");
+        JLabel passwordLabel = new JLabel("Password: ");
+        JLabel displayNameLabel = new JLabel("Display Name: ");
+        JLabel passwordRequirements = new JLabel("Password must have 8 characters and contain at least one" +
+                " uppercase, lowercase, and number.");
+        passwordRequirements.setForeground(Color.GRAY);
+        passwordRequirements.setFont(new Font(passwordRequirements.getFont().getFontName(), Font.ITALIC, 8));
+
+        JPanel usernamePanel = new JPanel(new GridBagLayout());
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameField);
+
+        JPanel passwordPanel = new JPanel(new GridBagLayout());
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(passwordField);
+
+        JPanel displayNamePanel = new JPanel(new GridBagLayout());
+        displayNamePanel.add(displayNameLabel);
+        displayNamePanel.add(displayNameField);
+
+        registerPanelContent.add(usernamePanel, registerPanelConstraints);
+        registerPanelContent.add(new JPanel(), registerPanelConstraints);
+        registerPanelContent.add(passwordPanel, registerPanelConstraints);
+        registerPanelContent.add(passwordRequirements, registerPanelConstraints);
+        registerPanelContent.add(new JPanel(), registerPanelConstraints);
+        registerPanelContent.add(displayNamePanel, registerPanelConstraints);
+        registerPanelContent.add(new JPanel(), registerPanelConstraints);
+        registerPanelContent.add(receiveAll, registerPanelConstraints);
+        registerPanelContent.add(new JPanel(), registerPanelConstraints);
+        registerPanelContent.add(registerEnterButton);
+        registerPanel.add(registerPanelContent, BorderLayout.CENTER);
+
+        registerFrame.setVisible(true);
     }
 
     public void loginGUI() {
@@ -238,47 +321,28 @@ public class Client implements ClientInterface {
         connectionWorker.execute();
     }
 
-    public void createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        String username;
-        String password;
-        String display;
-        String receiveAll;
-
+    public void createNewUser(String username, String password, String display, boolean receiveAll,
+                              ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("createNewUser");
             outToServer.flush();
 
             boolean loop = true;
-            do {    // Get and validate username with server
-                try {
-                    // TODO GUI
-                    System.out.println("Enter your desired username: ");
-                    username = scan.nextLine();
+            // Get and validate username with server
+            try {
+                outToServer.reset();
+                outToServer.writeUnshared(username);
+                outToServer.flush();
 
-                    if (username.isEmpty()) {    // Username must not be empty
-                        continue;
-                    }
-
-                    outToServer.reset();
-                    outToServer.writeUnshared(username);
-                    outToServer.flush();
-
-                    loop = inFromServer.readBoolean();
-
-                } catch (IOException e) {    // If socket is lost exit method
+                loop = inFromServer.readBoolean();
+                if (loop) {
                     return;
                 }
-            } while (loop);
+            } catch (IOException e) {    // If socket is lost exit method
+                return;
+            }
 
             try {
-                // TODO GUI
-                do { // Check valid password
-                    System.out.println("Enter your desired password");
-                    password = scan.nextLine();
-
-                    System.out.println("Enter your desired password again");
-                } while (!scan.nextLine().equals(password) || !checkValidPassword(password));
-
                 outToServer.writeUnshared(password);
                 outToServer.flush();
 
@@ -287,22 +351,11 @@ public class Client implements ClientInterface {
             }
 
             // Get user display name
-            // TODO GUI
-            System.out.println("What you you liked to be called?");
-            do {
-                display = scan.nextLine();
-            } while (display.isEmpty());
             outToServer.writeUnshared(display);
             outToServer.flush();
 
             // Get user receive all preference
-            // TODO GUI
-            do {
-                System.out.println("Would you like to receive messages from everyone (true/false)?");
-                receiveAll = scan.nextLine();
-            } while (!receiveAll.equals("true") && !receiveAll.equals("false"));
-
-            outToServer.writeBoolean(Boolean.parseBoolean(receiveAll));
+            outToServer.writeBoolean(receiveAll);
             outToServer.flush();
 
             this.profile = (Profile) inFromServer.readObject();
@@ -337,24 +390,10 @@ public class Client implements ClientInterface {
                     lowercase = true;
                 }
             }
-
         } else {
-            System.out.println("Password must be at least 8 characters!");    // TODO GUI: Replace with GUI
             return false;
         }
-
-        if (!uppercase) {
-            System.out.println("Password must an uppercase character!");    // TODO GUI: Replace with GUI
-            return false;
-        } else if (!lowercase) {
-            System.out.println("Password must a lowercase character!");    // TODO GUI: Replace with GUI
-            return false;
-        } else if (!number) {
-            System.out.println("Password must a digit!");    // TODO GUI: Replace with GUI
-            return false;
-        } else {
-            return true;
-        }
+        return uppercase && lowercase && number;
     }
 
     public void login(String username, String password, ObjectInputStream inFromServer,
