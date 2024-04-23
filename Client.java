@@ -24,34 +24,43 @@ public class Client implements ClientInterface {
     Profile profile;
     ArrayList<Chat> chats;
 
-    //Listeners
-    ObjectInputStream inFromServer;
-    ObjectOutputStream outToServer;
-    Scanner scan; // Placeholder
+    // GUI objects
+    // Display objects
+    JFrame frame;
+    JTextArea userMessages;
 
-    // GUI stuff
+    // Buttons
     JButton sendButton;
     JButton editButton;
     JButton deleteButton;
-    JTextField messageText;
-    JTextArea userMessages;
-
     JButton loginButton;
     JButton registerButton;
     JButton loginEnterButton;
     JButton registerEnterButton;
+    JCheckBox receiveAll;
+    JButton editProfileButton;
+    JButton chatButton;
+    JButton viewButton;
+    JComboBox userDisplaySelection;
+
+    // Text fields
+    JTextField messageText;
     JTextField usernameField;
     JPasswordField passwordField;
-    JFrame initialFrame;
-    JFrame loginFrame;
-    JFrame registerFrame;
     JTextField displayNameField;
-    JCheckBox receiveAll;
+
+
+    // Network IO stuff
+    ObjectInputStream inFromServer;
+    ObjectOutputStream outToServer;
+    Scanner scan; // FIXME: Placeholder
 
     public Client() {
         profile = null;
         chats = null;
-        initialFrame();
+
+        frameInitialization();
+        initialPanel();
     }
 
     ActionListener actionListener = new ActionListener() {
@@ -67,23 +76,20 @@ public class Client implements ClientInterface {
                 deleteMessage(scan, outToServer);
             }
             if (e.getSource() == loginButton) {
-                loginGUI();
+                loginPanel();
             }
             if (e.getSource() == registerButton) {
-                registerGUI();
+                registerPanel();
             }
             if (e.getSource() == loginEnterButton) {
                 if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
                         && !(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
                     login(usernameField.getText(), new String(passwordField.getPassword()),
                             inFromServer, outToServer);
-                    loginFrame.dispose();
-                    initialFrame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(loginFrame,
+                    JOptionPane.showMessageDialog(frame,
                             "Please enter a valid username/password",
                             "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
-                    loginFrame.dispose();
                 }
             }
             if (e.getSource() == registerEnterButton) {
@@ -94,24 +100,25 @@ public class Client implements ClientInterface {
                         createNewUser(usernameField.getText(), new String(passwordField.getPassword()),
                                 displayNameField.getText(), receiveAll.isSelected(), inFromServer, outToServer);
 
-                    } else {
-                        JOptionPane.showMessageDialog(registerFrame,
+                    } else {// TODO: Handle cases that username does not exist
+                        JOptionPane.showMessageDialog(frame,
                                 "Invalid Password!",
                                 "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
                     }
                     if (profile != null) {
-                        registerFrame.dispose();
-                        initialFrame.dispose();
+                        frame.dispose();
                     } else {
-                        JOptionPane.showMessageDialog(registerFrame,
+                        JOptionPane.showMessageDialog(frame,
                                 "Username already exists!",
                                 "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
                     }
+
                 } else {
-                    JOptionPane.showMessageDialog(registerFrame,
+                    // TODO: Handle cases that username does not exist
+                    JOptionPane.showMessageDialog(frame,
                             "Username/Password/Display Name cannot be empty",
                             "Invalid Username/Password/Display Name", JOptionPane.ERROR_MESSAGE);
-                    registerFrame.dispose();
+                    frame.dispose();
                 }
             }
         }
@@ -119,149 +126,6 @@ public class Client implements ClientInterface {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Client());
-    }
-
-    public void initialFrame() {
-        initialFrame = new JFrame("Login or Register");
-        Container initialPanel = initialFrame.getContentPane();
-        JPanel initialPanelContent = new JPanel(new GridBagLayout());
-        initialPanelContent.add(new JLabel(), new GridBagConstraints());
-        initialFrame.setSize(800, 600);
-        initialFrame.setLocationRelativeTo(null);
-        initialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        loginButton = new JButton("Login");
-        registerButton = new JButton("Register");
-        loginButton.addActionListener(actionListener);
-        registerButton.addActionListener(actionListener);
-        initialPanelContent.add(loginButton);
-        initialPanelContent.add(registerButton);
-        initialPanel.add(initialPanelContent, BorderLayout.CENTER);
-
-        initialFrame.setVisible(true);
-    }
-
-    public void registerGUI() {
-        registerFrame = new JFrame("Login");
-        Container registerPanel = registerFrame.getContentPane();
-        JPanel registerPanelContent = new JPanel(new GridBagLayout());
-        GridBagConstraints registerPanelConstraints = new GridBagConstraints();
-        registerPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        registerPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
-        registerFrame.setSize(800, 600);
-        registerFrame.setLocationRelativeTo(null);
-        registerFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        registerEnterButton = new JButton("Register");
-        registerEnterButton.addActionListener(actionListener);
-        usernameField = new JTextField("", 20);
-        passwordField = new JPasswordField("", 20);
-        displayNameField = new JTextField("", 20);
-        receiveAll = new JCheckBox("Receive messages from all users (not only friends)?");
-        JLabel usernameLabel = new JLabel("Username: ");
-        JLabel passwordLabel = new JLabel("Password: ");
-        JLabel displayNameLabel = new JLabel("Display Name: ");
-        JLabel passwordRequirements = new JLabel("Password must have 8 characters and contain at least one" +
-                " uppercase, lowercase, and number.");
-        passwordRequirements.setForeground(Color.GRAY);
-        passwordRequirements.setFont(new Font(passwordRequirements.getFont().getFontName(), Font.ITALIC, 8));
-
-        JPanel usernamePanel = new JPanel(new GridBagLayout());
-        usernamePanel.add(usernameLabel);
-        usernamePanel.add(usernameField);
-
-        JPanel passwordPanel = new JPanel(new GridBagLayout());
-        passwordPanel.add(passwordLabel);
-        passwordPanel.add(passwordField);
-
-        JPanel displayNamePanel = new JPanel(new GridBagLayout());
-        displayNamePanel.add(displayNameLabel);
-        displayNamePanel.add(displayNameField);
-
-        registerPanelContent.add(usernamePanel, registerPanelConstraints);
-        registerPanelContent.add(new JPanel(), registerPanelConstraints);
-        registerPanelContent.add(passwordPanel, registerPanelConstraints);
-        registerPanelContent.add(passwordRequirements, registerPanelConstraints);
-        registerPanelContent.add(new JPanel(), registerPanelConstraints);
-        registerPanelContent.add(displayNamePanel, registerPanelConstraints);
-        registerPanelContent.add(new JPanel(), registerPanelConstraints);
-        registerPanelContent.add(receiveAll, registerPanelConstraints);
-        registerPanelContent.add(new JPanel(), registerPanelConstraints);
-        registerPanelContent.add(registerEnterButton);
-        registerPanel.add(registerPanelContent, BorderLayout.CENTER);
-
-        registerFrame.setVisible(true);
-    }
-
-    public void loginGUI() {
-        loginFrame = new JFrame("Login");
-        Container loginPanel = loginFrame.getContentPane();
-        JPanel loginPanelContent = new JPanel(new GridBagLayout());
-        GridBagConstraints loginPanelConstraints = new GridBagConstraints();
-        loginPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        loginPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
-        loginFrame.setSize(800, 600);
-        loginFrame.setLocationRelativeTo(null);
-        loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        loginEnterButton = new JButton("Login");
-        loginEnterButton.addActionListener(actionListener);
-        usernameField = new JTextField("", 20);
-        passwordField = new JPasswordField("", 20);
-        JLabel usernameLabel = new JLabel("Username: ");
-        JLabel passwordLabel = new JLabel("Password: ");
-
-        JPanel usernamePanel = new JPanel(new GridBagLayout());
-        usernamePanel.add(usernameLabel);
-        usernamePanel.add(usernameField);
-
-        JPanel passwordPanel = new JPanel(new GridBagLayout());
-        passwordPanel.add(passwordLabel);
-        passwordPanel.add(passwordField);
-
-        loginPanelContent.add(usernamePanel, loginPanelConstraints);
-        loginPanelContent.add(new JPanel(), loginPanelConstraints);
-        loginPanelContent.add(passwordPanel, loginPanelConstraints);
-        loginPanelContent.add(new JPanel(), loginPanelConstraints);
-        loginPanelContent.add(loginEnterButton);
-        loginPanel.add(loginPanelContent, BorderLayout.CENTER);
-
-        loginFrame.setVisible(true);
-    }
-
-    public void createGUI() {
-        JFrame frame = new JFrame("Direct Messaging");
-        Container content = frame.getContentPane();
-        JScrollPane chatPanel = new JScrollPane();
-        JPanel messagePanel = new JPanel();
-        JPanel usersPanel = new JPanel();
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        content.setLayout(new BorderLayout());
-        sendButton = new JButton("Send");
-        sendButton.addActionListener(actionListener);
-        editButton = new JButton("Edit");
-        editButton.addActionListener(actionListener);
-        deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(actionListener);
-        messageText = new JTextField("", 20);
-        userMessages = new JTextArea();
-        userMessages.setEditable(false);
-        messagePanel.setLayout(new FlowLayout());
-        messagePanel.add(messageText);
-        messagePanel.add(sendButton);
-        messagePanel.add(editButton);
-        messagePanel.add(deleteButton);
-        chatPanel.setViewportView(userMessages);
-        chatPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        content.add(chatPanel, BorderLayout.CENTER);
-        content.add(messagePanel, BorderLayout.SOUTH);
-        content.add(usersPanel, BorderLayout.WEST);
-
-        frame.setVisible(true);
     }
 
     public void run() {
@@ -321,6 +185,7 @@ public class Client implements ClientInterface {
         connectionWorker.execute();
     }
 
+    // Backend functionality methods
     public void createNewUser(String username, String password, String display, boolean receiveAll,
                               ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
@@ -411,6 +276,8 @@ public class Client implements ClientInterface {
             Object o = inFromServer.readObject();
             if (o != null) {
                 profile = (Profile) o;
+            } else {
+                primaryPanel();
             }
         } catch (Exception e) {
             System.out.println("An error occurred while trying to login");
@@ -833,5 +700,228 @@ public class Client implements ClientInterface {
         } catch (Exception e) {
             System.out.println("An error occurred while viewing user");
         }
+    }
+
+    // GUI related methods
+    public void frameInitialization() {    // Initializes the frame for the GUI to be built in
+        frame = new JFrame("Boiler Chat");
+        frame.setSize(1000, 700);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
+    public void initialPanel() {
+        JPanel initialPanel = new JPanel(new GridBagLayout());
+        initialPanel.add(new JLabel(), new GridBagConstraints());
+
+        // Create login button
+        loginButton = new JButton("Login");
+        registerButton = new JButton("Register");
+
+        // Add action listeners
+        loginButton.addActionListener(actionListener);
+        registerButton.addActionListener(actionListener);
+
+        // Add buttons to panel
+        initialPanel.add(loginButton);
+        initialPanel.add(registerButton);
+
+        frame.getContentPane().removeAll();
+        frame.setContentPane(initialPanel);
+        frame.revalidate();
+    }
+
+    public void registerPanel() {
+        // TODO: Back button to take back to previous panel. Confirm password field
+
+        // Create registration panel and set constraints
+        JPanel registerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints registerPanelConstraints = new GridBagConstraints();
+        registerPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        registerPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+        // Create new button and attach action listener for registering
+        registerEnterButton = new JButton("Register");
+        registerEnterButton.addActionListener(actionListener);
+
+        // Create fields for username, password, display name and receive all input
+        usernameField = new JTextField("", 20);
+        passwordField = new JPasswordField("", 20);
+        displayNameField = new JTextField("", 20);
+        receiveAll = new JCheckBox("Receive messages from all users (not only friends)?");
+
+        // Create labels for text boxes
+        JLabel usernameLabel = new JLabel("Username: ");
+        JLabel passwordLabel = new JLabel("Password: ");
+        JLabel displayNameLabel = new JLabel("Display Name: ");
+        JLabel passwordRequirements = new JLabel("Password must have 8 characters and contain at least one" +
+                " uppercase, lowercase, and number.");
+        passwordRequirements.setForeground(Color.GRAY);
+        passwordRequirements.setFont(new Font(passwordRequirements.getFont().getFontName(), Font.ITALIC, 8));
+
+        // Create a panel for the username information
+        JPanel usernamePanel = new JPanel(new GridBagLayout());
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameField);
+
+        // Create a panel for the password information
+        JPanel passwordPanel = new JPanel(new GridBagLayout());
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(passwordField);
+
+        // Create a panel for the display name input
+        JPanel displayNamePanel = new JPanel(new GridBagLayout());
+        displayNamePanel.add(displayNameLabel);
+        displayNamePanel.add(displayNameField);
+
+        // Add all the smaller panels into the main panel with extra panels for spacing
+        registerPanel.add(usernamePanel, registerPanelConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(passwordPanel, registerPanelConstraints);
+        registerPanel.add(passwordRequirements, registerPanelConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(displayNamePanel, registerPanelConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(receiveAll, registerPanelConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(registerEnterButton);
+
+        // Change the frame to the registration panel
+        frame.getContentPane().removeAll();
+        frame.setContentPane(registerPanel);
+        frame.revalidate();
+    }
+
+    public void loginPanel() {
+        // TODO: Back button to take back to previous panel
+
+        // Create new login panel and set constraints
+        JPanel loginPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints loginPanelConstraints = new GridBagConstraints();
+        loginPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        loginPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+        // Create a button and add an action listener for logging in
+        loginEnterButton = new JButton("Login");
+        loginEnterButton.addActionListener(actionListener);
+
+        // Create fields for username and password
+        usernameField = new JTextField("", 20);
+        passwordField = new JPasswordField("", 20);
+        JLabel usernameLabel = new JLabel("Username: ");
+        JLabel passwordLabel = new JLabel("Password: ");
+
+        // Create panel for username input
+        JPanel usernamePanel = new JPanel(new GridBagLayout());
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameField);
+
+        // Create panel for password input
+        JPanel passwordPanel = new JPanel(new GridBagLayout());
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(passwordField);
+
+        // Add panels to main panel with spacing
+        loginPanel.add(usernamePanel, loginPanelConstraints);
+        loginPanel.add(new JPanel(), loginPanelConstraints);
+        loginPanel.add(passwordPanel, loginPanelConstraints);
+        loginPanel.add(new JPanel(), loginPanelConstraints);
+        loginPanel.add(loginEnterButton);
+
+        // Change the frame to the login panel
+        frame.getContentPane().removeAll();
+        frame.setContentPane(loginPanel);
+        frame.revalidate();
+    }
+
+    public void primaryPanel() {
+        // Create the main panel
+        JPanel primaryPanel = new JPanel();
+        primaryPanel.setLayout(new GridLayout());
+
+        // Split the left and right panes
+        JSplitPane panelSplit = new JSplitPane();
+        panelSplit.setDividerLocation(200);
+        panelSplit.enable(false);
+
+        // Create the area for a chat
+        JPanel chatArea = new JPanel(new BorderLayout());
+
+        // Create the area for user inputs
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+
+        messageText = new JTextField("", 57);    // Text field for message input
+        deleteButton = new JButton();    // Button to delete messages
+        editButton = new JButton();    // Button to edit messages
+        sendButton = new JButton();    // Button to send message
+
+        // Set text labels of buttons
+        deleteButton.setText("Delete");
+        editButton.setText("Edit");
+        sendButton.setText("Send");
+
+        // Add the buttons into the panel
+        inputPanel.add(deleteButton);
+        inputPanel.add(editButton);
+        inputPanel.add(sendButton);
+        inputPanel.add(messageText);
+
+        chatArea.add(inputPanel, BorderLayout.SOUTH);    // Add the input panel into the chat area
+
+        // Create the text area to be added to chat area
+        JTextPane chatDisplay = new JTextPane();
+        chatDisplay.setText("User 1: This is my first message\n");    // FIXME: This is the method used to change the message being displayed
+
+        JScrollPane chatScroll = new JScrollPane(chatDisplay);
+
+        chatArea.add(chatScroll, BorderLayout.CENTER);    // Add the display area into the chat area
+
+        panelSplit.setRightComponent(chatArea);    // Add chat area to right half of panel
+
+
+        // Create the user area
+        JPanel userPanel = new JPanel();
+        userPanel.setLayout(new BorderLayout());
+
+        userDisplaySelection = new JComboBox(new String[] {"Friends", "Blocked", "Search"});    // Create a dropdown menu for selecting who is displayed
+
+        userPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
+
+        // Create the display of users
+        var displayList = new ArrayList<String>();
+        displayList.add("User 1");
+        displayList.add("User 2");
+        displayList.add("User 3");
+        displayList.add("User 4");
+        displayList.add("User 5");
+        displayList.add("User 6");
+
+        JList userDisplay = new JList(displayList.toArray(new String[0]));
+        userPanel.add(userDisplay, BorderLayout.CENTER);    // Add the display into the user panel
+
+        JPanel userButtons = new JPanel(new GridLayout(3, 1));    // Create a panel for buttons
+        userPanel.add(userButtons, BorderLayout.SOUTH);
+
+        editProfileButton = new JButton();
+        chatButton = new JButton();
+        viewButton = new JButton();
+
+        editProfileButton.setText("Edit your Profile");
+        chatButton.setText("Chat with User");
+        viewButton.setText("View User");
+
+        userButtons.add(chatButton);
+        userButtons.add(viewButton);
+        userButtons.add(editProfileButton);
+
+        panelSplit.setLeftComponent(userPanel);    // Add the user panel into the left half of the main panel
+
+        primaryPanel.add(panelSplit);    // Add the split panel into the main panel
+
+        // Change the frame to the login panel
+        frame.getContentPane().removeAll();
+        frame.setContentPane(primaryPanel);
+        frame.revalidate();
     }
 }
