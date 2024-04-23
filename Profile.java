@@ -146,6 +146,6 @@ public class Profile implements Serializable, ProfileInterface {
     }
 
     public String toString() {
-        return null;    //TODO : This was preventing from running stuff
+        return displayName;    //TODO : This was preventing from running stuff
     }
 }

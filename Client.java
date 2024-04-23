@@ -42,7 +42,7 @@ public class Client implements ClientInterface {
     JButton chatButton;
     JButton viewButton;
     JComboBox userDisplaySelection;
-    DefaultListModel<String> displayList;
+    DefaultListModel<Profile> displayList;
     JTextField messageText;
     JTextField usernameField;
     JPasswordField passwordField;
@@ -442,7 +442,7 @@ public class Client implements ClientInterface {
 //            } while(query.isEmpty());
 //
 //            outToServer.writeUnshared(query);
-            outToServer.writeUnshared("u");
+            outToServer.writeUnshared("u");    // TODO: Update to pull from a text field
             outToServer.flush();
 
             ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
@@ -910,12 +910,10 @@ public class Client implements ClientInterface {
         JTextPane chatDisplay = new JTextPane();
         chatDisplay.setText("User 1: This is my first message\n");    // FIXME: This is the method used to change the message being displayed
 
-        JScrollPane chatScroll = new JScrollPane(chatDisplay);
-
+        JScrollPane chatScroll = new JScrollPane(chatDisplay);    // Put chat into a scroll panel
         chatArea.add(chatScroll, BorderLayout.CENTER);    // Add the display area into the chat area
 
         panelSplit.setRightComponent(chatArea);    // Add chat area to right half of panel
-
 
         // Create the user area
         JPanel userPanel = new JPanel();
@@ -937,7 +935,7 @@ public class Client implements ClientInterface {
         displayList = new DefaultListModel<>();
 
         updateUserDisplay(displayProfiles);
-        JList userDisplay = new JList(displayList);
+        JList<Profile> userDisplay = new JList<>(displayList);
 
         userPanel.add(userDisplay, BorderLayout.CENTER);    // Add the display into the user panel
 
@@ -976,7 +974,7 @@ public class Client implements ClientInterface {
 
         if (profiles != null) {
             for (Profile toShow : profiles) {
-                displayList.addElement(toShow.getDisplayName());
+                displayList.addElement(toShow);
             }
         }
     }
