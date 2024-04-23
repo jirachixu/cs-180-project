@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -29,7 +28,7 @@ public class Client implements ClientInterface {
     JFrame frame;
     JTextArea userMessages;
 
-    // Buttons
+    // User Inputs
     JButton logoutButton;
     JButton sendButton;
     JButton editButton;
@@ -43,18 +42,17 @@ public class Client implements ClientInterface {
     JButton chatButton;
     JButton viewButton;
     JComboBox userDisplaySelection;
-
-    // Text fields
+    DefaultListModel<String> displayList;
     JTextField messageText;
     JTextField usernameField;
     JPasswordField passwordField;
     JTextField displayNameField;
 
-
     // Network IO stuff
     ObjectInputStream inFromServer;
     ObjectOutputStream outToServer;
     Scanner scan; // FIXME: Placeholder
+    ArrayList<Profile> searchResults = new ArrayList<>() {};    // FIXME: Temporary
 
     public Client() {
         profile = null;
@@ -105,6 +103,7 @@ public class Client implements ClientInterface {
                         "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
 
             }
+
             if (e.getSource() == registerEnterButton) {
                 if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
                         && !(usernameField.getText() == null && !(passwordField.getPassword() == null))
@@ -133,6 +132,22 @@ public class Client implements ClientInterface {
                             "Invalid Username/Password/Display Name", JOptionPane.ERROR_MESSAGE);
                     frame.dispose();
                 }
+            }
+
+            if (e.getSource() == userDisplaySelection) {
+                ArrayList<Profile> displayProfiles = null;
+                switch ((String) userDisplaySelection.getSelectedItem()) {
+                    case "Friends" -> displayProfiles = profile.getFriends();
+                    case "Blocked" -> displayProfiles = profile.getBlocked();
+                    case "Search" -> displayProfiles = searchUsers(scan, inFromServer, outToServer);
+                }
+
+                updateUserDisplay(displayProfiles);
+
+                frame.revalidate();
+                frame.repaint();
+
+                System.out.println(userDisplaySelection.getSelectedItem());
             }
         }
     };
@@ -415,18 +430,19 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public ArrayList<Profile> searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("searchUsers");
             outToServer.flush();
 
-            System.out.println("Enter your search query:");
-            String query;
-            do {
-                query = scan.nextLine();
-            } while(query.isEmpty());
-
-            outToServer.writeUnshared(query);
+//            System.out.println("Enter your search query:");
+//            String query;
+//            do {
+//                query = scan.nextLine();
+//            } while(query.isEmpty());
+//
+//            outToServer.writeUnshared(query);
+            outToServer.writeUnshared("u");
             outToServer.flush();
 
             ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
@@ -435,8 +451,11 @@ public class Client implements ClientInterface {
                 System.out.println(option.getDisplayName() + "-" + option.getUsername());
             }
 
+            return results;
+
         } catch (Exception e) {
             System.out.println("An error occurred while searching for users");
+            return new ArrayList<Profile>();
         }
     }
 
@@ -903,19 +922,23 @@ public class Client implements ClientInterface {
         userPanel.setLayout(new BorderLayout());
 
         userDisplaySelection = new JComboBox(new String[] {"Friends", "Blocked", "Search"});    // Create a dropdown menu for selecting who is displayed
+        userDisplaySelection.addActionListener(actionListener);
 
         userPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
 
         // Create the display of users
-        var displayList = new ArrayList<String>();
-        displayList.add("User 1");
-        displayList.add("User 2");
-        displayList.add("User 3");
-        displayList.add("User 4");
-        displayList.add("User 5");
-        displayList.add("User 6");
+        ArrayList<Profile> displayProfiles = null;
+        switch ((String) userDisplaySelection.getSelectedItem()) {
+            case "Friends" -> displayProfiles = profile.getFriends();
+            case "Blocked" -> displayProfiles = profile.getBlocked();
+            case "Search" -> displayProfiles = profile.getFriends();
+        }
 
-        JList userDisplay = new JList(displayList.toArray(new String[0]));
+        displayList = new DefaultListModel<>();
+
+        updateUserDisplay(displayProfiles);
+        JList userDisplay = new JList(displayList);
+
         userPanel.add(userDisplay, BorderLayout.CENTER);    // Add the display into the user panel
 
         JPanel userButtons = new JPanel(new GridLayout(4, 1));    // Create a panel for buttons
@@ -946,5 +969,43 @@ public class Client implements ClientInterface {
         frame.getContentPane().removeAll();
         frame.setContentPane(primaryPanel);
         frame.revalidate();
+    }
+
+    public void updateUserDisplay(ArrayList<Profile> profiles) {
+        displayList.removeAllElements();
+
+        if (profiles != null) {
+            for (Profile toShow : profiles) {
+                displayList.addElement(toShow.getDisplayName());
+            }
+        }
+    }
+
+
+    private String displayChat(Chat chat) {
+        // TODO: Utilize this function to display a chat object
+
+        String senderDisplay;
+        String receiverDisplay;
+        String display;
+
+        if(chat.getProfiles().get(0).equals(profile)) {
+            senderDisplay = chat.getProfiles().get(0).getDisplayName();
+            receiverDisplay = chat.getProfiles().get(1).getDisplayName();
+        } else {
+            senderDisplay = chat.getProfiles().get(1).getDisplayName();
+            receiverDisplay = chat.getProfiles().get(0).getDisplayName();
+        }
+
+        String result = "";
+
+        for (Message message : chat.getMessages()) {
+            display = message.getSender().equals(profile) ? senderDisplay : receiverDisplay;
+
+            result = result + String.format("%s: %s\n", display, message.getContents());
+        }
+        result.strip();
+
+        return result;
     }
 }
