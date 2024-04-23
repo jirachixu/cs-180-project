@@ -81,14 +81,20 @@ public class Server implements ServerInterface {
             profileOut = "profileData.txt";
             chatsOut = "chatData.txt";
         } else {
-            System.out.println("Enter the name of the file from which to read profiles: ");
-            profileIn = scan.nextLine();
-            System.out.println("Enter the name of the file from which to read chats: ");
-            chatsIn = scan.nextLine();
-            System.out.println("Enter the name of the file to which to write profiles: ");
-            profileOut = scan.nextLine();
-            System.out.println("Enter the name of the file to which to write chats: ");
-            chatsOut = scan.nextLine();
+            profileIn = "profileDataDuplicate.txt";
+            chatsIn = "chatDataDuplicate.txt";
+            profileOut = "profileData.txt";
+            chatsOut = "chatData.txt";
+
+            // TODO: Make it so doesn't load backup
+//            System.out.println("Enter the name of the file from which to read profiles: ");
+//            profileIn = scan.nextLine();
+//            System.out.println("Enter the name of the file from which to read chats: ");
+//            chatsIn = scan.nextLine();
+//            System.out.println("Enter the name of the file to which to write profiles: ");
+//            profileOut = scan.nextLine();
+//            System.out.println("Enter the name of the file to which to write chats: ");
+//            chatsOut = scan.nextLine();
         }
 
         database = new Database(profileIn, chatsIn, profileOut, chatsOut);

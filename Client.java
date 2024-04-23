@@ -30,6 +30,7 @@ public class Client implements ClientInterface {
     JTextArea userMessages;
 
     // Buttons
+    JButton logoutButton;
     JButton sendButton;
     JButton editButton;
     JButton deleteButton;
@@ -69,28 +70,40 @@ public class Client implements ClientInterface {
             if (e.getSource() == sendButton) {
                 sendMessage(scan, inFromServer, outToServer);
             }
+
             if (e.getSource() == editButton) {
                 editMessage(scan, inFromServer, outToServer);
             }
+
             if (e.getSource() == deleteButton) {
                 deleteMessage(scan, outToServer);
             }
+
             if (e.getSource() == loginButton) {
                 loginPanel();
             }
+
+            if (e.getSource() == logoutButton) {
+                logout(inFromServer, outToServer);
+                initialPanel();
+            }
+
             if (e.getSource() == registerButton) {
                 registerPanel();
             }
+
             if (e.getSource() == loginEnterButton) {
-                if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
-                        && !(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
-                    login(usernameField.getText(), new String(passwordField.getPassword()),
-                            inFromServer, outToServer);
-                } else {
-                    JOptionPane.showMessageDialog(frame,
-                            "Please enter a valid username/password",
-                            "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
+                if (!(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
+                    if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)) {
+                        login(usernameField.getText(), new String(passwordField.getPassword()), inFromServer, outToServer);
+                        return;
+                    }
                 }
+
+                JOptionPane.showMessageDialog(frame,
+                        "Please enter a valid username/password",
+                        "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
+
             }
             if (e.getSource() == registerEnterButton) {
                 if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
@@ -138,10 +151,8 @@ public class Client implements ClientInterface {
                     inFromServer = new ObjectInputStream(socket.getInputStream());
                     outToServer = new ObjectOutputStream(socket.getOutputStream());
                     outToServer.flush();
-
                     profile = new Profile();
 
-                    int i = 0;  // TODO: PLACEHOLDER TO AVOID ERRORS
                     loop:
                     while (true) {
                         while (profile.getUsername() == null) {    // Loop while account is still empty
@@ -261,8 +272,7 @@ public class Client implements ClientInterface {
         return uppercase && lowercase && number;
     }
 
-    public void login(String username, String password, ObjectInputStream inFromServer,
-                      ObjectOutputStream outToServer) { // Log in
+    public void login(String username, String password, ObjectInputStream inFromServer, ObjectOutputStream outToServer) { // Log in
         try {
             outToServer.writeUnshared("login");
             outToServer.flush();
@@ -274,13 +284,21 @@ public class Client implements ClientInterface {
             outToServer.flush();
 
             Object o = inFromServer.readObject();
+
             if (o != null) {
                 profile = (Profile) o;
-            } else {
                 primaryPanel();
+
+            } else {
+               JOptionPane.showMessageDialog(frame,
+                       "Username or password is not correct",
+                       "Boiler Chat", JOptionPane.INFORMATION_MESSAGE);
             }
+
         } catch (Exception e) {
-            System.out.println("An error occurred while trying to login");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while trying to login",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -900,20 +918,25 @@ public class Client implements ClientInterface {
         JList userDisplay = new JList(displayList.toArray(new String[0]));
         userPanel.add(userDisplay, BorderLayout.CENTER);    // Add the display into the user panel
 
-        JPanel userButtons = new JPanel(new GridLayout(3, 1));    // Create a panel for buttons
+        JPanel userButtons = new JPanel(new GridLayout(4, 1));    // Create a panel for buttons
         userPanel.add(userButtons, BorderLayout.SOUTH);
 
         editProfileButton = new JButton();
         chatButton = new JButton();
         viewButton = new JButton();
+        logoutButton = new JButton();
 
-        editProfileButton.setText("Edit your Profile");
+        logoutButton.addActionListener(actionListener);
+
         chatButton.setText("Chat with User");
         viewButton.setText("View User");
+        editProfileButton.setText("Edit your Profile");
+        logoutButton.setText("Logout");
 
         userButtons.add(chatButton);
         userButtons.add(viewButton);
         userButtons.add(editProfileButton);
+        userButtons.add(logoutButton);
 
         panelSplit.setLeftComponent(userPanel);    // Add the user panel into the left half of the main panel
 
