@@ -7,10 +7,10 @@ public interface ClientInterface extends Runnable {
     void createNewUser(String username, String password, String displayName, boolean receiveAll,
                        ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void login(String username, String password, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void blockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void unblockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void friendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void unfriendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void deleteMessage(Scanner scan, ObjectOutputStream outToServer);

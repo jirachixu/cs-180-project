@@ -175,7 +175,49 @@ public class Client implements ClientInterface {
             }
 
             if (e.getSource() == friendButton) {
-                friendUser(scan, inFromServer, outToServer);
+                int i = userDisplay.getSelectedIndex();
+                if (i > -1) {
+                    Profile user = displayList.getElementAt(i);
+
+                    if (profile.getFriends().contains(user)) {
+                        unfriendUser(user.getUsername(), inFromServer, outToServer);
+                    } else {
+                        friendUser(user.getUsername(), inFromServer, outToServer);
+                    }
+
+                    ArrayList<Profile> displayProfiles = switch ((String) userDisplaySelection.getSelectedItem()) {
+                        case "Friends" -> profile.getFriends();
+                        case "Blocked" -> profile.getBlocked();
+                        case "Search" -> searchUsers(inFromServer, outToServer);
+                        default -> null;
+                    };
+
+                    updateUserDisplay(displayProfiles);
+                    panelSplit.setRightComponent(chatPanel());
+                }
+            }
+
+            if (e.getSource() == blockButton) {
+                int i = userDisplay.getSelectedIndex();
+                if (i > -1) {
+                    Profile user = displayList.getElementAt(i);
+
+                    if (profile.getBlocked().contains(user)) {
+                        unblockUser(user.getUsername(), inFromServer, outToServer);
+                    } else {
+                        blockUser(user.getUsername(), inFromServer, outToServer);
+                    }
+
+                    ArrayList<Profile> displayProfiles = switch ((String) userDisplaySelection.getSelectedItem()) {
+                        case "Friends" -> profile.getFriends();
+                        case "Blocked" -> profile.getBlocked();
+                        case "Search" -> searchUsers(inFromServer, outToServer);
+                        default -> null;
+                    };
+
+                    updateUserDisplay(displayProfiles);
+                    panelSplit.setRightComponent(chatPanel());
+                }
             }
 
             if (e.getSource() == viewButton) {
@@ -216,15 +258,15 @@ public class Client implements ClientInterface {
                             case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
                             case "editMessage" -> editMessage(scan, inFromServer, outToServer);
                             case "deleteMessage" -> deleteMessage(scan, outToServer);
-                            case "logout" -> logout(inFromServer, outToServer);
-                            case "searchUsers" -> searchUsers(inFromServer, outToServer);
-                            case "blockUser" -> blockUser(scan, inFromServer, outToServer);
-                            case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
-                            case "friendUser" -> friendUser(scan, inFromServer, outToServer);
-                            case "unfriendUser" -> unfriendUser(scan, inFromServer, outToServer);
+                            //case "logout" -> logout(inFromServer, outToServer);
+                            //case "searchUsers" -> searchUsers(inFromServer, outToServer);
+                            //case "blockUser" -> blockUser(scan, inFromServer, outToServer);
+                            //case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
+                            //case "friendUser" -> friendUser(scan, inFromServer, outToServer);
+                            //case "unfriendUser" -> unfriendUser(inFromServer, outToServer);
                             case "editProfile" -> editProfile(scan, inFromServer, outToServer);
                             case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
-                            case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
+                            //case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
                             case "exit" -> {
                                 break loop;
                             }
@@ -486,7 +528,7 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void blockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("blockUser");
             outToServer.flush();
@@ -494,23 +536,18 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
-            System.out.println("Who would you like to block?");
-            String toBlock;
-            do {
-                toBlock = scan.nextLine();
-            } while(toBlock.isEmpty());
-
-            outToServer.writeUnshared(toBlock);
+            outToServer.writeUnshared(user);
             outToServer.flush();
 
             profile = (Profile) inFromServer.readObject();
-
         } catch (Exception e) {
-            System.out.println("An error occurred while blocking user");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while blocking user",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public void unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void unblockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("unblockUser");
             outToServer.flush();
@@ -518,45 +555,39 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
-            System.out.println("Who would you like to unblock?");
-            String toUnblock;
-            do {
-                toUnblock = scan.nextLine();
-            } while(toUnblock.isEmpty());
-
-            outToServer.writeUnshared(toUnblock);
+            outToServer.writeUnshared(user);
             outToServer.flush();
 
             profile = (Profile) inFromServer.readObject();
 
         } catch (Exception e) {
-            System.out.println("An error occurred while unblocking user");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while unblocking user",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public void friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void friendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            int i = userDisplay.getSelectedIndex();
-            if (i > -1) {
-                outToServer.writeUnshared("friendUser");
-                outToServer.flush();
+            outToServer.writeUnshared("friendUser");
+            outToServer.flush();
 
-                outToServer.writeUnshared(profile.getUsername());
-                outToServer.flush();
+            outToServer.writeUnshared(profile.getUsername());
+            outToServer.flush();
 
-                String toFriend = displayList.getElementAt(i).getUsername();
+            outToServer.writeUnshared(user);
+            outToServer.flush();
 
-                outToServer.writeUnshared(toFriend);
-                outToServer.flush();
+            profile = (Profile) inFromServer.readObject();
 
-                profile = (Profile) inFromServer.readObject();
-            }
         } catch (Exception e) {
-            System.out.println("An error occurred while friending user");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while friending user",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public void unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void unfriendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("unfriendUser");
             outToServer.flush();
@@ -564,19 +595,15 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
 
-            System.out.println("Who would you like to unfriend?");
-            String toUnfriend;
-            do {
-                toUnfriend = scan.nextLine();
-            } while(toUnfriend.isEmpty());
-
-            outToServer.writeUnshared(toUnfriend);
+            outToServer.writeUnshared(user);
             outToServer.flush();
 
             profile = (Profile) inFromServer.readObject();
 
         } catch (Exception e) {
-            System.out.println("An error occurred while unfriending user");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while unfriending user",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -930,9 +957,26 @@ public class Client implements ClientInterface {
         // Get the list of users to display
         ArrayList<Profile> displayProfiles = null;
         switch ((String) userDisplaySelection.getSelectedItem()) {
-            case "Friends" -> displayProfiles = profile.getFriends();
-            case "Blocked" -> displayProfiles = profile.getBlocked();
-            case "Search" -> displayProfiles = profile.getFriends();
+            case "Friends" :
+                searchQuery.setText("");
+                searchQuery.setEditable(false);
+                searchButton.setEnabled(false);
+                displayProfiles = profile.getFriends();
+                break;
+
+            case "Blocked" :
+                searchQuery.setText("");
+                searchQuery.setEditable(false);
+                searchButton.setEnabled(false);
+                displayProfiles = profile.getBlocked();
+                break;
+
+            case "Search" :
+                searchQuery.setText("");
+                searchQuery.setEditable(true);
+                searchButton.setEnabled(true);
+                displayProfiles = searchUsers(inFromServer, outToServer);
+                break;
         }
 
         displayList = new DefaultListModel<>();
