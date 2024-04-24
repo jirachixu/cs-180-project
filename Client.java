@@ -28,8 +28,12 @@ public class Client implements ClientInterface {
     // Display objects
     JFrame frame;
     JTextArea userMessages;
+    JSplitPane panelSplit;
 
     // User Inputs
+    JButton backButton;    // TODO: Put this on login
+    JButton friendButton;
+    JButton blockButton;
     JButton logoutButton;
     JButton sendButton;
     JButton editButton;
@@ -45,6 +49,7 @@ public class Client implements ClientInterface {
     JButton viewButton;
     JComboBox<String> userDisplaySelection;
     DefaultListModel<Profile> displayList;
+    JList<Profile> userDisplay;
     JTextField messageText;
     JTextField usernameField;
     JTextField searchQuery;
@@ -167,6 +172,18 @@ public class Client implements ClientInterface {
 
             if (e.getSource() == searchQuery || e.getSource() == searchButton) {
                 updateUserDisplay(searchUsers(inFromServer, outToServer));
+            }
+
+            if (e.getSource() == friendButton) {
+                friendUser(scan, inFromServer, outToServer);
+            }
+
+            if (e.getSource() == viewButton) {
+                int i = userDisplay.getSelectedIndex();
+                if (i > -1) {
+                    Profile toView = displayList.getElementAt(i);
+                    panelSplit.setRightComponent(viewUserPanel(toView));    // Add the user panel into the left half of the main panel
+                }
             }
         }
     };
@@ -519,23 +536,21 @@ public class Client implements ClientInterface {
 
     public void friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            outToServer.writeUnshared("friendUser");
-            outToServer.flush();
+            int i = userDisplay.getSelectedIndex();
+            if (i > -1) {
+                outToServer.writeUnshared("friendUser");
+                outToServer.flush();
 
-            outToServer.writeUnshared(profile.getUsername());
-            outToServer.flush();
+                outToServer.writeUnshared(profile.getUsername());
+                outToServer.flush();
 
-            System.out.println("Who would you like to friend?");
-            String toFriend;
-            do {
-                toFriend = scan.nextLine();
-            } while(toFriend.isEmpty());
+                String toFriend = displayList.getElementAt(i).getUsername();
 
-            outToServer.writeUnshared(toFriend);
-            outToServer.flush();
+                outToServer.writeUnshared(toFriend);
+                outToServer.flush();
 
-            profile = (Profile) inFromServer.readObject();
-
+                profile = (Profile) inFromServer.readObject();
+            }
         } catch (Exception e) {
             System.out.println("An error occurred while friending user");
         }
@@ -755,6 +770,7 @@ public class Client implements ClientInterface {
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 
@@ -882,16 +898,79 @@ public class Client implements ClientInterface {
         frame.revalidate();
     }
 
-    public void primaryPanel() {
-        // Create the main panel
-        JPanel primaryPanel = new JPanel();
-        primaryPanel.setLayout(new GridLayout());
+    public JPanel userPanel() {
+        // Create the user area
+        JPanel userPanel = new JPanel(new BorderLayout());
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        JPanel lowerSearchPanel = new JPanel(new BorderLayout());
 
-        // Split the left and right panes
-        JSplitPane panelSplit = new JSplitPane();
-        panelSplit.setDividerLocation(200);
-        panelSplit.enable(false);
+        // Create a dropdown menu for selecting who is displayed
+        userDisplaySelection = new JComboBox<String>(new String[] {"Friends", "Blocked", "Search"});
+        userDisplaySelection.addActionListener(actionListener);
 
+        // Create a text field for searching users
+        searchQuery = new JTextField("", 12);
+        searchQuery.setEditable(false);
+        searchQuery.addActionListener(actionListener);
+
+        // Create a button for searching users
+        searchButton = new JButton();
+        searchButton.setText("Search");
+        searchButton.setEnabled(false);
+        searchButton.addActionListener(actionListener);
+
+        // Fill out the lower section of the search panel
+        lowerSearchPanel.add(searchButton, BorderLayout.WEST);
+        lowerSearchPanel.add(searchQuery, BorderLayout.EAST);
+
+        // Fill out the remainder of the search panel
+        searchPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
+        searchPanel.add(lowerSearchPanel, BorderLayout.SOUTH);    // Add the selection of display into the user panel
+
+        // Get the list of users to display
+        ArrayList<Profile> displayProfiles = null;
+        switch ((String) userDisplaySelection.getSelectedItem()) {
+            case "Friends" -> displayProfiles = profile.getFriends();
+            case "Blocked" -> displayProfiles = profile.getBlocked();
+            case "Search" -> displayProfiles = profile.getFriends();
+        }
+
+        displayList = new DefaultListModel<>();
+        updateUserDisplay(displayProfiles);
+        userDisplay = new JList<>(displayList);
+
+        // Create a panel of buttons
+        JPanel userButtons = new JPanel(new GridLayout(4, 1));    // Create a panel for buttons
+
+        editProfileButton = new JButton();
+        chatButton = new JButton();
+        viewButton = new JButton();
+        logoutButton = new JButton();
+
+        chatButton.addActionListener(actionListener);
+        viewButton.addActionListener(actionListener);
+        editProfileButton.addActionListener(actionListener);
+        logoutButton.addActionListener(actionListener);
+
+        chatButton.setText("Chat");
+        viewButton.setText("View");
+        editProfileButton.setText("Edit your Profile");
+        logoutButton.setText("Logout");
+
+        userButtons.add(chatButton);
+        userButtons.add(viewButton);
+        userButtons.add(editProfileButton);
+        userButtons.add(logoutButton);
+
+        // Add all the sub-panels into the main panel
+        userPanel.add(searchPanel, BorderLayout.NORTH);
+        userPanel.add(userDisplay, BorderLayout.CENTER);
+        userPanel.add(userButtons, BorderLayout.SOUTH);
+
+        return userPanel;
+    }
+
+    public JPanel chatPanel() {
         // Create the area for a chat
         JPanel chatArea = new JPanel(new BorderLayout());
 
@@ -923,70 +1002,72 @@ public class Client implements ClientInterface {
         JScrollPane chatScroll = new JScrollPane(chatDisplay);    // Put chat into a scroll panel
         chatArea.add(chatScroll, BorderLayout.CENTER);    // Add the display area into the chat area
 
-        panelSplit.setRightComponent(chatArea);    // Add chat area to right half of panel
+        return chatArea;
+    }
 
-        // Create the user area
-        JPanel userPanel = new JPanel(new BorderLayout());
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        JPanel lowerSearchPanel = new JPanel(new BorderLayout());
+    public JPanel viewUserPanel(Profile user) {
+        // Create the area for a chat
+        JPanel viewUserPanel = new JPanel(new GridBagLayout());
+        var gbc = new GridBagConstraints();
 
-        userDisplaySelection = new JComboBox<String>(new String[] {"Friends", "Blocked", "Search"});    // Create a dropdown menu for selecting who is displayed
-        userDisplaySelection.addActionListener(actionListener);
+        JLabel displayLabel = new JLabel("Display Name: " + user.getUsername());
+        JLabel usernameLabel = new JLabel("Username: " + user.getUsername());
 
-        searchQuery = new JTextField("", 12);
-        searchQuery.setEditable(false);
-        searchQuery.addActionListener(actionListener);
+        displayLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
+        usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
-        searchButton = new JButton();
-        searchButton.setText("Search");
-        searchButton.setEnabled(false);
-        searchButton.addActionListener(actionListener);
 
-        // Fill out the lower section of the search panel
-        lowerSearchPanel.add(searchButton, BorderLayout.WEST);
-        lowerSearchPanel.add(searchQuery, BorderLayout.EAST);
+        friendButton = new JButton();
+        blockButton = new JButton();
 
-        searchPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
-        searchPanel.add(lowerSearchPanel, BorderLayout.SOUTH);    // Add the selection of display into the user panel
-
-        userPanel.add(searchPanel, BorderLayout.NORTH);    // Add the selection of display into the user panel
-
-        // Create the display of users
-        ArrayList<Profile> displayProfiles = null;
-        switch ((String) userDisplaySelection.getSelectedItem()) {
-            case "Friends" -> displayProfiles = profile.getFriends();
-            case "Blocked" -> displayProfiles = profile.getBlocked();
-            case "Search" -> displayProfiles = profile.getFriends();
+        if (profile.getFriends().contains(user)) {
+            friendButton.setText("Unfriend");
+        } else {
+            friendButton.setText("Friend");
         }
 
-        displayList = new DefaultListModel<>();
+        if (profile.getBlocked().contains(user)) {
+            blockButton.setText("Unblock");
+        } else {
+            blockButton.setText("Block");
+        }
 
-        updateUserDisplay(displayProfiles);
-        JList<Profile> userDisplay = new JList<>(displayList);
 
-        userPanel.add(userDisplay, BorderLayout.CENTER);    // Add the display into the user panel
+        friendButton.addActionListener(actionListener);
+        blockButton.addActionListener(actionListener);
 
-        JPanel userButtons = new JPanel(new GridLayout(4, 1));    // Create a panel for buttons
-        userPanel.add(userButtons, BorderLayout.SOUTH);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        viewUserPanel.add(displayLabel, gbc);
 
-        editProfileButton = new JButton();
-        chatButton = new JButton();
-        viewButton = new JButton();
-        logoutButton = new JButton();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        viewUserPanel.add(usernameLabel, gbc);
 
-        logoutButton.addActionListener(actionListener);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        viewUserPanel.add(friendButton, gbc);
 
-        chatButton.setText("Chat with User");
-        viewButton.setText("View User");
-        editProfileButton.setText("Edit your Profile");
-        logoutButton.setText("Logout");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        viewUserPanel.add(blockButton, gbc);
 
-        userButtons.add(chatButton);
-        userButtons.add(viewButton);
-        userButtons.add(editProfileButton);
-        userButtons.add(logoutButton);
+        return viewUserPanel;
+    }
 
-        panelSplit.setLeftComponent(userPanel);    // Add the user panel into the left half of the main panel
+
+    public void primaryPanel() {
+        // Create the main panel
+        JPanel primaryPanel = new JPanel();
+        primaryPanel.setLayout(new GridLayout());
+
+        // Split the left and right panes
+        panelSplit = new JSplitPane();
+        panelSplit.setDividerLocation(200);
+        panelSplit.setEnabled(false);
+
+        panelSplit.setLeftComponent(userPanel());    // Add the user panel into the left half of the main panel
+        panelSplit.setRightComponent(chatPanel());    // Add chat area to right half of panel
 
         primaryPanel.add(panelSplit);    // Add the split panel into the main panel
 
