@@ -17,7 +17,7 @@ public interface ClientInterface extends Runnable {
     void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    ArrayList<Profile> searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    ArrayList<Profile> searchUsers(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void viewProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
 }
