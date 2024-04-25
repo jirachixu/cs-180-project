@@ -636,8 +636,10 @@ public class Client implements ClientInterface {
 
                     // Send the message to the server
                     toAdd = new Message(profile, receiver, contents);
+
                     outToServer.writeUnshared(toAdd);
                     outToServer.flush();
+
                     updateChats(inFromServer, outToServer);
                     messageText.setText("");
 
@@ -654,69 +656,70 @@ public class Client implements ClientInterface {
         worker.execute();
     }
 
+    public Chat getCurrentChat() {
+        Chat selectedChat = null;
+        Profile recipient = displayList.getElementAt(userDisplay.getSelectedIndex());
+        for (Chat chat : chats) {
+            if (chat.matchesProfiles(this.profile, recipient)) {
+                selectedChat = chat;
+            }
+        }
+        return selectedChat;
+    }
+
     public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        try {
-            outToServer.writeUnshared("editMessage");
-            outToServer.flush();
-
-            // TODO GUI
-            Message toEdit;
-            do {    // Get a valid method from chats
-                int chatIndex;
-                do {
-                    System.out.println("Enter chat index");
-                    try {
-                        chatIndex = Integer.parseInt(scan.nextLine());
-                        break;
-                    } catch (Exception e) {
-                        System.out.println("Chat index must be an integer");
-                    }
-                } while (true);
-
-                int messageIndex;
-                do {
-                    System.out.println("Enter message index");
-                    try {
-                        messageIndex = Integer.parseInt(scan.nextLine());
-
-                        break;
-                    } catch (Exception e) {
-                        System.out.println("Chat index must be an integer");
-                    }
-                } while (true);
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
 
                 try {
-                    toEdit = chats.get(chatIndex).getMessages().get(messageIndex);
+                    outToServer.writeUnshared("editMessage");
+                    outToServer.flush();
 
-                    if (!toEdit.getSender().equals(profile)) {
-                        System.out.println("You can only edit messages you sent!");
-                        toEdit = null;
+                    // TODO GUI
+                    Chat selectedChat = getCurrentChat();
+                    String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
+                    String sender = selection.substring(0, selection.indexOf(" "));
+                    String messageContent = selection.substring(selection.indexOf(" ") + 1);
+
+                    Message toEdit = null;
+
+                    for (int i = 0; i < selectedChat.getMessages().size(); i++) {
+                        if (messageContent.equals(selectedChat.getMessages().get(i).getContents())) {
+                            toEdit = selectedChat.getMessages().get(i);
+                            break;
+                        }
                     }
+                    do {    // Get a valid method from chats
+                        if (!toEdit.getSender().equals(profile)) {
+                            JOptionPane.showMessageDialog(null,
+                                    "You can only edit messages that you sent!", "Edit Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            toEdit = null;
+                        }
+                    } while (toEdit == null);
+
+                    outToServer.reset();
+                    outToServer.writeUnshared(toEdit);
+                    outToServer.flush();
+
+                    String contents = JOptionPane.showInputDialog(null,
+                            "What would you like to edit the message to?", "Edit", JOptionPane.QUESTION_MESSAGE);
+
+                    outToServer.writeUnshared(contents);
+                    outToServer.flush();
+
+                    updateChats(inFromServer, outToServer);
+                    chatDisplayList.set(chatDisplay.getSelectedIndex(), sender + " " + contents);
 
                 } catch (Exception e) {
-                    System.out.println("Indices must be within bounds");
-                    toEdit = null;
+                    System.out.println(e.getMessage());
+                    System.out.println("An error occurred when editing the message");
                 }
-            } while (toEdit == null);
-
-            System.out.println("Old message: " + toEdit.getContents());
-
-            outToServer.reset();
-            outToServer.writeUnshared(toEdit);
-            outToServer.flush();
-
-            System.out.println("What would you like to edit the message to?");
-            String contents;
-            do {
-                contents = scan.nextLine();
-            } while (contents.isEmpty());
-
-            outToServer.writeUnshared(contents);
-            outToServer.flush();
-
-        } catch (Exception e) {
-            System.out.println("An error occurred when editing the message");
-        }
+                return null;
+            }
+        };
+        worker.execute();
     }
 
     public void deleteMessage(Scanner scan, ObjectOutputStream outToServer) {
@@ -1024,12 +1027,7 @@ public class Client implements ClientInterface {
 
     public void getChatMessages(Profile recipient) {
         Profile sender = this.profile;
-        Chat selectedChat = null;
-        for (Chat chat : chats) {
-            if (chat.matchesProfiles(sender, recipient)) {
-                selectedChat = chat;
-            }
-        }
+        Chat selectedChat = getCurrentChat();
         if (selectedChat == null) {
             return;
         }
