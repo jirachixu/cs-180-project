@@ -131,12 +131,14 @@ public class Server implements ServerInterface {
             boolean loop;
 
             // Mirrors input for createNewUser in Client
-            do {
-                username = (String) inFromUser.readObject();
-                loop = !database.usernameFree(username);
-                outToUser.writeBoolean(loop);
-                outToUser.flush();
-            } while(loop);
+            username = (String) inFromUser.readObject();
+            loop = !database.usernameFree(username);
+            outToUser.writeBoolean(loop);
+            outToUser.flush();
+            if (loop) {
+                System.out.println("Username is taken!");
+                return;
+            }
 
             password = (String) inFromUser.readObject();
             display = (String) inFromUser.readObject();
