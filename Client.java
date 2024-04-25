@@ -327,18 +327,16 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared("createNewUser");
             outToServer.flush();
 
-            boolean loop = true;
             // Get and validate username with server
-            try {
-                outToServer.reset();
-                outToServer.writeUnshared(username);
-                outToServer.flush();
+            outToServer.reset();
+            outToServer.writeUnshared(username);
+            outToServer.flush();
 
-                loop = inFromServer.readBoolean();
-                if (loop) {
-                    return;
-                }
-            } catch (IOException e) {    // If socket is lost exit method
+            boolean loop = inFromServer.readBoolean();
+            if (loop) {
+                JOptionPane.showMessageDialog(frame,
+                        "Username already exists!",
+                        "Username Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
