@@ -52,6 +52,7 @@ public class Client implements ClientInterface {
     JList<Profile> userDisplay;
     JList<String> chatDisplay = new JList<>();
     DefaultListModel<String> chatDisplayList = new DefaultListModel<>();
+    JTextArea currentRecipient = new JTextArea();
     JTextField messageText;
     JTextField usernameField;
     JTextField searchQuery;
@@ -246,6 +247,7 @@ public class Client implements ClientInterface {
                 int i = userDisplay.getSelectedIndex();
                 if (i != -1) {
                     Profile recipient = displayList.getElementAt(i);
+                    currentRecipient.setText(recipient.getDisplayName() + "(" + recipient.getUsername() + ")");
                     chatDisplay.clearSelection();
                     chatDisplayList.clear();
                     getChatMessages(recipient);
@@ -284,9 +286,9 @@ public class Client implements ClientInterface {
                         System.out.println("Enter action:");    // TODO GUI
                         switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
                             // TODO: Replace with appropriate method calls
-                            case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
-                            case "editMessage" -> editMessage(scan, inFromServer, outToServer);
-                            case "deleteMessage" -> deleteMessage(scan, outToServer);
+                            //case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
+                            //case "editMessage" -> editMessage(scan, inFromServer, outToServer);
+                            //case "deleteMessage" -> deleteMessage(scan, outToServer);
                             //case "logout" -> logout(inFromServer, outToServer);
                             //case "searchUsers" -> searchUsers(inFromServer, outToServer);
                             //case "blockUser" -> blockUser(scan, inFromServer, outToServer);
@@ -686,7 +688,6 @@ public class Client implements ClientInterface {
                     outToServer.writeUnshared("editMessage");
                     outToServer.flush();
 
-                    // TODO GUI
                     Chat selectedChat = getCurrentChat();
                     String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
                     String sender = selection.substring(0, selection.indexOf(" "));
@@ -737,7 +738,6 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared("deleteMessage");
             outToServer.flush();
 
-            // TODO GUI
             Chat selectedChat = getCurrentChat();
             String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
             String sender = selection.substring(0, selection.indexOf(" "));
@@ -1039,7 +1039,6 @@ public class Client implements ClientInterface {
     }
 
     public void getChatMessages(Profile recipient) {
-        Profile sender = this.profile;
         Chat selectedChat = getCurrentChat();
         if (selectedChat == null) {
             return;
@@ -1057,6 +1056,8 @@ public class Client implements ClientInterface {
         // Create the area for user inputs
         JPanel inputPanel = new JPanel(new GridBagLayout());
 
+        currentRecipient.setEditable(false);
+
         messageText = new JTextField("", 57);    // Text field for message input
         sendButton = new JButton("Send");    // Button to send message
         sendButton.addActionListener(actionListener);
@@ -1073,6 +1074,7 @@ public class Client implements ClientInterface {
 
 
         chatArea.add(inputPanel, BorderLayout.SOUTH);    // Add the input panel into the chat area
+        chatArea.add(currentRecipient, BorderLayout.NORTH);
 
         // Create the text area to be added to chat area
         JScrollPane chatScroll = new JScrollPane(chatDisplay); // Put chat into a scroll panel
