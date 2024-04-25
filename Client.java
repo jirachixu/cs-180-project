@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,7 +26,6 @@ public class Client implements ClientInterface {
     // GUI objects
     // Display objects
     JFrame frame;
-    JTextArea userMessages;
     JSplitPane panelSplit;
 
     // User Inputs
@@ -61,10 +59,11 @@ public class Client implements ClientInterface {
     JPasswordField confirmPasswordField;
 
     // Network IO stuff
+    Profile activeChat;
     ObjectInputStream inFromServer;
     ObjectOutputStream outToServer;
     Scanner scan; // FIXME: Placeholder
-    ArrayList<Profile> searchResults = new ArrayList<>() {};    // FIXME: Temporary
+
 
     public Client() {
         profile = null;
@@ -240,15 +239,12 @@ public class Client implements ClientInterface {
                     panelSplit.setRightComponent(viewUserPanel(toView));    // Add the user panel into the left half of the main panel
                 }
             }
+
             if (e.getSource() == chatButton) {
                 int i = userDisplay.getSelectedIndex();
                 if (i != -1) {
-                    Profile recipient = displayList.getElementAt(i);
-                    currentRecipient.setText(recipient.getDisplayName() + "(" + recipient.getUsername() + ")");
-                    chatDisplay.clearSelection();
-                    chatDisplayList.clear();
-                    getChatMessages(recipient);
-                    chatDisplay = new JList<>(chatDisplayList);
+                    activeChat = displayList.getElementAt(i);
+                    chatDisplay = updateChatDisplay();
                     panelSplit.setRightComponent(chatPanel());
                 }
             }
@@ -264,6 +260,7 @@ public class Client implements ClientInterface {
 
     public void run() {
         scan = new Scanner(System.in);    // TODO: Replace with GUI
+        activeChat = new Profile();
         SwingWorker<Void, Void> connectionWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -274,39 +271,15 @@ public class Client implements ClientInterface {
                     outToServer.flush();
                     profile = new Profile();
 
-                    loop:
-                    while (true) {
-                        while (profile.getUsername() == null) {    // Loop while account is still empty
-                            // loginOrRegister();
+                    while (true) {    // Loop forever and update chats in background
+                        if (profile.getUsername() != null) {
+                            //System.out.println("Update chat");
+                            updateChats(inFromServer, outToServer);
+                            chatDisplay = updateChatDisplay();
                         }
 
-                        System.out.println("Enter action:");    // TODO GUI
-                        switch (scan.nextLine()) {    // TODO GUI: Action listeners and buttons rather than a switch
-                            // TODO: Replace with appropriate method calls
-                            //case "sendMessage" -> sendMessage(scan, inFromServer, outToServer);
-                            //case "editMessage" -> editMessage(scan, inFromServer, outToServer);
-                            //case "deleteMessage" -> deleteMessage(scan, outToServer);
-                            //case "logout" -> logout(inFromServer, outToServer);
-                            //case "searchUsers" -> searchUsers(inFromServer, outToServer);
-                            //case "blockUser" -> blockUser(scan, inFromServer, outToServer);
-                            //case "unblockUser" -> unblockUser(scan, inFromServer, outToServer);
-                            //case "friendUser" -> friendUser(scan, inFromServer, outToServer);
-                            //case "unfriendUser" -> unfriendUser(inFromServer, outToServer);
-                            case "editProfile" -> editProfile(scan, inFromServer, outToServer);
-                            case "deleteProfile" -> deleteProfile(scan, inFromServer, outToServer);
-                            //case "viewProfile" -> viewProfile(scan, inFromServer, outToServer);
-                            case "exit" -> {
-                                break loop;
-                            }
-                            default -> updateChats(inFromServer, outToServer);
-                        }
+                        //Thread.sleep(1000);
                     }
-
-                    // Exit process
-                    outToServer.writeUnshared("exit");
-                    outToServer.flush();
-                    outToServer.close();
-                    inFromServer.close();
 
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(null,
@@ -316,6 +289,7 @@ public class Client implements ClientInterface {
                 return null;
             }
         };
+
         connectionWorker.execute();
     }
 
@@ -335,7 +309,7 @@ public class Client implements ClientInterface {
             if (loop) {
                 JOptionPane.showMessageDialog(frame,
                         "Username already exists!",
-                        "Username Error", JOptionPane.ERROR_MESSAGE);
+                        "Boiler Chat", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -344,6 +318,9 @@ public class Client implements ClientInterface {
                 outToServer.flush();
 
             } catch (IOException e) {    // If socket is lost exit method
+                JOptionPane.showMessageDialog(frame,
+                        "An error occurred while trying to create an account!",
+                        "Boiler Chat", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -356,8 +333,11 @@ public class Client implements ClientInterface {
             outToServer.flush();
 
             this.profile = (Profile) inFromServer.readObject();
+
         } catch (Exception e) {
-            System.out.println("An error occurred while trying to create an account");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while trying to create an account!",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -368,7 +348,9 @@ public class Client implements ClientInterface {
 
             this.profile = (Profile) inFromServer.readObject();
         } catch (Exception e) {
-            System.out.println("Failed to Logout");
+            JOptionPane.showMessageDialog(frame,
+                    "Failed to logout",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -393,7 +375,8 @@ public class Client implements ClientInterface {
         return uppercase && lowercase && number;
     }
 
-    public void login(String username, String password, ObjectInputStream inFromServer, ObjectOutputStream outToServer) { // Log in
+    public void login(String username, String password, ObjectInputStream inFromServer,
+                      ObjectOutputStream outToServer) { // Log in
         try {
             outToServer.writeUnshared("login");
             outToServer.flush();
@@ -423,6 +406,8 @@ public class Client implements ClientInterface {
         }
     }
 
+
+    // TODO: Update to GUI
     public void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         System.out.println("Are you sure you want to delete this account?");
         if (scan.nextLine().equalsIgnoreCase("yes")) {
@@ -435,11 +420,14 @@ public class Client implements ClientInterface {
 
                 logout(inFromServer, outToServer);
             } catch (Exception e) {
-                System.out.println("Failed to delete account");
+                JOptionPane.showMessageDialog(frame,
+                        "Failed to delete account",
+                        "Boiler Chat", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
+    // TODO: Update to GUI
     public void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("editProfile");
@@ -498,10 +486,13 @@ public class Client implements ClientInterface {
                 profile = (Profile) inFromServer.readObject();
             }
         } catch (Exception e) {
-            System.out.println("Failed to edit account");
+            JOptionPane.showMessageDialog(frame,
+                    "Failed to edit account",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // TODO: Make a background process
     public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
@@ -515,7 +506,9 @@ public class Client implements ClientInterface {
 
                     chats = (ArrayList<Chat>) inFromServer.readObject();
                 } catch (Exception e) {
-                    System.out.println("An error occurred when updating chats");
+                    JOptionPane.showMessageDialog(frame,
+                            "An error occurred when updating chats",
+                            "Boiler Chat", JOptionPane.ERROR_MESSAGE);
                 }
                 return null;
             }
@@ -538,7 +531,10 @@ public class Client implements ClientInterface {
                 return new ArrayList<Profile>();
             }
         } catch (Exception e) {
-            System.out.println("An error occurred while searching for users");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while searching for users",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
+
             return new ArrayList<Profile>();
         }
     }
@@ -622,6 +618,8 @@ public class Client implements ClientInterface {
         }
     }
 
+
+    // TODO: Make it so doesn't need the loops. Just doesn't run if the user isn't selected or message is empty
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             Message toAdd;
@@ -653,7 +651,9 @@ public class Client implements ClientInterface {
                     messageText.setText("");
 
                 } catch (Exception e) {
-                    System.out.println("An error occurred when sending the message");
+                    JOptionPane.showMessageDialog(frame,
+                            "An error occurred when sending the message",
+                            "Boiler Chat", JOptionPane.ERROR_MESSAGE);
                 }
                 return null;
             }
@@ -671,6 +671,7 @@ public class Client implements ClientInterface {
         for (Chat chat : chats) {
             if (chat.matchesProfiles(this.profile, recipient)) {
                 selectedChat = chat;
+                break;
             }
         }
         return selectedChat;
@@ -765,10 +766,13 @@ public class Client implements ClientInterface {
             chatDisplayList.remove(chatDisplay.getSelectedIndex());
 
         } catch (Exception e) {
-            System.out.println("An error occurred while trying to delete the message");
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred while trying to delete the message",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // FIXME: Obselete method
     public void viewProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("viewProfile");
@@ -806,6 +810,7 @@ public class Client implements ClientInterface {
     }
 
     public void initialPanel() {
+        frame.setTitle("Boiler Chat");
         JPanel initialPanel = new JPanel(new GridBagLayout());
         initialPanel.add(new JLabel(), new GridBagConstraints());
 
@@ -1080,6 +1085,18 @@ public class Client implements ClientInterface {
         return chatArea;
     }
 
+    public JList<String> updateChatDisplay() {
+        if (activeChat.getUsername() != null) {
+            currentRecipient.setText(activeChat.getDisplayName() + "(" + activeChat.getUsername() + ")");
+            chatDisplay.clearSelection();
+            chatDisplayList.clear();
+            getChatMessages(activeChat);
+            chatDisplay = new JList<>(chatDisplayList);
+        }
+
+        return chatDisplay;
+    }
+
     public JPanel viewUserPanel(Profile user) {
         // Create the area for a chat
         JPanel viewUserPanel = new JPanel(new GridBagLayout());
@@ -1107,7 +1124,6 @@ public class Client implements ClientInterface {
             blockButton.setText("Block");
         }
 
-
         friendButton.addActionListener(actionListener);
         blockButton.addActionListener(actionListener);
 
@@ -1130,9 +1146,10 @@ public class Client implements ClientInterface {
         return viewUserPanel;
     }
 
-
     public void primaryPanel() {
         // Create the main panel
+        frame.setTitle(String.format("Boiler Chat - %s(%s)", profile.getDisplayName(), profile.getUsername()));
+
         JPanel primaryPanel = new JPanel();
         primaryPanel.setLayout(new GridLayout());
 
@@ -1160,33 +1177,5 @@ public class Client implements ClientInterface {
                 displayList.addElement(toShow);
             }
         }
-    }
-
-
-    private String displayChat(Chat chat) {
-        // TODO: Utilize this function to display a chat object
-
-        String senderDisplay;
-        String receiverDisplay;
-        String display;
-
-        if(chat.getProfiles().get(0).equals(profile)) {
-            senderDisplay = chat.getProfiles().get(0).getDisplayName();
-            receiverDisplay = chat.getProfiles().get(1).getDisplayName();
-        } else {
-            senderDisplay = chat.getProfiles().get(1).getDisplayName();
-            receiverDisplay = chat.getProfiles().get(0).getDisplayName();
-        }
-
-        String result = "";
-
-        for (Message message : chat.getMessages()) {
-            display = message.getSender().equals(profile) ? senderDisplay : receiverDisplay;
-
-            result = result + String.format("%s: %s\n", display, message.getContents());
-        }
-        result = result.strip();
-
-        return result;
     }
 }
