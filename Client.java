@@ -109,6 +109,7 @@ public class Client implements ClientInterface {
                         updateChats(inFromServer, outToServer);
                         chatDisplay.clearSelection();
                         chatDisplayList.clear();
+                        primaryPanel();
                         return;
                     }
                 }
@@ -135,26 +136,18 @@ public class Client implements ClientInterface {
                         updateChats(inFromServer, outToServer);
                         chatDisplay.clearSelection();
                         chatDisplayList.clear();
+                        primaryPanel();
 
-                    } else {// TODO: Handle cases that username does not exist
+                    } else {
                         JOptionPane.showMessageDialog(frame,
                                 "Invalid Password!",
                                 "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
                     }
-                    if (profile != null) {
-                        frame.dispose();
-                    } else {
-                        JOptionPane.showMessageDialog(frame,
-                                "Username already exists!",
-                                "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
-                    }
 
                 } else {
-                    // TODO: Handle cases that username does not exist
                     JOptionPane.showMessageDialog(frame,
                             "Username/Password/Display Name cannot be empty",
                             "Invalid Username/Password/Display Name", JOptionPane.ERROR_MESSAGE);
-                    frame.dispose();
                 }
             }
 
@@ -411,7 +404,6 @@ public class Client implements ClientInterface {
 
             if (o != null) {
                 profile = (Profile) o;
-                primaryPanel();
 
             } else {
                JOptionPane.showMessageDialog(frame,
