@@ -740,41 +740,24 @@ public class Client implements ClientInterface {
             outToServer.flush();
 
             // TODO GUI
-            Message toDelete;
+            Chat selectedChat = getCurrentChat();
+            String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
+            String sender = selection.substring(0, selection.indexOf(" "));
+            String messageContent = selection.substring(selection.indexOf(" ") + 1);
+
+            Message toDelete = null;
+
+            for (int i = 0; i < selectedChat.getMessages().size(); i++) {
+                if (messageContent.equals(selectedChat.getMessages().get(i).getContents())) {
+                    toDelete = selectedChat.getMessages().get(i);
+                    break;
+                }
+            }
+
             do {    // Get a valid method from chats
-                int chatIndex;
-                do {
-                    System.out.println("Enter chat index");
-                    try {
-                        chatIndex = Integer.parseInt(scan.nextLine());
-                        break;
-                    } catch (Exception e) {
-                        System.out.println("Chat index must be an integer");
-                    }
-                } while (true);
-
-                int messageIndex;
-                do {
-                    System.out.println("Enter message index");
-                    try {
-                        messageIndex = Integer.parseInt(scan.nextLine());
-
-                        break;
-                    } catch (Exception e) {
-                        System.out.println("Chat index must be an integer");
-                    }
-                } while (true);
-
-                try {
-                    toDelete = chats.get(chatIndex).getMessages().get(messageIndex);
-
-                    if (!toDelete.getSender().equals(profile)) {
-                        System.out.println("You can only edit messages you sent!");
-                        toDelete = null;
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("Indices must be within bounds");
+                if (!toDelete.getSender().equals(profile)) {
+                    JOptionPane.showMessageDialog(null, "You can only delete messages you sent!",
+                            "Delete Error", JOptionPane.ERROR_MESSAGE);
                     toDelete = null;
                 }
             } while (toDelete == null);
@@ -783,8 +766,11 @@ public class Client implements ClientInterface {
             outToServer.writeUnshared(toDelete); // Send the message to delete
             outToServer.flush();
 
+            updateChats(inFromServer, outToServer);
+            chatDisplayList.remove(chatDisplay.getSelectedIndex());
+
         } catch (Exception e) {
-            System.out.println("An error occurred while trying to delete the message: " + e.getMessage());
+            System.out.println("An error occurred while trying to delete the message");
         }
     }
 

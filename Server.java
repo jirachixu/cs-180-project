@@ -81,7 +81,7 @@ public class Server implements ServerInterface {
             profileOut = "profileData.txt";
             chatsOut = "chatData.txt";
         } else {
-            profileIn = "profileDataDuplicate.txt";
+            profileIn = "profileData.txt";
             chatsIn = "chatDataDuplicate.txt";
             profileOut = "profileData.txt";
             chatsOut = "chatData.txt";
