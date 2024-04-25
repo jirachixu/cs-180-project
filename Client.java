@@ -55,6 +55,7 @@ public class Client implements ClientInterface {
     JTextField searchQuery;
     JPasswordField passwordField;
     JTextField displayNameField;
+    JPasswordField confirmPasswordField;
 
     // Network IO stuff
     ObjectInputStream inFromServer;
@@ -116,6 +117,12 @@ public class Client implements ClientInterface {
                 if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)
                         && !(usernameField.getText() == null && !(passwordField.getPassword() == null))
                         && !displayNameField.getText().isEmpty()) {
+                    if (!(new String(confirmPasswordField.getPassword()))
+                            .equals(new String(passwordField.getPassword()))) {
+                        JOptionPane.showMessageDialog(frame,
+                                "Password and Confirm Password must be the same!",
+                                "Invalid Password", JOptionPane.ERROR_MESSAGE);
+                    }
                     if (checkValidPassword(new String(passwordField.getPassword()))) {
                         createNewUser(usernameField.getText(), new String(passwordField.getPassword()),
                                 displayNameField.getText(), receiveAll.isSelected(), inFromServer, outToServer);
@@ -281,7 +288,9 @@ public class Client implements ClientInterface {
                     inFromServer.close();
 
                 } catch (IOException e) {
-                    System.out.println("Failed to connect to server");    // TODO GUI: Fail to connect error
+                    JOptionPane.showMessageDialog(null,
+                            "Failed to connect to server!",
+                            "Connection Error", JOptionPane.ERROR_MESSAGE);
                 }
                 return null;
             }
@@ -823,7 +832,7 @@ public class Client implements ClientInterface {
     }
 
     public void registerPanel() {
-        // TODO: Back button to take back to previous panel. Confirm password field
+        // TODO: Back button to take back to previous panel
 
         // Create registration panel and set constraints
         JPanel registerPanel = new JPanel(new GridBagLayout());
@@ -838,12 +847,14 @@ public class Client implements ClientInterface {
         // Create fields for username, password, display name and receive all input
         usernameField = new JTextField("", 20);
         passwordField = new JPasswordField("", 20);
+        confirmPasswordField = new JPasswordField("", 20);
         displayNameField = new JTextField("", 20);
         receiveAll = new JCheckBox("Receive messages from all users (not only friends)?");
 
         // Create labels for text boxes
         JLabel usernameLabel = new JLabel("Username: ");
         JLabel passwordLabel = new JLabel("Password: ");
+        JLabel confirmPasswordLabel = new JLabel("Confirm Password: ");
         JLabel displayNameLabel = new JLabel("Display Name: ");
         JLabel passwordRequirements = new JLabel("Password must have 8 characters and contain at least one" +
                 " uppercase, lowercase, and number.");
@@ -860,6 +871,11 @@ public class Client implements ClientInterface {
         passwordPanel.add(passwordLabel);
         passwordPanel.add(passwordField);
 
+        // Create a panel for confirming password
+        JPanel confirmPasswordPanel = new JPanel(new GridBagLayout());
+        confirmPasswordPanel.add(confirmPasswordLabel);
+        confirmPasswordPanel.add(confirmPasswordField);
+
         // Create a panel for the display name input
         JPanel displayNamePanel = new JPanel(new GridBagLayout());
         displayNamePanel.add(displayNameLabel);
@@ -869,6 +885,8 @@ public class Client implements ClientInterface {
         registerPanel.add(usernamePanel, registerPanelConstraints);
         registerPanel.add(new JPanel(), registerPanelConstraints);
         registerPanel.add(passwordPanel, registerPanelConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(confirmPasswordPanel, registerPanelConstraints);
         registerPanel.add(passwordRequirements, registerPanelConstraints);
         registerPanel.add(new JPanel(), registerPanelConstraints);
         registerPanel.add(displayNamePanel, registerPanelConstraints);
@@ -1154,7 +1172,7 @@ public class Client implements ClientInterface {
 
             result = result + String.format("%s: %s\n", display, message.getContents());
         }
-        result.strip();
+        result = result.strip();
 
         return result;
     }
