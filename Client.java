@@ -259,8 +259,13 @@ public class Client implements ClientInterface {
                     panelSplit.setRightComponent(chatPanel());
                 }
             }
+
             if (e.getSource() == backButton) {
                 initialPanel();
+            }
+
+            if (e.getSource() == editDisplayButton) {
+                editProfile("Display Name", inFromServer, outToServer);
             }
         }
     };
@@ -439,16 +444,13 @@ public class Client implements ClientInterface {
     }
 
     // TODO: Update to GUI
-    public void editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void editProfile(String input, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("editProfile");
             outToServer.flush();
 
             outToServer.writeUnshared(profile.getUsername());
             outToServer.flush();
-
-            System.out.println("What would you like to change: Display Name? Password? Receive All?");
-            String input = scan.nextLine();
 
             if (input.equalsIgnoreCase("Display Name")) {
                 outToServer.writeUnshared("display");
