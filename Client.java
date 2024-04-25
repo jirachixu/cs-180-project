@@ -18,6 +18,8 @@ import java.util.Scanner;
  * @version April 14, 2024
  *
  */
+
+//FIXME: sending/editing/deleting messages is still scuffed
 public class Client implements ClientInterface {
     // Object specific to client
     Profile profile;
@@ -58,6 +60,11 @@ public class Client implements ClientInterface {
     JTextField displayNameField;
     JPasswordField confirmPasswordField;
 
+    JButton editDisplayButton;
+    JButton editPasswordButton;
+    JButton editReceiveAllButton;
+
+
     // Network IO stuff
     Profile activeChat;
     ObjectInputStream inFromServer;
@@ -76,6 +83,10 @@ public class Client implements ClientInterface {
     ActionListener actionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == editProfileButton) {
+                panelSplit.setRightComponent(editProfilePanel());
+            }
+
             if (e.getSource() == sendButton) {
                 sendMessage(scan, inFromServer, outToServer);
             }
@@ -273,12 +284,12 @@ public class Client implements ClientInterface {
 
                     while (true) {    // Loop forever and update chats in background
                         if (profile.getUsername() != null) {
-                            //System.out.println("Update chat");
+                            System.out.println("Update chat");
                             updateChats(inFromServer, outToServer);
                             chatDisplay = updateChatDisplay();
                         }
 
-                        //Thread.sleep(1000);
+                        Thread.sleep(2500);
                     }
 
                 } catch (IOException e) {
@@ -492,7 +503,6 @@ public class Client implements ClientInterface {
         }
     }
 
-    // TODO: Make a background process
     public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
@@ -526,7 +536,10 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(query);
                 outToServer.flush();
 
-                return (ArrayList<Profile>) inFromServer.readObject();
+                ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
+                results.remove(profile);
+
+                return results;
             } else {
                 return new ArrayList<Profile>();
             }
@@ -618,56 +631,43 @@ public class Client implements ClientInterface {
         }
     }
 
-
-    // TODO: Make it so doesn't need the loops. Just doesn't run if the user isn't selected or message is empty
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-            Message toAdd;
-            @Override
-            protected Void doInBackground() throws Exception {
-                try {
-                    outToServer.writeUnshared("sendMessage");
-                    outToServer.flush();
-                    Profile receiver;
+        Profile receiver;
+        receiver = activeChat;
 
-                    do {
-                        receiver = displayList.getElementAt(userDisplay.getSelectedIndex());
-                        outToServer.writeUnshared(receiver);    // Send profile name to server
-                        outToServer.flush();
-                    } while (receiver == null);
+        String contents;
+        contents = messageText.getText(); // Get message contents
 
-                    String contents;
-                    do {
-                        contents = messageText.getText(); // Get message contents
-                    } while (contents.isEmpty());
+        try {
+            if (receiver.getUsername() != null && !contents.isEmpty()) {
+                outToServer.writeUnshared("sendMessage");
+                outToServer.flush();
 
-                    // Send the message to the server
-                    toAdd = new Message(profile, receiver, contents);
+                outToServer.writeUnshared(receiver);    // Send profile name to server
+                outToServer.flush();
 
-                    outToServer.writeUnshared(toAdd);
-                    outToServer.flush();
+                // Send the message to the server
+                Message toAdd = new Message(profile, receiver, contents);
 
-                    updateChats(inFromServer, outToServer);
-                    messageText.setText("");
+                outToServer.writeUnshared(toAdd);
+                outToServer.flush();
 
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(frame,
-                            "An error occurred when sending the message",
-                            "Boiler Chat", JOptionPane.ERROR_MESSAGE);
-                }
-                return null;
-            }
+                updateChats(inFromServer, outToServer);
+                messageText.setText("");
 
-            protected void done() {
                 chatDisplayList.addElement(toAdd.getSender() + ": " + toAdd.getContents());
             }
-        };
-        worker.execute();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frame,
+                    "An error occurred when sending the message",
+                    "Boiler Chat", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public Chat getCurrentChat() {
         Chat selectedChat = null;
-        Profile recipient = displayList.getElementAt(userDisplay.getSelectedIndex());
+        Profile recipient = activeChat;
         for (Chat chat : chats) {
             if (chat.matchesProfiles(this.profile, recipient)) {
                 selectedChat = chat;
@@ -678,57 +678,56 @@ public class Client implements ClientInterface {
     }
 
     public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
+        Chat selectedChat = getCurrentChat();
+        int i = chatDisplay.getSelectedIndex();
 
-                try {
-                    outToServer.writeUnshared("editMessage");
-                    outToServer.flush();
+        System.out.println(i);
 
-                    Chat selectedChat = getCurrentChat();
-                    String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
-                    String sender = selection.substring(0, selection.indexOf(" "));
-                    String messageContent = selection.substring(selection.indexOf(" ") + 1);
+        if (i > -1) {
+            String selection = chatDisplayList.getElementAt(i);
+            String sender = selection.substring(0, selection.indexOf(" "));
+            String messageContent = selection.substring(selection.indexOf(" ") + 1);
 
-                    Message toEdit = null;
+            try {
+                outToServer.writeUnshared("editMessage");
+                outToServer.flush();
 
-                    for (int i = 0; i < selectedChat.getMessages().size(); i++) {
-                        if (messageContent.equals(selectedChat.getMessages().get(i).getContents())) {
-                            toEdit = selectedChat.getMessages().get(i);
-                            break;
-                        }
+                Message toEdit = null;
+
+                for (int j = 0; j < selectedChat.getMessages().size(); j++) {
+                    if (messageContent.equals(selectedChat.getMessages().get(j).getContents())) {
+                        toEdit = selectedChat.getMessages().get(j);
+                        break;
                     }
-                    do {    // Get a valid method from chats
-                        if (!toEdit.getSender().equals(profile)) {
-                            JOptionPane.showMessageDialog(null,
-                                    "You can only edit messages that you sent!", "Edit Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                            toEdit = null;
-                        }
-                    } while (toEdit == null);
-
-                    outToServer.reset();
-                    outToServer.writeUnshared(toEdit);
-                    outToServer.flush();
-
-                    String contents = JOptionPane.showInputDialog(null,
-                            "What would you like to edit the message to?", "Edit", JOptionPane.QUESTION_MESSAGE);
-
-                    outToServer.writeUnshared(contents);
-                    outToServer.flush();
-
-                    updateChats(inFromServer, outToServer);
-                    chatDisplayList.set(chatDisplay.getSelectedIndex(), sender + " " + contents);
-
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                    System.out.println("An error occurred when editing the message");
                 }
-                return null;
+
+                do {    // Get a valid method from chats
+                    if (!toEdit.getSender().equals(profile)) {
+                        JOptionPane.showMessageDialog(null,
+                                "You can only edit messages that you sent!", "Edit Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        toEdit = null;
+                    }
+                } while (toEdit == null);
+
+                outToServer.reset();
+                outToServer.writeUnshared(toEdit);
+                outToServer.flush();
+
+                String contents = JOptionPane.showInputDialog(null,
+                        "What would you like to edit the message to?", "Edit", JOptionPane.QUESTION_MESSAGE);
+
+                outToServer.writeUnshared(contents);
+                outToServer.flush();
+
+                updateChats(inFromServer, outToServer);
+                chatDisplayList.set(chatDisplay.getSelectedIndex(), sender + " " + contents);
+
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                System.out.println("An error occurred when editing the message");
             }
-        };
-        worker.execute();
+        }
     }
 
     public void deleteMessage(Scanner scan, ObjectOutputStream outToServer) {
@@ -1087,11 +1086,13 @@ public class Client implements ClientInterface {
 
     public JList<String> updateChatDisplay() {
         if (activeChat.getUsername() != null) {
+            int i = chatDisplay.getSelectedIndex();
             currentRecipient.setText(activeChat.getDisplayName() + "(" + activeChat.getUsername() + ")");
             chatDisplay.clearSelection();
             chatDisplayList.clear();
             getChatMessages(activeChat);
             chatDisplay = new JList<>(chatDisplayList);
+            chatDisplay.setSelectedIndex(i);
         }
 
         return chatDisplay;
@@ -1177,5 +1178,57 @@ public class Client implements ClientInterface {
                 displayList.addElement(toShow);
             }
         }
+    }
+
+    public JPanel editProfilePanel() {
+        JPanel editProfilePanel = new JPanel(new GridBagLayout());
+
+        var gbc = new GridBagConstraints();
+
+        JLabel displayLabel = new JLabel("Display Name: " + profile.getUsername());
+        JLabel usernameLabel = new JLabel("Username: " + profile.getUsername());
+        JLabel receiveAllLabel = new JLabel("Receive All: " + profile.isReceiveAll());
+
+        displayLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        receiveAllLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+
+        editDisplayButton = new JButton();
+        editPasswordButton = new JButton();
+        editReceiveAllButton = new JButton();
+
+        editDisplayButton.addActionListener(actionListener);
+        editPasswordButton.addActionListener(actionListener);
+        editReceiveAllButton.addActionListener(actionListener);
+
+        editDisplayButton.setText("Edit");
+        editPasswordButton.setText("Edit");
+        editReceiveAllButton.setText("Edit");
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        editProfilePanel.add(displayLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        editProfilePanel.add(editDisplayButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        editProfilePanel.add(usernameLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        editProfilePanel.add(editPasswordButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        editProfilePanel.add(receiveAllLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        editProfilePanel.add(editReceiveAllButton, gbc);
+
+        return editProfilePanel;
     }
 }
