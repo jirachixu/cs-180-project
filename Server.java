@@ -299,6 +299,7 @@ public class Server implements ServerInterface {
     public void editMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
             Message toEdit = (Message) inFromUser.readObject();
+            System.out.println("got message");
             database.editMessage(toEdit, (String) inFromUser.readObject());
         } catch (Exception e) {
             System.out.println("Error occurred while editing message");
