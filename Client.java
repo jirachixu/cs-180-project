@@ -645,9 +645,6 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared("sendMessage");
                 outToServer.flush();
 
-                outToServer.writeUnshared(receiver);    // Send profile name to server
-                outToServer.flush();
-
                 // Send the message to the server
                 Message toAdd = new Message(profile, receiver, contents);
 
@@ -1089,7 +1086,7 @@ public class Client implements ClientInterface {
     public JList<String> updateChatDisplay() {
         if (activeChat.getUsername() != null) {
             int i = chatDisplay.getSelectedIndex();
-            currentRecipient.setText(activeChat.getDisplayName() + "(" + activeChat.getUsername() + ")");
+            currentRecipient.setText(activeChat.getDisplayName() + " (" + activeChat.getUsername() + ")");
             chatDisplay.clearSelection();
             chatDisplayList.clear();
             getChatMessages(activeChat);

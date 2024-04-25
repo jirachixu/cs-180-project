@@ -282,15 +282,13 @@ public class Server implements ServerInterface {
 
     public void sendMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
-            Profile receiver;
-            do {    // TODO: Should be unnecessary in phase 3 but needed now for testing
-                receiver = (Profile) inFromUser.readObject(); // Search for receiver by username
-            } while (receiver == null);
+            Message toSend = (Message) inFromUser.readObject();
 
-            database.sendMessage((Message) inFromUser.readObject());    // Receives and sends the messages
+            database.sendMessage(toSend);    // Receives and sends the messages
 
         } catch (Exception e) {
             System.out.println("Error occurred while sending message");
+            System.out.println(e.getMessage());
         } finally {
             database.outputChat();
         }
