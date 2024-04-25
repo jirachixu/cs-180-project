@@ -104,7 +104,11 @@ public class Client implements ClientInterface {
             if (e.getSource() == loginEnterButton) {
                 if (!(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
                     if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)) {
-                        login(usernameField.getText(), new String(passwordField.getPassword()), inFromServer, outToServer);
+                        login(usernameField.getText(), new String(passwordField.getPassword()),
+                                inFromServer, outToServer);
+                        if (profile == null) {
+                            return;
+                        }
                         updateChats(inFromServer, outToServer);
                         chatDisplay.clearSelection();
                         chatDisplayList.clear();
@@ -404,7 +408,8 @@ public class Client implements ClientInterface {
                 profile = (Profile) o;
 
             } else {
-               JOptionPane.showMessageDialog(frame,
+                profile = null;
+                JOptionPane.showMessageDialog(frame,
                        "Username or password is not correct",
                        "Boiler Chat", JOptionPane.INFORMATION_MESSAGE);
             }
