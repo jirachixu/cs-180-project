@@ -31,7 +31,7 @@ public class Client implements ClientInterface {
     JSplitPane panelSplit;
 
     // User Inputs
-    JButton backButton;    // TODO: Put this on login
+    JButton backButton;
     JButton friendButton;
     JButton blockButton;
     JButton logoutButton;
@@ -252,6 +252,9 @@ public class Client implements ClientInterface {
                     chatDisplay = new JList<>(chatDisplayList);
                     panelSplit.setRightComponent(chatPanel());
                 }
+            }
+            if (e.getSource() == backButton) {
+                initialPanel();
             }
         }
     };
@@ -840,17 +843,19 @@ public class Client implements ClientInterface {
     }
 
     public void registerPanel() {
-        // TODO: Back button to take back to previous panel
-
         // Create registration panel and set constraints
         JPanel registerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints registerPanelConstraints = new GridBagConstraints();
         registerPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
         registerPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        GridBagConstraints registerButtonConstraints = new GridBagConstraints();
+        registerButtonConstraints.gridwidth = GridBagConstraints.REMAINDER;
 
         // Create new button and attach action listener for registering
         registerEnterButton = new JButton("Register");
         registerEnterButton.addActionListener(actionListener);
+        backButton = new JButton("Back");
+        backButton.addActionListener(actionListener);
 
         // Create fields for username, password, display name and receive all input
         usernameField = new JTextField("", 20);
@@ -901,7 +906,9 @@ public class Client implements ClientInterface {
         registerPanel.add(new JPanel(), registerPanelConstraints);
         registerPanel.add(receiveAll, registerPanelConstraints);
         registerPanel.add(new JPanel(), registerPanelConstraints);
-        registerPanel.add(registerEnterButton);
+        registerPanel.add(registerEnterButton, registerButtonConstraints);
+        registerPanel.add(new JPanel(), registerPanelConstraints);
+        registerPanel.add(backButton);
 
         // Change the frame to the registration panel
         frame.getContentPane().removeAll();
@@ -910,17 +917,19 @@ public class Client implements ClientInterface {
     }
 
     public void loginPanel() {
-        // TODO: Back button to take back to previous panel
-
         // Create new login panel and set constraints
         JPanel loginPanel = new JPanel(new GridBagLayout());
         GridBagConstraints loginPanelConstraints = new GridBagConstraints();
         loginPanelConstraints.gridwidth = GridBagConstraints.REMAINDER;
         loginPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        GridBagConstraints loginButtonConstraints = new GridBagConstraints();
+        loginButtonConstraints.gridwidth = GridBagConstraints.REMAINDER;
 
         // Create a button and add an action listener for logging in
         loginEnterButton = new JButton("Login");
         loginEnterButton.addActionListener(actionListener);
+        backButton = new JButton("Back");
+        backButton.addActionListener(actionListener);
 
         // Create fields for username and password
         usernameField = new JTextField("", 20);
@@ -943,7 +952,9 @@ public class Client implements ClientInterface {
         loginPanel.add(new JPanel(), loginPanelConstraints);
         loginPanel.add(passwordPanel, loginPanelConstraints);
         loginPanel.add(new JPanel(), loginPanelConstraints);
-        loginPanel.add(loginEnterButton);
+        loginPanel.add(loginEnterButton, loginButtonConstraints);
+        loginPanel.add(new JPanel(), loginPanelConstraints);
+        loginPanel.add(backButton);
 
         // Change the frame to the login panel
         frame.getContentPane().removeAll();
