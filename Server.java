@@ -282,9 +282,7 @@ public class Server implements ServerInterface {
         try {
             Profile receiver;
             do {    // TODO: Should be unnecessary in phase 3 but needed now for testing
-                receiver = database.getProfile((String) inFromUser.readObject());    // Search for receiver by username
-                outToUser.writeUnshared(receiver);    // Send to sender
-                outToUser.flush();
+                receiver = (Profile) inFromUser.readObject(); // Search for receiver by username
             } while (receiver == null);
 
             database.sendMessage((Message) inFromUser.readObject());    // Receives and sends the messages
