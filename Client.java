@@ -50,6 +50,8 @@ public class Client implements ClientInterface {
     JComboBox<String> userDisplaySelection;
     DefaultListModel<Profile> displayList;
     JList<Profile> userDisplay;
+    JList<String> chatDisplay = new JList<>();
+    DefaultListModel<String> chatDisplayList = new DefaultListModel<>();
     JTextField messageText;
     JTextField usernameField;
     JTextField searchQuery;
@@ -102,6 +104,9 @@ public class Client implements ClientInterface {
                 if (!(usernameField.getText() == null && !(passwordField.getPassword() == null))) {
                     if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)) {
                         login(usernameField.getText(), new String(passwordField.getPassword()), inFromServer, outToServer);
+                        updateChats(inFromServer, outToServer);
+                        chatDisplay.clearSelection();
+                        chatDisplayList.clear();
                         return;
                     }
                 }
@@ -119,6 +124,9 @@ public class Client implements ClientInterface {
                     if (checkValidPassword(new String(passwordField.getPassword()))) {
                         createNewUser(usernameField.getText(), new String(passwordField.getPassword()),
                                 displayNameField.getText(), receiveAll.isSelected(), inFromServer, outToServer);
+                        updateChats(inFromServer, outToServer);
+                        chatDisplay.clearSelection();
+                        chatDisplayList.clear();
 
                     } else {// TODO: Handle cases that username does not exist
                         JOptionPane.showMessageDialog(frame,
@@ -225,6 +233,17 @@ public class Client implements ClientInterface {
                 if (i > -1) {
                     Profile toView = displayList.getElementAt(i);
                     panelSplit.setRightComponent(viewUserPanel(toView));    // Add the user panel into the left half of the main panel
+                }
+            }
+            if (e.getSource() == chatButton) {
+                int i = userDisplay.getSelectedIndex();
+                if (i != -1) {
+                    Profile recipient = displayList.getElementAt(i);
+                    chatDisplay.clearSelection();
+                    chatDisplayList.clear();
+                    getChatMessages(recipient);
+                    chatDisplay = new JList<>(chatDisplayList);
+                    panelSplit.setRightComponent(chatPanel());
                 }
             }
         }
@@ -475,37 +494,24 @@ public class Client implements ClientInterface {
     }
 
     public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        try {
-            outToServer.writeUnshared("updateChats");
-            outToServer.flush();
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    outToServer.writeUnshared("updateChats");
+                    outToServer.flush();
 
-            outToServer.writeUnshared(profile);
-            outToServer.flush();
+                    outToServer.writeUnshared(profile);
+                    outToServer.flush();
 
-            chats = (ArrayList<Chat>) inFromServer.readObject();
-
-            int j = 0;
-            for (Chat chat : chats) {
-                int i = 0;
-                System.out.println("Chat " + j++);
-                for (Message message : chat.getMessages()) {
-                    String fromTag;
-                    // Ensure message has the most up-to-date display information
-                    if (message.getSender().getUsername().equals(chat.getProfiles().get(0).getUsername())) {
-                        fromTag = chat.getProfiles().get(0).getDisplayName();
-                    } else {
-                        fromTag = chat.getProfiles().get(1).getDisplayName();
-                    }
-
-                    System.out.println("\t" + i++ + " - " + fromTag + ": " + message.getContents());
+                    chats = (ArrayList<Chat>) inFromServer.readObject();
+                } catch (Exception e) {
+                    System.out.println("An error occurred when updating chats");
                 }
-
-                System.out.println();
+                return null;
             }
-
-        } catch (Exception e) {
-            System.out.println("An error occurred when updating chats");
-        }
+        };
+        worker.execute();
     }
 
     public ArrayList<Profile> searchUsers(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
@@ -609,6 +615,7 @@ public class Client implements ClientInterface {
 
     public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            Message toAdd;
             @Override
             protected Void doInBackground() throws Exception {
                 try {
@@ -617,11 +624,9 @@ public class Client implements ClientInterface {
                     Profile receiver;
 
                     do {
-                        String personToSend = JOptionPane.showInputDialog(null, "Who would you like to send a message to?", "Send Message", JOptionPane.QUESTION_MESSAGE);
-                        outToServer.writeUnshared(personToSend);    // Send profile name to server
+                        receiver = displayList.getElementAt(userDisplay.getSelectedIndex());
+                        outToServer.writeUnshared(receiver);    // Send profile name to server
                         outToServer.flush();
-
-                        receiver = (Profile) inFromServer.readObject();
                     } while (receiver == null);
 
                     String contents;
@@ -630,8 +635,11 @@ public class Client implements ClientInterface {
                     } while (contents.isEmpty());
 
                     // Send the message to the server
-                    outToServer.writeUnshared(new Message(profile, receiver, contents));
+                    toAdd = new Message(profile, receiver, contents);
+                    outToServer.writeUnshared(toAdd);
                     outToServer.flush();
+                    updateChats(inFromServer, outToServer);
+                    messageText.setText("");
 
                 } catch (Exception e) {
                     System.out.println("An error occurred when sending the message");
@@ -640,7 +648,7 @@ public class Client implements ClientInterface {
             }
 
             protected void done() {
-                userMessages.append(messageText.getText() + "\n");
+                chatDisplayList.addElement(toAdd.getSender() + ": " + toAdd.getContents());
             }
         };
         worker.execute();
@@ -1014,6 +1022,23 @@ public class Client implements ClientInterface {
         return userPanel;
     }
 
+    public void getChatMessages(Profile recipient) {
+        Profile sender = this.profile;
+        Chat selectedChat = null;
+        for (Chat chat : chats) {
+            if (chat.matchesProfiles(sender, recipient)) {
+                selectedChat = chat;
+            }
+        }
+        if (selectedChat == null) {
+            return;
+        }
+        for (int j = 0; j < selectedChat.getMessages().size(); j++) {
+            chatDisplayList.addElement(selectedChat.getMessages().get(j).getSender() + ": "
+                    + selectedChat.getMessages().get(j).getContents());
+        }
+    }
+
     public JPanel chatPanel() {
         // Create the area for a chat
         JPanel chatArea = new JPanel(new BorderLayout());
@@ -1022,28 +1047,24 @@ public class Client implements ClientInterface {
         JPanel inputPanel = new JPanel(new GridBagLayout());
 
         messageText = new JTextField("", 57);    // Text field for message input
-        deleteButton = new JButton();    // Button to delete messages
-        editButton = new JButton();    // Button to edit messages
-        sendButton = new JButton();    // Button to send message
-
-        // Set text labels of buttons
-        deleteButton.setText("Delete");
-        editButton.setText("Edit");
-        sendButton.setText("Send");
+        sendButton = new JButton("Send");    // Button to send message
+        sendButton.addActionListener(actionListener);
+        editButton = new JButton("Edit");    // Button to edit messages
+        editButton.addActionListener(actionListener);
+        deleteButton = new JButton("Delete");    // Button to delete messages
+        deleteButton.addActionListener(actionListener);
 
         // Add the buttons into the panel
-        inputPanel.add(deleteButton);
-        inputPanel.add(editButton);
-        inputPanel.add(sendButton);
         inputPanel.add(messageText);
+        inputPanel.add(sendButton);
+        inputPanel.add(editButton);
+        inputPanel.add(deleteButton);
+
 
         chatArea.add(inputPanel, BorderLayout.SOUTH);    // Add the input panel into the chat area
 
         // Create the text area to be added to chat area
-        JTextPane chatDisplay = new JTextPane();
-        chatDisplay.setText("User 1: This is my first message\n");    // FIXME: This is the method used to change the message being displayed
-
-        JScrollPane chatScroll = new JScrollPane(chatDisplay);    // Put chat into a scroll panel
+        JScrollPane chatScroll = new JScrollPane(chatDisplay); // Put chat into a scroll panel
         chatArea.add(chatScroll, BorderLayout.CENTER);    // Add the display area into the chat area
 
         return chatArea;
@@ -1154,7 +1175,7 @@ public class Client implements ClientInterface {
 
             result = result + String.format("%s: %s\n", display, message.getContents());
         }
-        result.strip();
+        result = result.strip();
 
         return result;
     }
