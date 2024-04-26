@@ -237,7 +237,8 @@ public class Client implements ClientInterface {
                 int i = userDisplay.getSelectedIndex();
                 if (i > -1) {
                     Profile toView = displayList.getElementAt(i);
-                    panelSplit.setRightComponent(viewUserPanel(toView));    // Add the user panel into the left half of the main panel
+                    panelSplit.setRightComponent(viewUserPanel(toView));
+                    // Add the user panel into the left half of the main panel
                 }
             }
 
@@ -653,7 +654,8 @@ public class Client implements ClientInterface {
         Profile recipient = currentChat.getProfiles().get(1);
         if (sender.getBlocked().contains(recipient) || recipient.getBlocked().contains(sender)) {
             return false;
-        } else return (sender.isReceiveAll() || sender.getFriends().contains(recipient)) && (recipient.isReceiveAll() || recipient.getFriends().contains(sender));
+        } else return (sender.isReceiveAll() || sender.getFriends().contains(recipient)) && (recipient.isReceiveAll() ||
+                recipient.getFriends().contains(sender));
     }
 
     public void sendMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
@@ -687,7 +689,9 @@ public class Client implements ClientInterface {
                 } else {
                     outToServer.writeBoolean(false);
                     outToServer.flush();
-                    JOptionPane.showMessageDialog(null, "You can't send a message to this user!", "Send Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,
+                            "You can't send a message to this user!", "Send Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
 
@@ -792,8 +796,9 @@ public class Client implements ClientInterface {
 
             do {    // Get a valid method from chats
                 if (toDelete != null && !toDelete.getSender().equals(profile)) {
-                    JOptionPane.showMessageDialog(null, "You can only delete messages you sent!",
-                            "Delete Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,
+                            "You can only delete messages you sent!", "Delete Error",
+                            JOptionPane.ERROR_MESSAGE);
                     toDelete = null;
                 }
             } while (toDelete == null);
@@ -990,7 +995,7 @@ public class Client implements ClientInterface {
         lowerSearchPanel.add(searchQuery, BorderLayout.EAST);
 
         // Fill out the remainder of the search panel
-        searchPanel.add(userDisplaySelection, BorderLayout.NORTH);    // Add the selection of display into the user panel
+        searchPanel.add(userDisplaySelection, BorderLayout.NORTH); // Add the selection of display into the user panel
         searchPanel.add(lowerSearchPanel, BorderLayout.SOUTH);    // Add the selection of display into the user panel
 
         // Get the list of users to display
