@@ -206,8 +206,7 @@ public class Client implements ClientInterface {
                         default -> null;
                     };
 
-                    updateUserDisplay(displayProfiles);
-                    panelSplit.setRightComponent(chatPanel());
+                    primaryPanel();
                 }
             }
 
@@ -230,8 +229,7 @@ public class Client implements ClientInterface {
                         default -> null;
                     };
 
-                    updateUserDisplay(displayProfiles);
-                    panelSplit.setRightComponent(chatPanel());
+                    primaryPanel();
                 }
             }
 
@@ -1256,63 +1254,63 @@ public class Client implements ClientInterface {
         gbc.gridwidth = 1;
         editProfilePanel.add(new JLabel("New Display Name: "), gbc);
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 3;
         gbc.gridwidth = 1;
         editProfilePanel.add(displayNameField, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
         editProfilePanel.add(editDisplayButton, gbc);
 
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         editProfilePanel.add(new JLabel(" "), gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         editProfilePanel.add(passwordLabel, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 8;
+        gbc.gridy = 7;
         gbc.gridwidth = 1;
         editProfilePanel.add(new JLabel("New Password: "), gbc);
         gbc.gridx = 1;
-        gbc.gridy = 9;
+        gbc.gridy = 7;
         gbc.gridwidth = 1;
         editProfilePanel.add(passwordField, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 10;
+        gbc.gridy = 8;
         gbc.gridwidth = 1;
         editProfilePanel.add(new JLabel("Reenter New Password: "), gbc);
         gbc.gridx = 1;
-        gbc.gridy = 11;
+        gbc.gridy = 8;
         gbc.gridwidth = 1;
         editProfilePanel.add(confirmPasswordField, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 12;
+        gbc.gridy = 9;
         gbc.gridwidth = 2;
         editProfilePanel.add(passwordRequirements, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 13;
+        gbc.gridy = 10;
         gbc.gridwidth = 2;
         editProfilePanel.add(editPasswordButton, gbc);
+
+        gbc.gridy = 11;
+        editProfilePanel.add(new JLabel(" "), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(receiveAllLabel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 13;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(receiveAll, gbc);
 
         gbc.gridy = 14;
         editProfilePanel.add(new JLabel(" "), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 15;
-        gbc.gridwidth = 2;
-        editProfilePanel.add(receiveAllLabel, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 16;
-        gbc.gridwidth = 2;
-        editProfilePanel.add(receiveAll, gbc);
-
-        gbc.gridy = 17;
-        editProfilePanel.add(new JLabel(" "), gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 18;
         gbc.gridwidth = 2;
         editProfilePanel.add(deleteProfileButton, gbc);
 
