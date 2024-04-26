@@ -5,11 +5,10 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Objects;
 
 /**
  * Team Project - Client
- *
  * This class is the class that interacts with the user. All methods are connected directly into methods within Server
  * in order to handle network IO.
  *
@@ -19,7 +18,6 @@ import java.util.Scanner;
  *
  */
 
-//FIXME: sending/editing/deleting messages is still scuffed
 public class Client implements ClientInterface {
     // Object specific to client
     Profile profile;
@@ -69,8 +67,6 @@ public class Client implements ClientInterface {
     Profile activeChat;
     ObjectInputStream inFromServer;
     ObjectOutputStream outToServer;
-    Scanner scan; // FIXME: Placeholder
-
 
     public Client() {
         profile = null;
@@ -88,15 +84,15 @@ public class Client implements ClientInterface {
             }
 
             if (e.getSource() == sendButton) {
-                sendMessage(scan, inFromServer, outToServer);
+                sendMessage(inFromServer, outToServer);
             }
 
             if (e.getSource() == editButton) {
-                editMessage(scan, inFromServer, outToServer);
+                editMessage(inFromServer, outToServer);
             }
 
             if (e.getSource() == deleteButton) {
-                deleteMessage(scan, outToServer);
+                deleteMessage(outToServer);
             }
 
             if (e.getSource() == loginButton) {
@@ -161,7 +157,7 @@ public class Client implements ClientInterface {
 
             if (e.getSource() == userDisplaySelection) {
                 ArrayList<Profile> displayProfiles = null;
-                switch ((String) userDisplaySelection.getSelectedItem()) {
+                switch ((String) Objects.requireNonNull(userDisplaySelection.getSelectedItem())) {
                     case "Friends" :
                         searchQuery.setText("");
                         searchQuery.setEditable(false);
@@ -202,7 +198,8 @@ public class Client implements ClientInterface {
                         friendUser(user.getUsername(), inFromServer, outToServer);
                     }
 
-                    ArrayList<Profile> displayProfiles = switch ((String) userDisplaySelection.getSelectedItem()) {
+                    ArrayList<Profile> displayProfiles = switch (
+                            (String) Objects.requireNonNull(userDisplaySelection.getSelectedItem())) {
                         case "Friends" -> profile.getFriends();
                         case "Blocked" -> profile.getBlocked();
                         case "Search" -> searchUsers(inFromServer, outToServer);
@@ -225,7 +222,8 @@ public class Client implements ClientInterface {
                         blockUser(user.getUsername(), inFromServer, outToServer);
                     }
 
-                    ArrayList<Profile> displayProfiles = switch ((String) userDisplaySelection.getSelectedItem()) {
+                    ArrayList<Profile> displayProfiles = switch (
+                            (String) Objects.requireNonNull(userDisplaySelection.getSelectedItem())) {
                         case "Friends" -> profile.getFriends();
                         case "Blocked" -> profile.getBlocked();
                         case "Search" -> searchUsers(inFromServer, outToServer);
@@ -285,7 +283,6 @@ public class Client implements ClientInterface {
     }
 
     public void run() {
-        scan = new Scanner(System.in);    // TODO: Replace with GUI
         activeChat = new Profile();
         SwingWorker<Void, Void> connectionWorker = new SwingWorker<Void, Void>() {
             @Override
@@ -297,7 +294,9 @@ public class Client implements ClientInterface {
                     outToServer.flush();
                     profile = new Profile();
 
+                    //noinspection InfiniteLoopStatement
                     while (true) {
+                        //noinspection BusyWait
                         Thread.sleep(2500);
                     }
 
@@ -532,6 +531,7 @@ public class Client implements ClientInterface {
                     outToServer.writeUnshared(profile);
                     outToServer.flush();
 
+                    //noinspection unchecked
                     chats = (ArrayList<Chat>) inFromServer.readObject();
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(frame,
@@ -554,6 +554,7 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(query);
                 outToServer.flush();
 
+                @SuppressWarnings("unchecked")
                 ArrayList<Profile> results = (ArrayList<Profile>) inFromServer.readObject();
                 results.remove(profile);
 
@@ -649,7 +650,7 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void sendMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         Profile receiver;
         receiver = activeChat;
 
@@ -692,7 +693,7 @@ public class Client implements ClientInterface {
         return selectedChat;
     }
 
-    public void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+    public void editMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         Chat selectedChat = getCurrentChat();
         int i = chatDisplay.getSelectedIndex();
 
@@ -717,8 +718,8 @@ public class Client implements ClientInterface {
                 }
 
                 do {    // Get a valid method from chats
-                    if (!toEdit.getSender().equals(profile)) {
-                        JOptionPane.showMessageDialog(null,
+                    if (toEdit != null && !toEdit.getSender().equals(profile)) {
+                        JOptionPane.showMessageDialog(frame,
                                 "You can only edit messages that you sent!", "Edit Error",
                                 JOptionPane.ERROR_MESSAGE);
                         toEdit = null;
@@ -729,8 +730,9 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(toEdit);
                 outToServer.flush();
 
-                String contents = JOptionPane.showInputDialog(null,
-                        "What would you like to edit the message to?", "Edit", JOptionPane.QUESTION_MESSAGE);
+                String contents = (String) JOptionPane.showInputDialog(frame,
+                        "What would you like to edit the message to?", "Edit",
+                        JOptionPane.QUESTION_MESSAGE);
 
                 outToServer.writeUnshared(contents);
                 outToServer.flush();
@@ -745,14 +747,13 @@ public class Client implements ClientInterface {
         }
     }
 
-    public void deleteMessage(Scanner scan, ObjectOutputStream outToServer) {
+    public void deleteMessage(ObjectOutputStream outToServer) {
         try {
             outToServer.writeUnshared("deleteMessage");
             outToServer.flush();
 
             Chat selectedChat = getCurrentChat();
             String selection = chatDisplayList.getElementAt(chatDisplay.getSelectedIndex());
-            String sender = selection.substring(0, selection.indexOf(" "));
             String messageContent = selection.substring(selection.indexOf(" ") + 1);
 
             Message toDelete = null;
@@ -765,7 +766,7 @@ public class Client implements ClientInterface {
             }
 
             do {    // Get a valid method from chats
-                if (!toDelete.getSender().equals(profile)) {
+                if (toDelete != null && !toDelete.getSender().equals(profile)) {
                     JOptionPane.showMessageDialog(null, "You can only delete messages you sent!",
                             "Delete Error", JOptionPane.ERROR_MESSAGE);
                     toDelete = null;
@@ -969,7 +970,7 @@ public class Client implements ClientInterface {
 
         // Get the list of users to display
         ArrayList<Profile> displayProfiles = null;
-        switch ((String) userDisplaySelection.getSelectedItem()) {
+        switch ((String) Objects.requireNonNull(userDisplaySelection.getSelectedItem())) {
             case "Friends" :
                 searchQuery.setText("");
                 searchQuery.setEditable(false);
@@ -1027,7 +1028,7 @@ public class Client implements ClientInterface {
         return userPanel;
     }
 
-    public void getChatMessages(Profile recipient) {
+    public void getChatMessages() {
         Chat selectedChat = getCurrentChat();
         if (selectedChat == null) {
             return;
@@ -1078,7 +1079,7 @@ public class Client implements ClientInterface {
             currentRecipient.setText(activeChat.getDisplayName() + " (" + activeChat.getUsername() + ")");
             chatDisplay.clearSelection();
             chatDisplayList.clear();
-            getChatMessages(activeChat);
+            getChatMessages();
             chatDisplay = new JList<>(chatDisplayList);
             chatDisplay.setSelectedIndex(i);
         }

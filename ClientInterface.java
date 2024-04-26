@@ -11,9 +11,9 @@ public interface ClientInterface extends Runnable {
     void unblockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void friendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void unfriendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
-    void deleteMessage(Scanner scan, ObjectOutputStream outToServer);
+    void sendMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void editMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    void deleteMessage(ObjectOutputStream outToServer);
     void deleteProfile(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void editProfile(String input, ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
