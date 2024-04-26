@@ -59,10 +59,10 @@ public class Client implements ClientInterface {
     JPasswordField passwordField;
     JTextField displayNameField;
     JPasswordField confirmPasswordField;
-
     JButton editDisplayButton;
     JButton editPasswordButton;
     JButton editReceiveAllButton;
+    JButton deleteProfile;
 
 
     // Network IO stuff
@@ -270,7 +270,7 @@ public class Client implements ClientInterface {
             }
 
             if (e.getSource() == editPasswordButton) {
-                editProfile("Receive All", inFromServer, outToServer);
+                editProfile("Password", inFromServer, outToServer);
                 panelSplit.setRightComponent(editProfilePanel());
             }
         }
@@ -472,9 +472,10 @@ public class Client implements ClientInterface {
                 }
 
             } else if (input.equalsIgnoreCase("Password")) {
-                String newPassword = passwordField.getText();
+                String newPassword = String.valueOf(passwordField.getPassword());
+                String confirmPassword = String.valueOf(confirmPasswordField.getPassword());
 
-                if (!newPassword.isEmpty() && newPassword.equals(confirmPasswordField.getText())) {
+                if (!newPassword.isEmpty() && newPassword.equals(confirmPassword)) {
                     outToServer.writeUnshared("editProfile");
                     outToServer.flush();
 
@@ -488,7 +489,7 @@ public class Client implements ClientInterface {
                     outToServer.flush();
 
                     profile = (Profile) inFromServer.readObject();
-                } else if (!checkValidPassword(newPassword)) {
+                } else {
                     JOptionPane.showMessageDialog(frame,
                             "Password is not valid",
                             "Boiler Chat", JOptionPane.ERROR_MESSAGE);
