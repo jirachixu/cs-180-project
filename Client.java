@@ -261,7 +261,7 @@ public class Client implements ClientInterface {
             if (e.getSource() == editDisplayButton) {
                 editProfile("Display Name", inFromServer, outToServer);
                 panelSplit.setRightComponent(editProfilePanel());
-                frame.setTitle(String.format("Boiler Chat - %s(%s)", profile.getDisplayName(), profile.getUsername()));
+                frame.setTitle(String.format("Boiler Chat - %s (%s)", profile.getDisplayName(), profile.getUsername()));
             }
 
             if (e.getSource() == receiveAll) {
@@ -293,13 +293,7 @@ public class Client implements ClientInterface {
                     outToServer.flush();
                     profile = new Profile();
 
-                    while (true) {    // Loop forever and update chats in background
-                        if (profile.getUsername() != null) {
-                            System.out.println("Update chat");
-                            updateChats(inFromServer, outToServer);
-                            chatDisplay = updateChatDisplay();
-                        }
-
+                    while (true) {
                         Thread.sleep(2500);
                     }
 
@@ -307,6 +301,11 @@ public class Client implements ClientInterface {
                     JOptionPane.showMessageDialog(null,
                             "Failed to connect to server!",
                             "Connection Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    outToServer.writeUnshared("exit");
+                    outToServer.flush();
+                    outToServer.close();
+                    inFromServer.close();
                 }
                 return null;
             }
@@ -1159,7 +1158,7 @@ public class Client implements ClientInterface {
 
     public void primaryPanel() {
         // Create the main panel
-        frame.setTitle(String.format("Boiler Chat - %s(%s)", profile.getDisplayName(), profile.getUsername()));
+        frame.setTitle(String.format("Boiler Chat - %s (%s)", profile.getDisplayName(), profile.getUsername()));
 
         JPanel primaryPanel = new JPanel();
         primaryPanel.setLayout(new GridLayout());
