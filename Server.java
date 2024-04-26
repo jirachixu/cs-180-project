@@ -275,10 +275,12 @@ public class Server implements ServerInterface {
 
     public void sendMessage(ObjectInputStream inFromUser, ObjectOutputStream outToUser) {
         try {
-            Message toSend = (Message) inFromUser.readObject();
+            boolean valid = inFromUser.readBoolean();
 
-            database.sendMessage(toSend);    // Receives and sends the messages
-
+            if (valid) {
+                Message toSend = (Message) inFromUser.readObject();
+                database.sendMessage(toSend);    // Receives and sends the messages
+            }
         } catch (Exception e) {
             System.out.println("Error occurred while sending message");
             System.out.println(e.getMessage());

@@ -33,6 +33,14 @@ public class Chat implements Serializable, ChatInterface {
         }
     }
 
+    public Chat(Profile p1, Profile p2) {
+        profiles = new ArrayList<>();
+        profiles.add(p1);
+        profiles.add(p2);
+        messages = new ArrayList<>();
+        timestamp = System.currentTimeMillis();
+    }
+
     public ArrayList<Profile> getProfiles() {
         return profiles;
     }

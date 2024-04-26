@@ -284,7 +284,7 @@ public class Client implements ClientInterface {
 
     public void run() {
         activeChat = new Profile();
-        SwingWorker<Void, Void> connectionWorker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> connectionWorker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try (Socket socket = new Socket("localhost", 8080)) {    // Network connection
@@ -521,9 +521,9 @@ public class Client implements ClientInterface {
     }
 
     public void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
-            protected Void doInBackground() throws Exception {
+            protected Void doInBackground() {
                 try {
                     outToServer.writeUnshared("updateChats");
                     outToServer.flush();
@@ -560,14 +560,14 @@ public class Client implements ClientInterface {
 
                 return results;
             } else {
-                return new ArrayList<Profile>();
+                return new ArrayList<>();
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame,
                     "An error occurred while searching for users",
                     "Boiler Chat", JOptionPane.ERROR_MESSAGE);
 
-            return new ArrayList<Profile>();
+            return new ArrayList<>();
         }
     }
 
@@ -650,7 +650,17 @@ public class Client implements ClientInterface {
         }
     }
 
+    public boolean canSend(Chat currentChat) {
+        Profile sender = currentChat.getProfiles().get(0);
+        Profile recipient = currentChat.getProfiles().get(1);
+        if (sender.getBlocked().contains(recipient) || recipient.getBlocked().contains(sender)) {
+            return false;
+        } else return (sender.isReceiveAll() || sender.getFriends().contains(recipient)) && (recipient.isReceiveAll() || recipient.getFriends().contains(sender));
+    }
+
     public void sendMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        Chat selectedChat = getCurrentChat();
+
         Profile receiver;
         receiver = activeChat;
 
@@ -663,15 +673,24 @@ public class Client implements ClientInterface {
                 outToServer.flush();
 
                 // Send the message to the server
-                Message toAdd = new Message(profile, receiver, contents);
+                if (canSend(selectedChat)) {
+                    outToServer.writeBoolean(true);
+                    outToServer.flush();
 
-                outToServer.writeUnshared(toAdd);
-                outToServer.flush();
+                    Message toAdd = new Message(profile, receiver, contents);
 
-                updateChats(inFromServer, outToServer);
-                messageText.setText("");
+                    outToServer.writeUnshared(toAdd);
+                    outToServer.flush();
 
-                chatDisplayList.addElement(toAdd.getSender() + ": " + toAdd.getContents());
+                    updateChats(inFromServer, outToServer);
+                    messageText.setText("");
+
+                    chatDisplayList.addElement(toAdd.getSender() + ": " + toAdd.getContents());
+                } else {
+                    outToServer.writeBoolean(false);
+                    outToServer.flush();
+                    JOptionPane.showMessageDialog(null, "You can't send a message to this user!", "Send Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
 
         } catch (Exception e) {
@@ -684,11 +703,20 @@ public class Client implements ClientInterface {
     public Chat getCurrentChat() {
         Chat selectedChat = null;
         Profile recipient = activeChat;
+        System.out.println(chats.size());
+        if (chats.isEmpty()) {
+            Chat chat = new Chat(this.profile, recipient);
+            chats.add(chat);
+            return chat;
+        }
         for (Chat chat : chats) {
             if (chat.matchesProfiles(this.profile, recipient)) {
                 selectedChat = chat;
                 break;
             }
+        }
+        if (selectedChat == null) {
+            selectedChat = new Chat(this.profile, recipient);
         }
         return selectedChat;
     }
@@ -730,7 +758,7 @@ public class Client implements ClientInterface {
                 outToServer.writeUnshared(toEdit);
                 outToServer.flush();
 
-                String contents = (String) JOptionPane.showInputDialog(frame,
+                String contents = JOptionPane.showInputDialog(frame,
                         "What would you like to edit the message to?", "Edit",
                         JOptionPane.QUESTION_MESSAGE);
 
@@ -946,7 +974,7 @@ public class Client implements ClientInterface {
         JPanel lowerSearchPanel = new JPanel(new BorderLayout());
 
         // Create a dropdown menu for selecting who is displayed
-        userDisplaySelection = new JComboBox<String>(new String[] {"Friends", "Blocked", "Search"});
+        userDisplaySelection = new JComboBox<>(new String[] {"Friends", "Blocked", "Search"});
         userDisplaySelection.addActionListener(actionListener);
 
         // Create a text field for searching users
@@ -1092,7 +1120,7 @@ public class Client implements ClientInterface {
         JPanel viewUserPanel = new JPanel(new GridBagLayout());
         var gbc = new GridBagConstraints();
 
-        JLabel displayLabel = new JLabel("Display Name: " + user.getUsername());
+        JLabel displayLabel = new JLabel("Display Name: " + user.getDisplayName());
         JLabel usernameLabel = new JLabel("Username: " + user.getUsername());
 
         displayLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
