@@ -701,7 +701,7 @@ public class Client implements ClientInterface {
     public Chat getCurrentChat() {
         Chat selectedChat = null;
         Profile recipient = activeChat;
-        System.out.println(chats.size());
+
         if (chats.isEmpty()) {
             Chat chat = new Chat(this.profile, recipient);
             chats.add(chat);
@@ -722,8 +722,6 @@ public class Client implements ClientInterface {
     public void editMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         Chat selectedChat = getCurrentChat();
         int i = chatDisplay.getSelectedIndex();
-
-        System.out.println(i);
 
         if (i > -1) {
             String selection = chatDisplayList.getElementAt(i);
@@ -767,8 +765,9 @@ public class Client implements ClientInterface {
                 chatDisplayList.set(chatDisplay.getSelectedIndex(), sender + " " + contents);
 
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                System.out.println("An error occurred when editing the message");
+                JOptionPane.showMessageDialog(frame,
+                        "An error occurred when editing the message",
+                        "Boiler Chat", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
