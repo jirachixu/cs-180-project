@@ -62,7 +62,7 @@ public class Client implements ClientInterface {
     JButton editDisplayButton;
     JButton editPasswordButton;
     JButton editReceiveAllButton;
-    JButton deleteProfile;
+    JButton deleteProfileButton;
 
 
     // Network IO stuff
@@ -273,6 +273,10 @@ public class Client implements ClientInterface {
                 editProfile("Password", inFromServer, outToServer);
                 panelSplit.setRightComponent(editProfilePanel());
             }
+
+            if (e.getSource() == deleteProfileButton) {
+                deleteProfile(inFromServer, outToServer);
+            }
         }
     };
 
@@ -429,10 +433,12 @@ public class Client implements ClientInterface {
     }
 
 
-    // TODO: Update to GUI
-    public void deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        System.out.println("Are you sure you want to delete this account?");
-        if (scan.nextLine().equalsIgnoreCase("yes")) {
+    public void deleteProfile(ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
+        int confirm = JOptionPane.showConfirmDialog(frame,
+                "Are you sure you delete your profile?",
+                "Boiler Chat", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
             try {
                 outToServer.writeUnshared("deleteProfile");
                 outToServer.flush();
@@ -441,6 +447,7 @@ public class Client implements ClientInterface {
                 outToServer.flush();
 
                 logout(inFromServer, outToServer);
+                initialPanel();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(frame,
                         "Failed to delete account",
@@ -449,7 +456,6 @@ public class Client implements ClientInterface {
         }
     }
 
-    // TODO: Update to GUI
     public void editProfile(String input, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
             if (input.equalsIgnoreCase("Display Name")) {
@@ -778,33 +784,6 @@ public class Client implements ClientInterface {
             JOptionPane.showMessageDialog(frame,
                     "An error occurred while trying to delete the message",
                     "Boiler Chat", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // FIXME: Obselete method
-    public void viewProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
-        try {
-            outToServer.writeUnshared("viewProfile");
-            outToServer.flush();
-
-            System.out.println("Who would you like to view?");
-            String toView;
-            do {
-                toView = scan.nextLine();
-            } while(toView.isEmpty());
-
-            outToServer.writeUnshared(toView);
-            outToServer.flush();
-
-            Profile viewMe = (Profile) inFromServer.readObject();
-
-            if (viewMe != null) {
-                System.out.printf("Display name: %s\nUsername: %s\n", viewMe.getUsername(), viewMe.getDisplayName());
-            } else {
-                System.out.println("User does not exist!");
-            }
-        } catch (Exception e) {
-            System.out.println("An error occurred while viewing user");
         }
     }
 
@@ -1194,11 +1173,12 @@ public class Client implements ClientInterface {
         JPanel editProfilePanel = new JPanel(new GridBagLayout());
 
         var gbc = new GridBagConstraints();
-
+        JLabel usernameLabel = new JLabel("Username: " + profile.getUsername());
         JLabel displayLabel = new JLabel("Display Name: " + profile.getDisplayName());
         JLabel passwordLabel = new JLabel("Password:");
         JLabel receiveAllLabel = new JLabel("Receive All: " + profile.isReceiveAll());
 
+        usernameLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
         displayLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
         passwordLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
         receiveAllLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
@@ -1206,14 +1186,17 @@ public class Client implements ClientInterface {
         editDisplayButton = new JButton();
         editPasswordButton = new JButton();
         editReceiveAllButton = new JButton();
+        deleteProfileButton = new JButton();
 
         editDisplayButton.addActionListener(actionListener);
         editPasswordButton.addActionListener(actionListener);
         editReceiveAllButton.addActionListener(actionListener);
+        deleteProfileButton.addActionListener(actionListener);
 
         editDisplayButton.setText("Edit");
         editPasswordButton.setText("Edit");
         editReceiveAllButton.setText("Edit");
+        deleteProfileButton.setText("Delete Profile");
 
         displayNameField = new JTextField("", 15);
         passwordField = new JPasswordField("", 15);
@@ -1231,63 +1214,79 @@ public class Client implements ClientInterface {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        editProfilePanel.add(displayLabel, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(new JLabel("New Display Name: "), gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(displayNameField, gbc);
+        editProfilePanel.add(usernameLabel, gbc);
+
+        gbc.gridy = 6;
+        editProfilePanel.add(new JLabel(" "), gbc);
+
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
+        editProfilePanel.add(displayLabel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("New Display Name: "), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(displayNameField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
         editProfilePanel.add(editDisplayButton, gbc);
 
-        gbc.gridy = 3;
+        gbc.gridy = 6;
         editProfilePanel.add(new JLabel(" "), gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        editProfilePanel.add(passwordLabel, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(new JLabel("New Password: "), gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(passwordField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(new JLabel("Reenter New Password: "), gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 6;
-        gbc.gridwidth = 1;
-        editProfilePanel.add(confirmPasswordField, gbc);
         gbc.gridx = 0;
         gbc.gridy = 7;
         gbc.gridwidth = 2;
-        editProfilePanel.add(passwordRequirements, gbc);
+        editProfilePanel.add(passwordLabel, gbc);
         gbc.gridx = 0;
         gbc.gridy = 8;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("New Password: "), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(passwordField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("Reenter New Password: "), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 11;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(confirmPasswordField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(passwordRequirements, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 13;
         gbc.gridwidth = 2;
         editProfilePanel.add(editPasswordButton, gbc);
 
-        gbc.gridy = 9;
+        gbc.gridy = 14;
         editProfilePanel.add(new JLabel(" "), gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 10;
+        gbc.gridy = 15;
         gbc.gridwidth = 2;
         editProfilePanel.add(receiveAllLabel, gbc);
         gbc.gridx = 0;
-        gbc.gridy = 11;
+        gbc.gridy = 16;
         gbc.gridwidth = 2;
         editProfilePanel.add(receiveAll, gbc);
+
+        gbc.gridy = 17;
+        editProfilePanel.add(new JLabel(" "), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 18;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(deleteProfileButton, gbc);
 
         return editProfilePanel;
     }
