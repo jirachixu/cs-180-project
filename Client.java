@@ -117,21 +117,15 @@ public class Client implements ClientInterface {
                     if (!usernameField.getText().isEmpty() && !(passwordField.getPassword().length < 1)) {
                         login(usernameField.getText(), new String(passwordField.getPassword()),
                                 inFromServer, outToServer);
-                        if (profile == null) {
-                            return;
+
+                        if (profile.getUsername() != null) {
+                            updateChats(inFromServer, outToServer);
+                            chatDisplay.clearSelection();
+                            chatDisplayList.clear();
+                            primaryPanel();
                         }
-                        updateChats(inFromServer, outToServer);
-                        chatDisplay.clearSelection();
-                        chatDisplayList.clear();
-                        primaryPanel();
-                        return;
                     }
                 }
-
-                JOptionPane.showMessageDialog(frame,
-                        "Please enter a valid username/password",
-                        "Invalid Username/Password", JOptionPane.ERROR_MESSAGE);
-
             }
 
             if (e.getSource() == registerEnterButton) {
@@ -266,6 +260,18 @@ public class Client implements ClientInterface {
 
             if (e.getSource() == editDisplayButton) {
                 editProfile("Display Name", inFromServer, outToServer);
+                panelSplit.setRightComponent(editProfilePanel());
+                frame.setTitle(String.format("Boiler Chat - %s(%s)", profile.getDisplayName(), profile.getUsername()));
+            }
+
+            if (e.getSource() == receiveAll) {
+                editProfile("Receive All", inFromServer, outToServer);
+                panelSplit.setRightComponent(editProfilePanel());
+            }
+
+            if (e.getSource() == editPasswordButton) {
+                editProfile("Receive All", inFromServer, outToServer);
+                panelSplit.setRightComponent(editProfilePanel());
             }
         }
     };
@@ -409,7 +415,7 @@ public class Client implements ClientInterface {
                 profile = (Profile) o;
 
             } else {
-                profile = null;
+                profile = new Profile();
                 JOptionPane.showMessageDialog(frame,
                        "Username or password is not correct",
                        "Boiler Chat", JOptionPane.INFORMATION_MESSAGE);
@@ -446,54 +452,58 @@ public class Client implements ClientInterface {
     // TODO: Update to GUI
     public void editProfile(String input, ObjectInputStream inFromServer, ObjectOutputStream outToServer) {
         try {
-            outToServer.writeUnshared("editProfile");
-            outToServer.flush();
-
-            outToServer.writeUnshared(profile.getUsername());
-            outToServer.flush();
-
             if (input.equalsIgnoreCase("Display Name")) {
-                outToServer.writeUnshared("display");
-                outToServer.flush();
+                String newDisplay = displayNameField.getText();
 
-                String newDisplay;
-                do {    // Get user input for new username
-                    System.out.println("What you you liked to be called?");
-                    newDisplay = scan.nextLine();
-                } while (newDisplay.isEmpty());
+                if (!newDisplay.isEmpty()) {
+                    outToServer.writeUnshared("editProfile");
+                    outToServer.flush();
 
-                outToServer.writeUnshared(newDisplay);
-                outToServer.flush();
+                    outToServer.writeUnshared(profile.getUsername());
+                    outToServer.flush();
 
-                profile = (Profile) inFromServer.readObject();
+                    outToServer.writeUnshared("display");
+                    outToServer.flush();
+
+                    outToServer.writeUnshared(newDisplay);
+                    outToServer.flush();
+
+                    profile = (Profile) inFromServer.readObject();
+                }
 
             } else if (input.equalsIgnoreCase("Password")) {
-                outToServer.writeUnshared("password");
-                outToServer.flush();
+                String newPassword = passwordField.getText();
 
-                String newPassword;
+                if (!newPassword.isEmpty() && newPassword.equals(confirmPasswordField.getText())) {
+                    outToServer.writeUnshared("editProfile");
+                    outToServer.flush();
 
-                do {     // Enter old password before editing password
-                    System.out.println("Enter your current password");
-                } while (!scan.nextLine().equals(profile.getPassword()));
+                    outToServer.writeUnshared(profile.getUsername());
+                    outToServer.flush();
 
-                do {     // Check valid password
-                    System.out.println("Enter your desired password");
-                    newPassword = scan.nextLine();
+                    outToServer.writeUnshared("password");
+                    outToServer.flush();
 
-                    System.out.println("Enter your desired password again");
-                } while (!scan.nextLine().equals(newPassword) || !checkValidPassword(newPassword));
+                    outToServer.writeUnshared(newPassword);
+                    outToServer.flush();
 
-                outToServer.writeUnshared(newPassword);
-                outToServer.flush();
-
-                profile = (Profile) inFromServer.readObject();
+                    profile = (Profile) inFromServer.readObject();
+                } else if (!checkValidPassword(newPassword)) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Password is not valid",
+                            "Boiler Chat", JOptionPane.ERROR_MESSAGE);
+                }
             } else if (input.equalsIgnoreCase("Receive All")) {
+                outToServer.writeUnshared("editProfile");
+                outToServer.flush();
+
+                outToServer.writeUnshared(profile.getUsername());
+                outToServer.flush();
+
                 outToServer.writeUnshared("receiveAll");
                 outToServer.flush();
 
-                System.out.println("Would you like to receive messages from everyone (true/false)?");
-                outToServer.writeBoolean(Boolean.parseBoolean(scan.nextLine()));
+                outToServer.writeBoolean(receiveAll.isSelected());
                 outToServer.flush();
 
                 profile = (Profile) inFromServer.readObject();
@@ -1105,8 +1115,8 @@ public class Client implements ClientInterface {
         JLabel displayLabel = new JLabel("Display Name: " + user.getUsername());
         JLabel usernameLabel = new JLabel("Username: " + user.getUsername());
 
-        displayLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
-        usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
+        displayLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
+        usernameLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
 
 
         friendButton = new JButton();
@@ -1184,13 +1194,13 @@ public class Client implements ClientInterface {
 
         var gbc = new GridBagConstraints();
 
-        JLabel displayLabel = new JLabel("Display Name: " + profile.getUsername());
-        JLabel usernameLabel = new JLabel("Username: " + profile.getUsername());
+        JLabel displayLabel = new JLabel("Display Name: " + profile.getDisplayName());
+        JLabel passwordLabel = new JLabel("Password:");
         JLabel receiveAllLabel = new JLabel("Receive All: " + profile.isReceiveAll());
 
-        displayLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        receiveAllLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        displayLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
+        passwordLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
+        receiveAllLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
 
         editDisplayButton = new JButton();
         editPasswordButton = new JButton();
@@ -1204,29 +1214,79 @@ public class Client implements ClientInterface {
         editPasswordButton.setText("Edit");
         editReceiveAllButton.setText("Edit");
 
+        displayNameField = new JTextField("", 15);
+        passwordField = new JPasswordField("", 15);
+        confirmPasswordField = new JPasswordField("", 15);
+
+        receiveAll = new JCheckBox("Receive messages from all users (not only friends)?");
+        receiveAll.setSelected(profile.isReceiveAll());
+        receiveAll.addActionListener(actionListener);
+
+        JLabel passwordRequirements = new JLabel("Password must have 8 characters and contain at least one" +
+                " uppercase, lowercase, and number.");
+        passwordRequirements.setForeground(Color.GRAY);
+        passwordRequirements.setFont(new Font(passwordRequirements.getFont().getFontName(), Font.ITALIC, 8));
+
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 2;
         editProfilePanel.add(displayLabel, gbc);
-
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("New Display Name: "), gbc);
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(displayNameField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
         editProfilePanel.add(editDisplayButton, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        editProfilePanel.add(usernameLabel, gbc);
+        gbc.gridy = 3;
+        editProfilePanel.add(new JLabel(" "), gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(passwordLabel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("New Password: "), gbc);
         gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(passwordField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(new JLabel("Reenter New Password: "), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        gbc.gridwidth = 1;
+        editProfilePanel.add(confirmPasswordField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(passwordRequirements, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
         editProfilePanel.add(editPasswordButton, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        editProfilePanel.add(receiveAllLabel, gbc);
+        gbc.gridy = 9;
+        editProfilePanel.add(new JLabel(" "), gbc);
 
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        editProfilePanel.add(editReceiveAllButton, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(receiveAllLabel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 2;
+        editProfilePanel.add(receiveAll, gbc);
 
         return editProfilePanel;
     }
