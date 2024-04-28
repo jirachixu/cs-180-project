@@ -649,7 +649,7 @@ public class Client implements ClientInterface {
         }
     }
 
-    public boolean canSend(Chat currentChat) {
+    private boolean canSend(Chat currentChat) {
         Profile sender = currentChat.getProfiles().get(0);
         Profile recipient = currentChat.getProfiles().get(1);
         if (sender.getBlocked().contains(recipient) || recipient.getBlocked().contains(sender)) {

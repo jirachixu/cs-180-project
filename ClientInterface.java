@@ -19,4 +19,18 @@ public interface ClientInterface extends Runnable {
     void updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     ArrayList<Profile> searchUsers(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
     void logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer);
+    Chat getCurrentChat();
+    void frameInitialization();
+    void initialPanel();
+    void registerPanel();
+    void loginPanel();
+    JPanel userPanel();
+    void getChatMessages();
+    JPanel chatPanel();
+    JList<String> updateChatDisplay();
+    JPanel viewUserPanel(Profile user);
+    void primaryPanel();
+    void updateUserDisplay(ArrayList<Profile> profiles);
+    JPanel editProfilePanel();
+    
 }

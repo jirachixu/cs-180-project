@@ -8,6 +8,7 @@ client and follow all prompts
 ## Submission
 Phase 1 was submitted by Jared Bright on Brightspace on 04/01/2024.
 Phase 2 was submitted by Caasi Boakye on Brightspace on 04/15/2024.
+Phase 3 was submitted by Jared Bright on Brightspace on 04/28/2024
 
 ## Server-Side Classes
 
@@ -177,39 +178,91 @@ chats as of the last refresh. Client implements Runnable so that later testing c
 time even if that testing is not currently done.
 
 #### Fields
-| Field Name | Type             | Description                                     |
-|------------|------------------|-------------------------------------------------|
-| profile    | Profile          | The profile being used for the current client.  |
-| chats      | ArrayList\<Chat> | The chats that the current client is a part of. |
+| Field Name           | Type                      | Description                                                 |
+|----------------------|---------------------------|-------------------------------------------------------------|
+| profile              | Profile                   | The profile being used for the current client.              |
+| chats                | ArrayList<Chat>           | The chats that the current client is a part of.             |
+| frame                | JFrame                    | The main frame that the GUI exists in                       |
+| panelSplit           | JSplitPane                | The primary left and right split pane in the main interface |
+| backButton           | JButton                   | A button for going back to the welcome screen               |
+| friendButton         | JButton                   | A button for friending a user                               |
+| blockButton          | JButton                   | A button for blocking a user                                |
+| editButton           | JButton                   | A button for viewing edit profile panel                     |
+| logoutButton         | JButton                   | A button for logging out                                    |
+| sendButton           | JButton                   | A button for sending message                                |
+| loginButton          | JButton                   | A button for logging in                                     |
+| registerButton       | JButton                   | A button for registering an account                         |
+| loginEnterButton     | JButton                   | A button for confirming login                               |
+| registerEnterButton  | JButton                   | A button for confirming registration                        |
+| receiveAll           | JCheckBox                 | A check box for registering options                         |
+| editProfileButton    | JButton                   | A button for editing a profile                              |
+| chatButton           | JButton                   | A button for chatting with a user                           |
+| searchButton         | JButton                   | A button for searching users                                |
+| viewButton           | JButton                   | A button for viewing a user                                 |
+| userDisplaySelection | JComboBox<String>         | A drop down menu for selecting tab of users to view         |
+| displayList          | DefaultListModel<Profile> | A list to hold the profiles to view                         |
+| userDisplay          | JList<Profile>            | A list to hold the profiles to view                         |
+| chatDisplay          | JList<String>             | A list for holding chats to display                         |
+| chatDisplayList      | DefaultListModel<String>  | A list for holding chats to display                         |
+| currentRecipient     | JTextArea                 | Header for a chat                                           |
+| messageText          | JTextField                | Message to be sent                                          |
+| usernameField        | JTextField                | Username to be inputted                                     |
+| searchQuery          | JTextField                | Search query input field                                    |
+| passwordField        | JPasswordField            | Password to be inputted                                     |
+| displayNameField     | JTextField                | Display name to be inputted                                 |
+| confirmPasswordField | JPasswordField            | Confirm a password                                          |
+| editDisplayButton    | JTextField                | Confirms a change to display name                           |
+| editPasswordButton   | JButton                   | Confirms a change to password                               |
+| editReceiveAllButton | JButton                   | Confirms a change to receive all                            |
+| deleteProfileButton  | JButton                   | Confirms deleting of a profile                              |
+| activeChat           | Profile                   | Current user that a chat is being held with                 |
+| actionListener       | ActionListener            | Binds to all buttons to run correct methods based on clicks |
+
 
 #### Methods
-| Method Name                                                                                                                | Return         | Description                                                                                                        |
-|----------------------------------------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------------------------------------------------|
-| main(String[] args)                                                                                                        | static void    | Creates a new Client thread.                                                                                       |
-| run()                                                                                                                      | void           | Organizes the calls to individual methods.                                                                         |
-| createNewUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Creates a new Profile for the client.                                                                              |
-| logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                     | void           | Logs a profile out of client.                                                                                      |
-| checkValidPassword(String password)                                                                                        | static boolean | Checks if a given password is a valid password. (8 characters, uppercase, lowercase, number and special character) |
-| login(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                        | void           | Logs into a Profile for the client.                                                                                |
-| deleteProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Deletes the profile currently logged into client                                                                   |
-| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Edits the profile currently logged into client                                                                     |
-| updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                | void           | Updates all chats associated with client                                                                           |
-| searchUsers(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Searches for a user and displays results                                                                           |
-| blockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                    | void           | Blocks a profile                                                                                                   |
-| unblockUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Unlocks a profile                                                                                                  |
-| friendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                   | void           | Friends a profile                                                                                                  |
-| unfriendUser(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                 | void           | Unfriends a profile                                                                                                |
-| sendMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Sends a message to a chat.                                                                                         |
-| editMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex) | void           | Edits a message in a chat.                                                                                         |
-| deleteMessage(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                | void           | Deletes a message in a chat.                                                                                       |
-| editProfile(Scanner scan, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                  | void           | Edits the Profile the client is on.                                                                                |
+| Method Name                                                                                                                                         | Return             | Description                                                                                                        |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------|
+| main(String[] args)                                                                                                                                 | static void        | Creates a new Client thread.                                                                                       |
+| run()                                                                                                                                               | void               | Organizes the calls to individual methods.                                                                         |
+| createNewUser(String username, String password, String display, boolean receiveAll, ObjectInputStream inFromServer, ObjectOutputStream outToServer) | void               | Creates a new Profile for the client.                                                                              |
+| logout(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                                              | void               | Logs a profile out of client.                                                                                      |
+| checkValidPassword(String password)                                                                                                                 | static boolean     | Checks if a given password is a valid password. (8 characters, uppercase, lowercase, number and special character) |
+| login(String username, String password, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                             | void               | Logs into a Profile for the client.                                                                                |
+| deleteProfile(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                                       | void               | Deletes the profile currently logged into client                                                                   |
+| editProfile(String input, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                           | void               | Edits the profile currently logged into client                                                                     |
+| updateChats(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                                         | void               | Updates all chats associated with client                                                                           |
+| searchUsers(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                                         | ArrayList<Profile> | Searches for a user and displays results                                                                           |
+| blockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                              | void               | Blocks a profile                                                                                                   |
+| unblockUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                            | void               | Unlocks a profile                                                                                                  |
+| friendUserString user, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                              | void               | Friends a profile                                                                                                  |
+| unfriendUser(String user, ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                           | void               | Unfriends a profile                                                                                                |
+| canSend(Chat currentChat)                                                                                                                           | boolean            | Checks if a chat can be sent based on blocked/friend status                                                        |
+| sendMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer)                                                                         | void               | Sends a message to a chat.                                                                                         |
+| getCurrentChat()                                                                                                                                    | Chat               | Gets the current active chat                                                                                       |
+| editMessage(ObjectInputStream inFromServer, ObjectOutputStream outToServer, String chatId, int messageIndex)                                        | void               | Edits a message in a chat.                                                                                         |
+| deleteMessage(ObjectOutputStream outToServer)                                                                                                       | void               | Deletes a message in a chat.                                                                                       |
+| frameInitialization()                                                                                                                               | void               | Starts the frame for the GUI to be build in                                                                        |
+| initialPanel()                                                                                                                                      | void               | The first panel seen when starting the program                                                                     |
+| registerPanel                                                                                                                                       | void               | Loads the registration panel                                                                                       |
+| loginPanel()                                                                                                                                        | void               | Loads the login panel                                                                                              |
+| userPanel()                                                                                                                                         | JPanel             | Loads the side panel of users and searches                                                                         |
+| getChatMessages()                                                                                                                                   | void               | Gets all the possible chats                                                                                        |
+| chatPanel()                                                                                                                                         | JPanel             | Creates a panel for chats                                                                                          |
+| updateChatDisplay(Profile user)                                                                                                                     | JList<String>      | Updates the Chat display                                                                                           |
+| viewUserPanel()                                                                                                                                     | JPanel             | Loads the view user panel                                                                                          |
+| primaryPanel()                                                                                                                                      | void               | Loads the primary panel to interface with user                                                                     |
+| updateUserDisplay(ArrayList<Profile> profiles)                                                                                                      | void               | Updates the users that are displayed                                                                               |
+| editProfilePane()                                                                                                                                   | JPanel             | Loads the edit profile panel                                                                                       |
 
 ## Testing
 All of these classes are tested in RunLocalTest.java, where all methods are rigorously tested to make sure they function
 properly and also so that they error properly for invalid inputs.
 The Client class also includes a main method so that we could test it without having to test the Network I/O.
 
-### Instructions for Detailed Testing of Network IO
+### OBSOLETE - Instructions for Detailed Testing of Network IO without GUI
+_This is an obsolete procedure but maintained in the README in case there ever is a need to revert the program to before
+the GUI had been implemented._
+
 For testing of the network, perform all testing within the console of your device. Quotes indicates things that appear 
 in terminal. They should not be included when inputting prompts.
 1) If the files "profiles.txt" and "chats.txt" exist them, delete them, they will be rewritten through the course of 
@@ -272,3 +325,55 @@ against invalid inputs so that shouldn't be a concern. In addition, if you load 
 the first prompt when loading the servers, you'll open a server that already has an Admin with password "Admin123!" and 
 User1 - User4 with password "Password123!". Some messages have already been sent and some users are already friends so
 feel free to experiment!.
+
+### Instructions for Detailed Testing of Network IO with GUI
+For testing of the entire program, perform all testing within the console of your device. Quotes indicates things that 
+appear in terminal or on the GUI. They should not be included when inputting prompts unless otherwise noted.
+
+1) If the files "profiles.txt" and "chats.txt" exist them, delete them, they will be rewritten through the course of
+testing.
+2) Run "Server.java". When prompted in terminal to load default files, type "no". Then type in "profiles.txt", 
+"chats.txt", "profiles.txt", and finally "chats.txt". This will load the empty files. A message that files failed to 
+read is likely but this is expected because the files do not exist yet. The last message you should see is "Waiting for 
+server connection" which indicates the server is idling while waiting for a client to connect.
+3) In a different terminal run "Client.java". A GUI should appear with a login and register button. On the terminal
+associated with Server, you should see two new messages "Server connected", "Waiting for server connection" which
+indicates that the server successfully connected to the client and is awaiting more clients.
+4) On the client GUI, click "Register" in order to initiate creating a new account. Enter the following into the fields:
+"User1", "Password123!", "Password123!", "UserOne" and do NOT click the checkbox for receive all. Then click
+"Register". This creates new account with username User1, password Password123!, display name UserOne and set to not
+receive all messages. 
+5) The GUI should now appear. Confirm no other users exist yet by going to the drop-down menu currently displaying
+"Friends" in the upper left and change it to "Search". In the text box below the drop-down menu, type "U" and click
+"Search". There should be no changes as no other users currently exist.
+6) Click "Logout" and create a new process in the same process as step 3 but using: "User2", "Password123!", 
+"Password123!", "UserToo" and DO click the checkbox for receive all. Note the typo is intentional in the display name.
+7) Fix the typo in the username by clicking "Edit your Profile", typing "User Two" in the top box and clicking the 
+button next to the text field. Note the new change appearing in the frame title and in the panel. 
+8) User2 wants to friend User1 so search for "U" using the same procedure in step 5 but now "User One" should appear in 
+the list below. Select "UserOne", click the "View" button in the lower right and then select "Friend". The GUI should
+revert to the original panel but now User One should appear in the friend list.
+9) User2 wants to try and send a message so in they click "UserOne", click "Chat" and type "This is my first message!". 
+When they hit send, they get an error because User1 is set to receive only from friends and User1 is not friends
+with User2 even though User2 is friends with User1 (friending is a single direction connection).
+10) End the program by clicking the x in the upper right, then ending the server by stopping the program. Restart the 
+server following step 2. No error should appear this time.
+11) This time click "Login" and enter "User1" "Password123!" to log into User1's account. Search for User2 and add them
+as a friend following step 8. Now sends the messages "Sorry about that!" and "Hi their!" to User2. User1 realizes their 
+typo and clicks on their message, clicks "Edit", types "Hi there", and clicks ok to fix their typo.
+12) Log out and log in to User2 in the same GUI. Click on "UserOne" and select "Chat" to view the chat's User1 sent.
+User2 doesn't like how nonchalant User1 is and so replies "It's not ok" and "Stupid". They realize maybe they shouldn't
+have said "Stupid" so they quickly select the message and then click delete to undo the sending.
+13) Just to be safe. Then also block User1 by viewing User1's profile and selecting block. Now they no longer see User1
+in the friends list but they do see them in the blocked list.
+14) Log out of User2 and log back into User1. User1 secretly has superpowers and knows everything ever said about them
+and they are very sad, so they try to send ":(" but because they have been blocked they can't send the message.
+14) User1 is so sad they decide they want to leave social media forever and so they delete their profile, so they click
+"Edit your Profile" and "Delete Profile", confirming their choices as needed.
+15) Log back into User2 and go to the blocked tab. Notice how User1 still exists in case User1 ever decides to come back
+but not search for User1 and notices how they no longer exist.
+
+This was a brief walkthrough of all the Network IO methods. Feel free to experiment around, everything should be 
+protected against invalid inputs so that shouldn't be a concern. In addition, if you load the default profiles by typing
+"yes" on the first prompt when loading the servers, you'll open a server that already has User1 - User4 with password 
+"Password123!". Some messages have already been sent and some users are already friends so feel free to experiment!.
